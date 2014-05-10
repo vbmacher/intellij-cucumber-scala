@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="iso-8859-1"?>
+
+<idea-plugin version="2">
+    <id>com.github.danielwegener.cucumber-scala</id>
+    <name>Cucumber for Scala</name>
+    <version>0.1</version>
+    <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
+
+    <description><![CDATA[
+      Enables Reference tracking of glue code when using cucumber-scala DSL.
+
+      Requires Scala language integration from Community Repo and the JetBrains cucumber plugin.
+
+      Issue tracking at https://github.com/danielwegener/intellij-cucumber-scala/issues
+    ]]></description>
+
+    <change-notes><![CDATA[
+      0.1: Initial release.
+    ]]>
+    </change-notes>
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
+    <idea-version since-build="135.0"/>
+
+
+    <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
+         on how to target different products -->
+
+    <!--<depends>com.intellij.modules.lang</depends>-->
+    <depends>cucumber</depends>
+    <depends>org.intellij.scala</depends>
+
+    <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
+        <cucumberJvmExtensionPoint
+                implementation="com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension"/>
+    </extensions>
+
+</idea-plugin>
