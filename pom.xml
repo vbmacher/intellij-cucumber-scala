@@ -4,7 +4,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>com.github.danielwegener.intellij.cucumber</groupId>
     <artifactId>intellij-cucumber-scala</artifactId>
-    <version>0.0.1</version>
+    <version>0.0.2-SNAPSHOT</version>
     <parent>
         <groupId>org.sonatype.oss</groupId>
         <artifactId>oss-parent</artifactId>
@@ -29,10 +29,13 @@
         <vendor.email>daniel@wegener.me</vendor.email>
         <vendor.name>Daniel Wegener</vendor.name>
         <scala.version>2.10.3</scala.version>
+        <ij.plugin>true</ij.plugin>
+        <ij.pluginDescriptor>src/main/resources/META-INF/plugin.xml</ij.pluginDescriptor>
+        <idea.version>135.475</idea.version>
     </properties>
 
     <prerequisites>
-        <maven>3.0.4</maven>
+        <maven>3.2.1</maven>
     </prerequisites>
 
     <issueManagement>
@@ -76,10 +79,90 @@
             <version>4.11</version>
             <scope>test</scope>
         </dependency>
+
+        <!-- Intellij Dependencies -->
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>idea-annotations</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/annotations.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>idea</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/idea.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>openapi</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/openapi.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>extensions</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/extensions.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>log4j</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/log4j.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>util</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/util.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>picocontainer</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/picocontainer.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>oromatcher</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/oromatcher.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>idea-annotations</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/lib/annotations.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>scala-plugin</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/plugins/Scala/lib/scala-plugin.jar</systemPath>
+        </dependency>
+        <dependency>
+            <groupId>org.jetbrains.intellij</groupId>
+            <artifactId>idea-cucumber</artifactId>
+            <version>${idea.version}</version>
+            <scope>system</scope>
+            <systemPath>${idea.home}/plugins/cucumber/lib/cucumber.jar</systemPath>
+        </dependency>
     </dependencies>
 
 
     <build>
+        <defaultGoal>clean install</defaultGoal>
         <resources>
             <resource>
                 <directory>src/main/resources</directory>
@@ -88,6 +171,24 @@
         </resources>
 
         <plugins>
+            <!--
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>ideauidesigner-maven-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>javac2</goal>
+                        </goals>
+                    </execution>
+                </executions>
+                <configuration>
+                    <fork>true</fork>
+                    <debug>true</debug>
+                    <failOnError>true</failOnError>
+                </configuration>
+            </plugin>
+            -->
             <plugin>
                 <groupId>org.scala-tools</groupId>
                 <artifactId>maven-scala-plugin</artifactId>
@@ -98,6 +199,13 @@
                             <goal>compile</goal>
                             <goal>testCompile</goal>
                         </goals>
+                        <!--<configuration>
+                            <args>
+                                <arg>-make:transitive</arg>
+                                <arg>-dependencyfile</arg>
+                                <arg>${project.build.directory}/.scala_dependencies</arg>
+                            </args>
+                        </configuration>-->
                     </execution>
                 </executions>
             </plugin>
@@ -121,8 +229,8 @@
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.0</version>
                 <configuration>
-                    <source>1.6</source>
-                    <target>1.6</target>
+                    <source>1.7</source>
+                    <target>1.7</target>
                 </configuration>
             </plugin>
             <plugin>
