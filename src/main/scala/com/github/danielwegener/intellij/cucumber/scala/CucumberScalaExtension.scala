@@ -1,29 +1,25 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
-import org.jetbrains.plugins.cucumber.StepDefinitionCreator
-import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
-import com.intellij.psi._
-import com.intellij.openapi.fileTypes.FileType
-import org.jetbrains.plugins.scala.ScalaFileType
-import org.jetbrains.plugins.cucumber.psi.GherkinFile
-import java.util.{Collection => JavaCollection, Set => JavaSet, Collections}
-import org.jetbrains.annotations.NotNull
-import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition, NotIndexedCucumberExtension}
-import com.intellij.openapi.module.{ModuleUtilCore, Module}
-import scala.collection.convert.Wrappers.MutableSetWrapper
-import scala.collection.JavaConversions._
-import scala.collection.JavaConversions
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.openapi.project.Project
-import org.jetbrains.plugins.scala.lang.psi.stubs.util.ScalaStubsUtil
-import org.jetbrains.plugins.scala.lang.psi
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScTemplateDefinition}
-import com.intellij.openapi.diagnostic.Logger
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScBlock, ScMethodCall}
-import org.jetbrains.plugins.scala.lang.psi.api.base.{ScLiteral, ScInterpolatedStringLiteral}
-import scala.annotation.tailrec
-import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
+import java.util.{Collections, Collection => JavaCollection, Set => JavaSet}
+
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScalaStepDefinition
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.fileTypes.FileType
+import com.intellij.openapi.module.{Module, ModuleUtilCore}
+import com.intellij.openapi.project.Project
+import com.intellij.psi._
+import com.intellij.psi.search.GlobalSearchScope
+import org.jetbrains.annotations.NotNull
+import org.jetbrains.plugins.cucumber.StepDefinitionCreator
+import org.jetbrains.plugins.cucumber.psi.GherkinFile
+import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
+import org.jetbrains.plugins.scala.ScalaFileType
+import org.jetbrains.plugins.scala.lang.psi
+import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
+import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScClass
+
+import scala.collection.JavaConversions
 import scala.util.Try
 
 object CucumberScalaExtension {
@@ -32,7 +28,7 @@ object CucumberScalaExtension {
 
 class CucumberScalaExtension extends AbstractCucumberExtension {
 
-  import CucumberScalaExtension._
+  import com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension._
 
   val CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
 
