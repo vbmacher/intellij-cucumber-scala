@@ -19,6 +19,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScClass
 
+import scala.annotation.tailrec
 import scala.collection.JavaConversions
 import scala.util.Try
 
@@ -64,7 +65,8 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
     val stepDefs = for {
       cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependenciesScope).toSeq
-      glueCodeClass@(some:ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope)
+      scalaDslInheritingClass@(some:ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope)
+      glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, dependenciesScope)
       scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
       outerMethodCall@(some:ScMethodCall) <- scConstructorBody.children
 
@@ -73,6 +75,25 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
     JavaConversions.seqAsJavaList(stepDefs)
 
+  }
+
+  def classAndItsInheritors(parentOfHirarchy:ScClass, scope:GlobalSearchScope):Iterable[ScClass] = {
+
+    @tailrec
+    def helper(queue:List[ScClass], akku:Set[ScClass]) : Set[ScClass] = {
+      queue match {
+        case Nil => akku
+        case a if !a.isEmpty => {
+          val newChildren = psi.stubs.util.ScalaStubsUtil.getClassInheritors(a.head, scope)
+            .collect{case a:ScClass => a}
+            .filterNot(akku.contains)
+          helper(a.tail ::: newChildren.toList, akku + a.head)
+        }
+      }
+
+    }
+    val r = helper(List(parentOfHirarchy), Set.empty)
+    r
   }
 
 
@@ -85,7 +106,8 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       searchScope = module.getModuleContentScope
       globalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
       cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, globalSearchScope).toSeq
-      glueCodeClass@(some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, searchScope)
+      scalaDslInheritingClass@(some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, searchScope)
+      glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, searchScope)
       containingFile <- Try( glueCodeClass.getContainingFile ).toOption
     } yield containingFile
 
