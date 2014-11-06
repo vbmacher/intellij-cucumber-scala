@@ -32,6 +32,7 @@
         <ij.plugin>true</ij.plugin>
         <ij.pluginDescriptor>src/main/resources/META-INF/plugin.xml</ij.pluginDescriptor>
         <idea.version>135.475</idea.version>
+        <idea.home>${env.IDEA_HOME}</idea.home>
     </properties>
 
     <prerequisites>
