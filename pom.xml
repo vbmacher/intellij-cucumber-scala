@@ -140,13 +140,6 @@
         </dependency>
         <dependency>
             <groupId>org.jetbrains.intellij</groupId>
-            <artifactId>idea-annotations</artifactId>
-            <version>${idea.version}</version>
-            <scope>system</scope>
-            <systemPath>${idea.home}/lib/annotations.jar</systemPath>
-        </dependency>
-        <dependency>
-            <groupId>org.jetbrains.intellij</groupId>
             <artifactId>scala-plugin</artifactId>
             <version>${idea.version}</version>
             <scope>system</scope>
