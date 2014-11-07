@@ -4,13 +4,12 @@ import java.util.{Collections, Collection => JavaCollection, Set => JavaSet}
 
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScalaStepDefinition
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.fileTypes.FileType
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.Project
 import com.intellij.psi._
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.annotations.NotNull
-import org.jetbrains.plugins.cucumber.StepDefinitionCreator
+import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
 import org.jetbrains.plugins.scala.ScalaFileType
@@ -32,6 +31,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
   import com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension._
 
   val CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
+  val BDD_FRAMEWORK_TYPE = new BDDFrameworkType(ScalaFileType.SCALA_FILE_TYPE)
 
   override def isStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
     child.isInstanceOf[ScalaFile]
@@ -46,7 +46,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
   }
 
   @NotNull
-  override def getStepFileType: FileType = ScalaFileType.SCALA_FILE_TYPE
+  override def getStepFileType: BDDFrameworkType = BDD_FRAMEWORK_TYPE
 
   @NotNull
   override def getStepDefinitionCreator: StepDefinitionCreator = throw new UnsupportedOperationException("You cannot automatically create Steps yet.")
