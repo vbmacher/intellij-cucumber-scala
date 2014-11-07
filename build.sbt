@@ -20,19 +20,20 @@ scalacOptions in Global += "-target:jvm-1.6"
 
 ideaVersion := "139.224.1"
 
-//  [organisation]/[module]/[revision]/[artifact].[ext]
-// https://plugins.jetbrains.com/pluginManager/?action=download&id=mobi.hsz.idea.gitignore&uuid=5b75b75b7-BEEF-5b70-4242-5b75b75b75b7
 
+//  "http://plugins.jetbrains.com/pluginManager/?action=download&id=org.intellij.scala&build=IU-139.224&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
 
+//libraryDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current" from s"http://plugins.jetbrains.com/pluginManager/?action=download&id=org.intellij.scala&build=$ideaRepoVersion&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
 
-resolvers += Resolver.url( "sbt-plugin-releases", url( "https://plugins.jetbrains.com/pluginManager/" ))( Patterns("?action=download&id=[module]&uuid=5b75b75b7-BEEF-5b70-4242-5b75b75b75b7" ))
+libraryDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current" from s"file:///opt/idea-IC-139.224.1/plugins/Scala/lib/scala-plugin.jar"
 
-libraryDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current"
+libraryDependencies +=  "com.jetbrains.plugins" % "cucumber" % "current" from s"file:///opt/idea-IC-139.224.1/plugins/cucumber/lib/cucumber.jar"
 
 ideaBasePath in Global := baseDirectory.value / "SDK" / "ideaSDK" / s"idea-${ideaVersion.value}"
 
-ideaBaseJars in Global := (ideaBasePath.value  / "lib" * "*.jar").classpath
+//ideaPluginBasePath in Global := baseDirectory.value / "SDK" / "plugins" / s"idea-${ideaVersion.value}"
 
+ideaBaseJars in Global := (ideaBasePath.value  / "lib" * "*.jar").classpath
 
 unmanagedJars in Compile := ideaBaseJars.value
 
@@ -63,6 +64,31 @@ ideaResolver := {
     )
   )
 }
+
+
+
+//downloadPlugins := {
+//  val log = streams.value.log
+//  val pluginsPath = ideaPluginBasePath.value.getParentFile
+//  val resolver = (ideaResolver in Compile).value
+//  val buildId = getBuildId(resolver).getOrElse("")
+//  def artifactUrl(pluginId:String) = resolver.teamcityURL + s"https://plugins.jetbrains.com/pluginManager/?action=download&id=$pluginId&build=$buildId&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
+//  if (!pluginsPath.exists) pluginsPath.mkdirs
+//  def downloadDep(art: TCArtifact): Unit = {
+//    val fileTo = file(art.to)
+//    if (!fileTo.exists() || art.overwrite) {
+//      log.info(s"downloading${if (art.overwrite) "(overwriting)" else ""}: ${art.from} -> ${fileTo.getAbsolutePath}")
+//      IO.download(url(artifactBaseUrl + art.from), fileTo)
+//      log.success(s"download of ${fileTo.getName} finished")
+//      art.extractFun foreach { func =>
+//        log.info(s"extracting from archive ${fileTo.getName}")
+//        func(fileTo)
+//        log.success("extract finished")
+//      }
+//    } else log.info(s"$fileTo already exists, skipping")
+//  }
+//  resolver.artifacts foreach downloadDep
+//}
 
 downloadIdea := {
   val log = streams.value.log

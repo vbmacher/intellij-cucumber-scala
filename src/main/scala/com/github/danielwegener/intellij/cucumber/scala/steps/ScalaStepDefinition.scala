@@ -40,7 +40,7 @@ class ScalaStepDefinition(scMethod:ScMethodCall) extends AbstractStepDefinition(
         literalParameter@(someOther: ScLiteral) <- innerMethodCall.args.exprs
         if literalParameter.isString
       } yield literalParameter.getValue.toString
-        x.headOption.getOrElse(null)
+        x.headOption.orNull
       case _ => null
     }
 

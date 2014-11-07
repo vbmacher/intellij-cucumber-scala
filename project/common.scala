@@ -4,6 +4,7 @@ import Keys._
 object common extends Build {
   lazy val ideaVersion = settingKey[String]("gets idea sdk version from file")
   lazy val ideaBasePath = settingKey[File]("path to idea SDK")
+  //lazy val ideaPluginBasePath = settingKey[File]("path to community plugins")
 
   lazy val ideaBaseJars = settingKey[Classpath]("")
   lazy val ideaICPluginJars = settingKey[Classpath]("")
@@ -15,6 +16,7 @@ object common extends Build {
   lazy val packageStructure = taskKey[Seq[(File, String)]]("plugin artifact structure")
 
   lazy val downloadIdea = taskKey[Unit]("downloads idea runtime")
+  //lazy val downloadPlugins = taskKey[Unit]("downloads idea plugins")
   lazy val ideaResolver = settingKey[IdeaResolver]("idea sdk resolver")
   case class TCArtifact(from: String, to: String, extractFun: Option[File => Any] = None, overwrite: Boolean = false)
   implicit def tuple2TCA(t: (String, String, Option[File => Any], Boolean)): TCArtifact = TCArtifact(t._1, t._2, t._3, t._4)
@@ -35,7 +37,7 @@ object common extends Build {
   }
 
   implicit class Regex(sc: StringContext) {
-    def r = new util.matching.Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
+    def r = new scala.util.matching.Regex(sc.parts.mkString, sc.parts.tail.map(_ => "x"): _*)
   }
 
   def getBuildId(resolver: IdeaResolver): Option[String] = {
