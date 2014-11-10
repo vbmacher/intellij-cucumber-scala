@@ -2,6 +2,8 @@ import Keys.{`package` => pack}
 
 name :=  "Cucumber for Scala"
 
+version := "0.3.0"
+
 scalaVersion :=  "2.11.2"
 
 //libraryDependencies +=  "org.scala-lang" % "scala-reflect" % scalaVersion.value
@@ -140,4 +142,25 @@ pack in Compile <<= (pack in Compile) dependsOn (
   pack in (`cucumber-scala`, Compile)
   )
 
+
+packageStructure in Compile := Seq(
+    (artifactPath in (`cucumber-scala`, Compile, packageBin)).value -> "lib/")
+
+packagePlugin in Compile := {
+  val (dirs, files) = (packageStructure in Compile).value.partition(_._1.isDirectory)
+  val base = baseDirectory.value / "out" / "plugin" / "Scala"
+  IO.delete(base.getParentFile)
+  dirs  foreach { case (from, to) => IO.copyDirectory(from, base / to, overwrite = true) }
+  files foreach { case (from, to) => IO.copyFile(from, base / to)}
+}
+
+packagePlugin in Compile <<= (packagePlugin in Compile) dependsOn (pack in Compile)
+
+packagePluginZip in Compile := {
+  val base = baseDirectory.value / "out" / "plugin"
+  val zipFile = baseDirectory.value / "out" / "scala-plugin.zip"
+  IO.zip((base ***) pair (relativeTo(base), false), zipFile)
+}
+
+packagePluginZip in Compile <<= (packagePluginZip in Compile) dependsOn (packagePlugin in Compile)
 
