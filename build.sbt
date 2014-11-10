@@ -22,23 +22,27 @@ scalacOptions in Global += "-target:jvm-1.6"
 
 ideaVersion := "139.224.1"
 
+ideaPluginVersion := "IC-139.224"
+
 scalariformSettings
 
-//  "http://plugins.jetbrains.com/pluginManager/?action=download&id=org.intellij.scala&build=IU-139.224&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
+pluginDependencies := Seq()
 
-//libraryDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current" from s"http://plugins.jetbrains.com/pluginManager/?action=download&id=org.intellij.scala&build=$ideaRepoVersion&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
+pluginDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current"
 
-libraryDependencies +=  "com.jetbrains.plugins" % "org.intellij.scala" % "current" from s"file:///opt/idea-IC-139.224.1/plugins/Scala/lib/scala-plugin.jar"
-
-libraryDependencies +=  "com.jetbrains.plugins" % "cucumber" % "current" from s"file:///opt/idea-IC-139.224.1/plugins/cucumber/lib/cucumber.jar"
+pluginDependencies +=  "com.jetbrains.plugins" % "cucumber" % "current"
 
 ideaBasePath in Global := baseDirectory.value / "SDK" / "ideaSDK" / s"idea-${ideaVersion.value}"
 
-//ideaPluginBasePath in Global := baseDirectory.value / "SDK" / "plugins" / s"idea-${ideaVersion.value}"
+ideaPluginBasePath in Global := baseDirectory.value / "SDK" / "plugins" / s"idea-${ideaVersion.value}"
+
+ideaPluginJars in Global := (ideaPluginBasePath.value  ** "lib" * "*.jar").classpath
 
 ideaBaseJars in Global := (ideaBasePath.value  / "lib" * "*.jar").classpath
 
 unmanagedJars in Compile := ideaBaseJars.value
+
+unmanagedJars in Compile ++= ideaPluginJars.value
 
 unmanagedJars in Compile +=  file(System.getProperty("java.home")).getParentFile / "lib" / "tools.jar"
 
@@ -70,28 +74,39 @@ ideaResolver := {
 
 
 
-//downloadPlugins := {
-//  val log = streams.value.log
-//  val pluginsPath = ideaPluginBasePath.value.getParentFile
-//  val resolver = (ideaResolver in Compile).value
-//  val buildId = getBuildId(resolver).getOrElse("")
-//  def artifactUrl(pluginId:String) = resolver.teamcityURL + s"https://plugins.jetbrains.com/pluginManager/?action=download&id=$pluginId&build=$buildId&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
-//  if (!pluginsPath.exists) pluginsPath.mkdirs
-//  def downloadDep(art: TCArtifact): Unit = {
-//    val fileTo = file(art.to)
-//    if (!fileTo.exists() || art.overwrite) {
-//      log.info(s"downloading${if (art.overwrite) "(overwriting)" else ""}: ${art.from} -> ${fileTo.getAbsolutePath}")
-//      IO.download(url(artifactBaseUrl + art.from), fileTo)
-//      log.success(s"download of ${fileTo.getName} finished")
-//      art.extractFun foreach { func =>
-//        log.info(s"extracting from archive ${fileTo.getName}")
-//        func(fileTo)
-//        log.success("extract finished")
-//      }
-//    } else log.info(s"$fileTo already exists, skipping")
-//  }
-//  resolver.artifacts foreach downloadDep
-//}
+downloadPlugins := {
+  val log = streams.value.log
+  val pluginsPath = ideaPluginBasePath.value
+  val resolver = (ideaResolver in Compile).value
+  val resolvedIdeaVersion = (ideaPluginVersion in Compile).value
+  def artifactUrl(pluginId:String) = s"http://plugins.jetbrains.com/pluginManager/?action=download&id=$pluginId&build=$resolvedIdeaVersion&uuid=81756afd-dc0b-426a-f0f0-72ed100d35bf"
+  if (!pluginsPath.exists) pluginsPath.mkdirs
+  val (hits, fails) =  (pluginDependencies in Compile).value.partition(_.organization == "com.jetbrains.plugins")
+  fails.foreach( m => log.warn(s"Ignoring $m. Each pluginDependencies organisation must be 'com.jetbrains.plugins'"))
+  val pluginIds = hits.map(_.name)
+  def downloadDep(pluginId: String): Unit = {
+      val pluginSourceUrl = artifactUrl(pluginId)
+      val markerFile = new File(pluginsPath, "."+pluginId+".present")
+      if (markerFile.exists()) {
+        log.info(s"plugin $pluginId already downloaded.")
+      } else {
+        IO.withTemporaryFile(pluginId, ".zip") { tempFile =>
+          log.info(s"downloading : $pluginSourceUrl -> ${tempFile.getAbsolutePath}")
+          IO.download(url(pluginSourceUrl), tempFile)
+          if (tempFile.length() == 0) {
+            log.warn(s"Could not download plugin $pluginId. Retrieved file has size 0.")
+          } else {
+            log.info(s"download of $tempFile finished")
+            log.info(s"extracting $tempFile to $pluginsPath")
+            IO.unzip(tempFile, pluginsPath)
+            IO.touch(markerFile)
+            log.success(s"extracting $tempFile to $pluginsPath finished")
+          }
+        }
+      }
+  }
+  pluginIds foreach downloadDep
+}
 
 downloadIdea := {
   val log = streams.value.log
