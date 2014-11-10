@@ -1,4 +1,4 @@
-intellij-cucumber-scala
+intellij-cucumber-scala 0.3.0
 =======================
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
@@ -13,16 +13,13 @@ Enables Reference tracking of glue code when using cucumber-scala DSL.
 #Development
 
 1. `git clone git@github.com:danielwegener/intellij-cucumber-scala.git`
-2. Download and unpack IDEA-CE or UE
- - _Scala_ Plugin
- - _cucumber_ plugin
- - _IntelliJ Plugin development with Maven_ plugin
+2. `sbt downloadIdea` will download the idea sdk to the SDK folder
+3. `sbt downloadPlugins` will download the dependent plugins from jetbrains repo to the SDK folder
 4. Import the project as maven project into IDEA. Make sure to use your prepared IDEA version as plugin sdk.
-5. Make sure that _Project Structure -> Module -> intellij-cucumber-scala -> Plugin Deployment -> Path to META-INF/plugin.xml ends with `intellij-cucumber-scala/src/main/resources`_
 
-Now you can build this plugin with `mvn -Didea.home=PATH_TO_IDEA clean install` or use a IDEA plugin run configuration to debug it.
+Now you can build this plugin with `sbt package`
 
-> IntelliJ Plugin Development is too hard :/ Please provide a public (maybe non-oss, non-free) repo for Idea artifacts.
+> IntelliJ Plugin Development is too hard :/ Please provide a public (maybe non-oss, non-free) repo for Idea artifacts. Or maybe a sbt plugin.
 
 #License
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).
