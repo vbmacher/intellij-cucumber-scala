@@ -22,6 +22,7 @@ scalacOptions in Global += "-target:jvm-1.6"
 
 ideaVersion := "139.224.1"
 
+scalariformSettings
 
 //  "http://plugins.jetbrains.com/pluginManager/?action=download&id=org.intellij.scala&build=IU-139.224&uuid=81756afd-dc0b-426a-b7c1-72ed100d35bf"
 
