@@ -2,7 +2,7 @@ import Keys.{`package` => pack}
 
 name :=  "Cucumber for Scala"
 
-version := "0.3.0"
+version := "0.3.1"
 
 scalaVersion :=  "2.11.2"
 
@@ -20,9 +20,9 @@ javacOptions in Global ++= Seq("-source", "1.6", "-target", "1.6")
 
 scalacOptions in Global += "-target:jvm-1.6"
 
-ideaVersion := "139.224.1"
+ideaVersion := "141.177.4"
 
-ideaPluginVersion := "IC-139.224"
+ideaPluginVersion := "IC-141.177"
 
 scalariformSettings
 
