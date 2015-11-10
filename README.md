@@ -1,4 +1,4 @@
-intellij-cucumber-scala 0.3.0
+intellij-cucumber-scala 0.3.2
 =======================
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
@@ -13,9 +13,8 @@ Enables Reference tracking of glue code when using cucumber-scala DSL.
 #Development
 
 1. `git clone git@github.com:danielwegener/intellij-cucumber-scala.git`
-2. `sbt downloadIdea` will download the idea sdk to the SDK folder
-3. `sbt downloadPlugins` will download the dependent plugins from jetbrains repo to the SDK folder
-4. Import the project as sbt project into IDEA. Make sure to use your prepared IDEA version as plugin sdk.
+2. `sbt updateIdea` will download the idea sdk to the SDK folder and all required plugins
+3. Import the project as sbt project into IDEA. Make sure to use the downloaded IDEA version (e.g. `$project_root/idea/143.371.42`) as plugin sdk.
 
 Now you can build this plugin with `sbt package`
 

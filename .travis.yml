@@ -1,6 +1,6 @@
 language: java
 jdk:
 - openjdk6
-script: mvn verify -B
+script: sbt updateIdea package
 after_success: ! '[[ $TRAVIS_BRANCH == "master" && $TRAVIS_REPO_SLUG == "danielwegener/intellij-cucumber-scala"
   && $TRAVIS_PULL_REQUEST == "false" ]] && { mvn verify  }'

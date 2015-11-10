@@ -3,7 +3,7 @@
 <idea-plugin version="2">
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>0.3.1</version>
+    <version>0.3.2</version>
     <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
 
     <description><![CDATA[
@@ -19,12 +19,12 @@
       0.2.0: Supports glue code classes that implement ScalaDsl indirectly.
       0.3.0: Release for IntelliJ14 (unchanged functionality)
       0.3.1: Release for IntelliJ 14.1 (unchanged functionality)
+      0.3.2: Release for IntelliJ 15.0 (unchanged functionality)
     ]]>
     </change-notes>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Build+Number+Ranges for description -->
-    <idea-version since-build="141.104" until-build="142.0"/>
-
+    <idea-version since-build="143.0" until-build="145.0"/>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
          on how to target different products -->
