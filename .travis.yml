@@ -1,6 +1,14 @@
-language: java
+sudo: false
+language: scala
+scala:
+  - 2.11.2
+cache:
+  directories:
+  - idea
+  - $HOME/.m2/repository
+  - $HOME/.sbt
+  - $HOME/.ivy2
 jdk:
 - openjdk6
-script: mvn verify -B
-after_success: ! '[[ $TRAVIS_BRANCH == "master" && $TRAVIS_REPO_SLUG == "danielwegener/intellij-cucumber-scala"
-  && $TRAVIS_PULL_REQUEST == "false" ]] && { mvn verify  }'
+before_script: sbt updateIdea
+script: sbt package
