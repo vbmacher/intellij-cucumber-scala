@@ -1,6 +1,8 @@
 intellij-cucumber-scala 0.3.2
 =======================
 
+[![Build Status](https://travis-ci.org/danielwegener/intellij-cucumber-scala.svg)](https://travis-ci.org/danielwegener/intellij-cucumber-scala)
+
 Enables Reference tracking of glue code when using cucumber-scala DSL.
 
 #Features
