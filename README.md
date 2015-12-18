@@ -22,5 +22,7 @@ Now you can build this plugin with `sbt package`
 
 > IntelliJ Plugin Development is too hard :/ Please provide a public (maybe non-oss, non-free) repo for Idea artifacts. Or maybe a sbt plugin.
 
+To start an IDE with the plugin installed in the example project just run `sbt "runIdea example"` (_todo: does not work yet_)
+
 #License
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).
