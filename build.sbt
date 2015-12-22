@@ -2,6 +2,7 @@ import com.dancingrobot84.sbtidea.Keys._
 import sbt.Keys._
 
 name :=  "Cucumber for Scala"
+normalizedName :=  "intellij-cucumber-scala"
 version := "0.3.3"
 scalaVersion :=  "2.11.4"
 
