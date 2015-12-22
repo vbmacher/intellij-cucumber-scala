@@ -1,10 +1,10 @@
-package cucumber.examples.scalacalculator
+
 
 import cucumber.api.Scenario
 import cucumber.api.scala.{ScalaDsl, EN}
 import org.junit.Assert._
 
-class RpnCalculatorStepDefinitions extends ScalaDsl with EN {
+class RpnCalculatorStepDefinitions extends ScalaDslIndirection with EN {
 
   val calc = new Calculator
 
