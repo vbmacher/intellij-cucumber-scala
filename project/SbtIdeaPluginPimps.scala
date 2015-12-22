@@ -2,7 +2,6 @@ import com.dancingrobot84.sbtidea.{Keys => SbtIdeaPluginKeys, SbtIdeaPlugin}
 import sbt.Keys._
 import sbt._
 
-
 object SbtIdeaPluginPimps extends sbt.AutoPlugin {
 
   import SbtIdeaPluginKeys._
@@ -30,7 +29,8 @@ object SbtIdeaPluginPimps extends sbt.AutoPlugin {
       (javaOptions in runIdea) := Seq(
         s"-Xbootclasspath/a:${ideaBaseDirectory.value}/lib/boot.jar",
         s"-Dplugin.path=${(artifactPath in packageBin in Compile).value}",
-
+        "-Didea.debug.mode=true",
+        "-Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005",
         s"-Didea.system.path=${(runIdeaSystemDirectory in runIdea).value}",
         s"-Didea.config.path=${(runIdeaConfigDirectory in runIdea).value}"
       ),
@@ -44,9 +44,6 @@ object SbtIdeaPluginPimps extends sbt.AutoPlugin {
     )
 
   }
-
-
-
 
 }
 

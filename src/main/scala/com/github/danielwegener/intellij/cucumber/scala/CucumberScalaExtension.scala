@@ -16,7 +16,7 @@ import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScClass
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ ScTrait, ScTypeDefinition, ScClass }
 
 import scala.annotation.tailrec
 import scala.collection.JavaConversions
@@ -62,36 +62,33 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
     val project: Project = featureFile.getProject
 
     val stepDefs = for {
-      cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependenciesScope).toSeq
-      scalaDslInheritingClass @ (some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope)
+      cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependenciesScope)
+      scalaDslInheritingClass <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope).collect { case sc: ScClass => sc; case sct: ScTrait => sct }
       glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, dependenciesScope)
       scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
-      outerMethodCall @ (some: ScMethodCall) <- scConstructorBody.children
-
-      stepDefinition = new ScalaStepDefinition(outerMethodCall)
-    } yield stepDefinition
+      outerMethodCall <- scConstructorBody.children.collect { case mc: ScMethodCall => mc }
+    } yield new ScalaStepDefinition(outerMethodCall)
 
     JavaConversions.seqAsJavaList(stepDefs)
 
   }
 
-  def classAndItsInheritors(parentOfHirarchy: ScClass, scope: GlobalSearchScope): Iterable[ScClass] = {
+  def classAndItsInheritors(parentOfHierarchy: ScTypeDefinition, scope: GlobalSearchScope): Iterable[ScTypeDefinition] = {
 
     @tailrec
-    def helper(queue: List[ScClass], akku: Set[ScClass]): Set[ScClass] = {
+    def rec(queue: List[ScTypeDefinition], akku: Set[ScTypeDefinition]): Set[ScTypeDefinition] = {
       queue match {
         case Nil => akku
-        case a if !a.isEmpty => {
+        case a =>
           val newChildren = psi.stubs.util.ScalaStubsUtil.getClassInheritors(a.head, scope)
-            .collect { case a: ScClass => a }
+            .collect { case sc: ScClass => sc; case sct: ScTrait => sct }
             .filterNot(akku.contains)
-          helper(a.tail ::: newChildren.toList, akku + a.head)
-        }
+          rec(a.tail ::: newChildren.toList, akku + a.head)
+
       }
 
     }
-    val r = helper(List(parentOfHirarchy), Set.empty)
-    r
+    rec(List(parentOfHierarchy), Set.empty)
   }
 
   override def getStepDefinitionContainers(featureFile: GherkinFile): JavaCollection[_ <: PsiFile] = {
