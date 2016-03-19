@@ -1,4 +1,4 @@
-intellij-cucumber-scala 0.3.3
+intellij-cucumber-scala 0.3.4
 =======================
 
 [![Build Status](https://travis-ci.org/danielwegener/intellij-cucumber-scala.svg)](https://travis-ci.org/danielwegener/intellij-cucumber-scala)
