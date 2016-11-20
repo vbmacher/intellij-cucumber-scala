@@ -24,5 +24,11 @@ Now you can build this plugin with `sbt package`
 
 To start an IDE with the plugin installed in the example project just run `sbt "runIdea example"` (_todo: does not work yet_)
 
+#Publishing
+
+
+1. Add your credentials to `ideaPublishSettings` in `build.sbt` (make sure to not check them in!) 
+2 run `sbt publishPlugin`
+
 #License
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).

@@ -3,7 +3,7 @@
 <idea-plugin version="2">
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>0.3.5</version>
+    <version>0.3.7</version>
     <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
 
     <description><![CDATA[
@@ -24,6 +24,7 @@
       0.3.4: Release for IntelliJ 2016.1 (scala-plugin 3.0.0)
       0.3.5: Release for IntelliJ 2016.2 (scala-plugin 2016.2.0)
       0.3.6: Release for IntelliJ 2016.3
+      0.3.7: Release for IntelliJ 2016.3 (fix renamed gherkin dependency)
     ]]>
     </change-notes>
 
@@ -34,7 +35,7 @@
          on how to target different products -->
 
     <!--<depends>com.intellij.modules.lang</depends>-->
-    <depends>cucumber</depends>
+    <depends>gherkin</depends>
     <depends>org.intellij.scala</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
