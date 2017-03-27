@@ -3,7 +3,7 @@
 <idea-plugin version="2">
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>2017.1.1</version>
+    <version>2017.1.2</version>
     <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
 
     <description><![CDATA[
@@ -26,6 +26,7 @@
       0.3.6: Release for IntelliJ 2016.3
       0.3.7: Release for IntelliJ 2016.3 (fix renamed gherkin dependency)
       2017.1.1: Release for IntelliJ 2017.1 (scala-plugin 2017.1.8)
+      2017.1.2: fix compatibility with external changes in scala plugin
     ]]>
     </change-notes>
 
