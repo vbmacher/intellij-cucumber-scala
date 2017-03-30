@@ -3,7 +3,7 @@ import sbt.Keys._
 
 name :=  "Cucumber for Scala"
 normalizedName :=  "intellij-cucumber-scala"
-version := "2017.1.15"
+version := "2017.1.2"
 scalaVersion :=  "2.11.8"
 
 lazy val `scala-plugin` = IdeaPlugin.Zip("scala-plugin", url("https://plugins.jetbrains.com/files/1347/33637/scala-intellij-bin-2017.1.15.zip"))
