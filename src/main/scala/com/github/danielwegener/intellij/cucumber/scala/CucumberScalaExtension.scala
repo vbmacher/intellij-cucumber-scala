@@ -45,7 +45,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
   }
 
   @NotNull
-  override val getStepFileType: BDDFrameworkType = new BDDFrameworkType(ScalaFileType.SCALA_FILE_TYPE)
+  override val getStepFileType: BDDFrameworkType = new BDDFrameworkType(ScalaFileType.INSTANCE)
 
   @NotNull
   override def getStepDefinitionCreator: StepDefinitionCreator = throw new UnsupportedOperationException("You cannot automatically create Steps yet.")
@@ -66,7 +66,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       scalaDslInheritingClass <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope).collect { case sc: ScClass => sc; case sct: ScTrait => sct }
       glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, dependenciesScope)
       scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
-      outerMethodCall <- scConstructorBody.children.collect { case mc: ScMethodCall => mc }
+      outerMethodCall <- scConstructorBody.getChildren.collect { case mc: ScMethodCall => mc }
     } yield new ScalaStepDefinition(outerMethodCall)
 
     JavaConversions.seqAsJavaList(stepDefs)

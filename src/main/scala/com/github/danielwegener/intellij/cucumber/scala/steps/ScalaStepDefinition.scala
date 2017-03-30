@@ -20,7 +20,7 @@ class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition
     val r = for {
       // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
       arg <- scMethod.args.exprs
-      parentheses <- arg.children
+      parentheses <- arg.getChildren
     } yield (arg, parentheses)
 
     LOG.info(r.toString)
