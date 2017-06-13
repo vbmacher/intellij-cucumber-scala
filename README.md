@@ -5,14 +5,14 @@ intellij-cucumber-scala
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
 
-#Features
+# Features
 
 - [x] Navigate from feature step to step definition
 - [ ] Find usages of step definitions in feature files
 - [ ] Wizard that creates step definitions for a step in a feature file
 
 
-#Development
+# Development
 
 1. `git clone git@github.com:danielwegener/intellij-cucumber-scala.git`
 2. `sbt updateIdea` will download the idea sdk to the SDK folder and all required plugins
@@ -24,11 +24,12 @@ Now you can build this plugin with `sbt package`
 
 To start an IDE with the plugin installed in the example project just run `sbt "runIdea example"` (_todo: does not work yet_)
 
-#Publishing
+# Publishing
 
 
 1. Add your credentials to `ideaPublishSettings` in `build.sbt` (make sure to not check them in!) 
 2 run `sbt publishPlugin`
 
-#License
+# License
+
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).
