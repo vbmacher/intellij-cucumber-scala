@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="iso-8859-1"?>
 
-<idea-plugin version="2">
+<idea-plugin>
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>2017.2.0</version>
+    <version>2017.2.1</version>
     <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
 
     <description><![CDATA[
@@ -28,6 +28,7 @@
       2017.1.1: Release for IntelliJ 2017.1 (scala-plugin 2017.1.8)
       2017.1.2: fix compatibility with external changes in scala plugin
       2017.2.0: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4)
+      2017.2.1: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4) (oops :))
     ]]>
     </change-notes>
 
