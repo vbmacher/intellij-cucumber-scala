@@ -19,7 +19,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ ScTrait, ScTypeDefinition, ScClass }
 
 import scala.annotation.tailrec
-import scala.collection.JavaConversions
+import scala.collection.JavaConverters
 import scala.util.Try
 
 object CucumberScalaExtension {
@@ -69,7 +69,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       outerMethodCall <- scConstructorBody.getChildren.collect { case mc: ScMethodCall => mc }
     } yield new ScalaStepDefinition(outerMethodCall)
 
-    JavaConversions.seqAsJavaList(stepDefs)
+    JavaConverters.seqAsJavaList(stepDefs)
 
   }
 
@@ -105,7 +105,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       containingFile <- Try(glueCodeClass.getContainingFile).toOption
     } yield containingFile
 
-    JavaConversions.seqAsJavaList(stepDefs)
+    JavaConverters.seqAsJavaList(stepDefs)
   }
 
 }
