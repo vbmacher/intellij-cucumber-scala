@@ -1,6 +1,6 @@
-addSbtPlugin("com.typesafe.sbt" % "sbt-scalariform" % "1.3.0")
+addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.2")
 
-resolvers += Resolver.url("dancingrobot84-bintray",
-  url("http://dl.bintray.com/dancingrobot84/sbt-plugins/"))(Resolver.ivyStylePatterns)
+resolvers += Resolver.url("org.jetbrains-bintray",
+  url("http://dl.bintray.com/jetbrains/sbt-plugins/"))(Resolver.ivyStylePatterns)
 
-addSbtPlugin("com.dancingrobot84" % "sbt-idea-plugin" % "0.4.2")
+addSbtPlugin("org.jetbrains" % "sbt-idea-plugin" % "1.0.1")

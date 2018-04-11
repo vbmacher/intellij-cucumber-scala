@@ -3,7 +3,7 @@
 <idea-plugin>
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>2017.3.1</version>
+    <version>2018.1</version>
     <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
 
     <description><![CDATA[
@@ -31,11 +31,12 @@
       2017.2.1: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4) (oops :))
       2017.3.0: Release for IntelliJ 2017.3 (scala-plugin 2017.3.9)
       2017.3.1: Release for IntelliJ 2017.3.1 (scala-plugin 2017.3.11)
+      2018.1: Release for IntelliJ 2018.1 (scala-plugin 2018.1.8)
     ]]>
     </change-notes>
 
     <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
-    <idea-version since-build="173.3942.27" until-build="174.0"/>
+    <idea-version since-build="181.4203.550" until-build="182.0"/>
 
     <!-- please see http://confluence.jetbrains.com/display/IDEADEV/Plugin+Compatibility+with+IntelliJ+Platform+Products
          on how to target different products -->

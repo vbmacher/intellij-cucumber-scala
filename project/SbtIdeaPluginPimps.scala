@@ -1,4 +1,4 @@
-import com.dancingrobot84.sbtidea.{Keys => SbtIdeaPluginKeys, SbtIdeaPlugin}
+import org.jetbrains.sbtidea.{Keys => SbtIdeaPluginKeys, SbtIdeaPlugin}
 import sbt.Keys._
 import sbt._
 
@@ -39,7 +39,7 @@ object SbtIdeaPluginPimps extends sbt.AutoPlugin {
 
       (fork in runIdea) := true,
       (runIdeaClasspath in runIdea) := ideaMainJars.value ++ (file(System.getProperty("java.home")) / ".." / "lib" * "tools.jar").classpath,
-      runIdea <<= Defaults.runTask(runIdeaClasspath in runIdea, mainClass in runIdea, runner in runIdea)
+      runIdea := {Defaults.runTask(runIdeaClasspath in runIdea, mainClass in runIdea, runner in runIdea)}
       //runIdea := { println((javaOptions in runIdea).value)   }
     )
 
