@@ -1,22 +1,23 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
-import java.util.{ Collections, Collection => JavaCollection, Set => JavaSet }
+import java.util
+import java.util.{Collections, Collection => JavaCollection, Set => JavaSet}
 
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScalaStepDefinition
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.module.{ Module, ModuleUtilCore }
+import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.Project
 import com.intellij.psi._
 import com.intellij.psi.search.GlobalSearchScope
 import org.jetbrains.annotations.NotNull
-import org.jetbrains.plugins.cucumber.{ BDDFrameworkType, StepDefinitionCreator }
+import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
-import org.jetbrains.plugins.cucumber.steps.{ AbstractCucumberExtension, AbstractStepDefinition }
+import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
 import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ ScTrait, ScTypeDefinition, ScClass }
+import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScTrait, ScTypeDefinition}
 
 import scala.annotation.tailrec
 import scala.collection.JavaConverters
@@ -52,8 +53,16 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
   @NotNull override def getGlues(@NotNull file: GherkinFile, jGluesFromOtherFiles: JavaSet[String]): JavaCollection[String] = {
     // never called? wtf
-    LOG.debug("GET GLUES CALLED")
-    Collections.emptyList()
+    import scala.collection.JavaConverters._
+
+    val gluePaths = glueClassesFromFeature(file).map(_.getPath).distinct
+    val otherGlues = jGluesFromOtherFiles.asScala
+
+    LOG.warn(s"""GET GLUES CALLED found glues: ${gluePaths.mkString(":")} known glues: ${otherGlues.mkString(":")}""" )
+
+    val glues = JavaConverters.seqAsJavaList((gluePaths ++ otherGlues).distinct)
+
+    glues
   }
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
@@ -91,17 +100,24 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
     rec(List(parentOfHierarchy), Set.empty)
   }
 
-  override def getStepDefinitionContainers(featureFile: GherkinFile): JavaCollection[_ <: PsiFile] = {
+  def glueClassesFromFeature(featureFile: GherkinFile): Seq[ScTypeDefinition] = {
     val project: Project = featureFile.getProject
     val maybeModule = Option(ModuleUtilCore.findModuleForPsiElement(featureFile))
 
-    val stepDefs = for {
+    for {
       module <- maybeModule.toSeq
       searchScope = module.getModuleContentScope
       globalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
       cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, globalSearchScope).toSeq
-      scalaDslInheritingClass @ (some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, searchScope)
+      scalaDslInheritingClass@(some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, searchScope)
       glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, searchScope)
+    } yield (glueCodeClass)
+  }
+
+
+  override def getStepDefinitionContainers(featureFile: GherkinFile): JavaCollection[_ <: PsiFile] = {
+    val stepDefs = for {
+      glueCodeClass <- glueClassesFromFeature(featureFile)
       containingFile <- Try(glueCodeClass.getContainingFile).toOption
     } yield containingFile
 
