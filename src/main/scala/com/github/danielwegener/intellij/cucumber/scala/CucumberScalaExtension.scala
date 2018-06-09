@@ -58,11 +58,10 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
     val gluePaths = glueClassesFromFeature(file).map(_.getPath).distinct
     val otherGlues = jGluesFromOtherFiles.asScala
 
-    LOG.warn(s"""GET GLUES CALLED found glues: ${gluePaths.mkString(":")} known glues: ${otherGlues.mkString(":")}""" )
+    if (LOG.isDebugEnabled)
+      LOG.debug(s"""GET GLUES CALLED found glues: ${gluePaths.mkString(":")} known glues: ${otherGlues.mkString(":")}""" )
 
-    val glues = JavaConverters.seqAsJavaList((gluePaths ++ otherGlues).distinct)
-
-    glues
+    JavaConverters.seqAsJavaList((gluePaths ++ otherGlues).distinct)
   }
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
