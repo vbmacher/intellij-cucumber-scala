@@ -25,6 +25,10 @@ import scala.util.Try
 
 object CucumberScalaExtension {
   val LOG = Logger.getInstance(classOf[CucumberScalaExtension])
+
+  def uniqueShortestPath(paths: Seq[String]): Seq[String] = {
+    paths.filter(x => !paths.filter(_ != x).exists(y => x.startsWith(y)))
+  }
 }
 
 class CucumberScalaExtension extends AbstractCucumberExtension {
@@ -61,7 +65,9 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
     if (LOG.isDebugEnabled)
       LOG.debug(s"""GET GLUES CALLED found glues: ${gluePaths.mkString(":")} known glues: ${otherGlues.mkString(":")}""" )
 
-    JavaConverters.seqAsJavaList((gluePaths ++ otherGlues).distinct)
+    val allGlue: Seq[String] = gluePaths ++ otherGlues
+    val shortest = uniqueShortestPath(allGlue)
+    JavaConverters.seqAsJavaList(shortest)
   }
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {

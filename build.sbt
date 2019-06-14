@@ -3,13 +3,13 @@ import sbt.Keys._
 
 name :=  "Cucumber for Scala"
 normalizedName :=  "intellij-cucumber-scala"
-version := "2018.2.0"
+version := "2019.1.3"
 scalaVersion :=  "2.12.4"
 
 lazy val `scala-plugin` = IdeaPlugin.Zip("scala-plugin", url("https://plugins.jetbrains.com/plugin/download?updateId=45268"))
 lazy val `cucumber-java` = IdeaPlugin.Zip("cucumber-java", url("https://plugins.jetbrains.com/plugin/download?updateId=43535"))
 lazy val gherkin = IdeaPlugin.Zip("gherkin", url("https://plugins.jetbrains.com/plugin/download?updateId=43534"))
-lazy val ideaBuildNumber  = "182.3684.101"
+lazy val ideaBuildNumber  = "191.7479.19"
 
 lazy val `cucumber-scala` = project.in(file( "."))
   .enablePlugins(SbtIdeaPlugin)
@@ -25,7 +25,8 @@ lazy val `cucumber-scala` = project.in(file( "."))
     ideaEdition in ThisBuild := IdeaEdition.Community,
     ideaPublishSettings := PublishSettings(pluginId = "com.github.danielwegener.cucumber-scala", username = "", password = "", channel = None),
     fork in Test := true,
-    parallelExecution := true
+    parallelExecution := true,
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.5" % "test"
 )
 
 lazy val `runner-cucumber-scala-idea`  = project.in(file(s"idea"))
