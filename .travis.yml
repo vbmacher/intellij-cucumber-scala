@@ -1,14 +1,12 @@
 sudo: false
 language: scala
 scala:
-  - 2.11.2
+  - 2.12.8
 cache:
   directories:
-  - idea
   - $HOME/.m2/repository
-  - $HOME/.sbt
+  - $HOME/.gradle
   - $HOME/.ivy2
 jdk:
-- openjdk6
-before_script: sbt updateIdea
-script: sbt package
+- openjdk8
+script: ./gradlew buildPlugin

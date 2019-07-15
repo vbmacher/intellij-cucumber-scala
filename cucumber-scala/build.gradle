@@ -15,4 +15,11 @@ intellij {
   version 'IC-2019.1.3'
   pluginName 'intellij-cucumber-scala'
   plugins = ['cucumber-java:191.7479.7', 'gherkin:191.6707.7', 'org.intellij.scala:2019.1.3']
+  updateSinceUntilBuild true
+}
+
+publishPlugin {
+  username ''
+  password ''
+  channels ''
 }
