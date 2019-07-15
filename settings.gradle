@@ -1,0 +1,4 @@
+rootProject.name = 'intellij-cucumber-scala'
+
+include 'cucumber-scala'
+include 'example'

@@ -1,0 +1,29 @@
+plugins {
+  id "org.jetbrains.intellij" version "0.4.9"
+  id "scala"
+}
+
+group 'com.github.danielwegener'
+version '2019.1.3'
+sourceCompatibility = 1.8
+
+repositories {
+  mavenCentral()
+  maven {
+    url "https://oss.sonatype.org/content/repositories/snapshots/"
+  }
+  maven {
+    url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
+  }
+}
+
+
+dependencies {
+  implementation libs.scala
+}
+
+intellij {
+  version 'IC-2019.1.3'
+  pluginName 'intellij-cucumber-scala'
+  plugins = ['cucumber-java:191.7479.7', 'gherkin:191.6707.7', 'org.intellij.scala:2019.1.3']
+}

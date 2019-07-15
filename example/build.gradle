@@ -1,0 +1,23 @@
+plugins {
+    id 'scala'
+}
+
+version "0.0.1"
+description "Example project Cucumber for Scala"
+
+repositories {
+    mavenCentral()
+    maven {
+        url "https://oss.sonatype.org/content/repositories/snapshots/"
+    }
+    maven {
+        url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
+    }
+}
+
+dependencies {
+    implementation libs.scala
+
+    testCompile libs.jUnit
+    testCompile libs.cucumber
+}

@@ -1,0 +1,6 @@
+ext.libs = [
+        jUnit            : 'junit:junit:4.12',
+        scala            : "org.scala-lang:scala-library:2.12.8",
+        scalaTest        : "org.scalatest:scalatest_2.12:3.0.5",
+        cucumber         : "info.cukes:cucumber-scala_2.11:1.2.4"
+]
