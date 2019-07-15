@@ -4,3 +4,16 @@ ext.libs = [
         scalaTest        : "org.scalatest:scalatest_2.12:3.0.5",
         cucumber         : "info.cukes:cucumber-scala_2.11:1.2.4"
 ]
+
+subprojects {
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
+        }
+    }
+}
