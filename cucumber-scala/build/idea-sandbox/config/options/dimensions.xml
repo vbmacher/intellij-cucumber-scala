@@ -1,8 +1,0 @@
-<application>
-  <component name="DimensionService">
-    <location key="FileChooserDialogImpl.0.0.2560.1440" x="1057" y="238" />
-    <location key="NewModule_or_Project.wizard.0.0.2560.1440" x="797" y="282" />
-    <size key="FileChooserDialogImpl.0.0.2560.1440" width="428" height="478" />
-    <size key="NewModule_or_Project.wizard.0.0.2560.1440" width="956" height="434" />
-  </component>
-</application>
