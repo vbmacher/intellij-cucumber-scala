@@ -4,7 +4,7 @@ plugins {
 }
 
 group 'com.github.danielwegener'
-version '2019.1.3'
+version "${versions.idea}"
 sourceCompatibility = 1.8
 
 dependencies {
@@ -12,10 +12,15 @@ dependencies {
 }
 
 intellij {
-  version 'IC-2019.1.3'
   pluginName 'intellij-cucumber-scala'
-  plugins = ['cucumber-java:191.7479.7', 'gherkin:191.6707.7', 'org.intellij.scala:2019.1.3']
-  updateSinceUntilBuild true
+  version "IC-${versions.idea}"
+
+  plugins = [
+    "cucumber-java:${versions.cucumber}",
+    "gherkin:${versions.gherkin}",
+    "org.intellij.scala:${versions.scalaPlugin}"
+  ]
+  updateSinceUntilBuild false
 }
 
 publishPlugin {
