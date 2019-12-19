@@ -50,12 +50,6 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
   @NotNull
   override def getStepDefinitionCreator: StepDefinitionCreator = throw new UnsupportedOperationException("You cannot automatically create Steps yet.")
 
-  @NotNull override def getGlues(@NotNull file: GherkinFile, jGluesFromOtherFiles: JavaSet[String]): JavaCollection[String] = {
-    // never called? wtf
-    LOG.debug("GET GLUES CALLED")
-    Collections.emptyList()
-  }
-
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
 
     val dependenciesScope: GlobalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
@@ -63,7 +57,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
     val stepDefs = for {
       cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependenciesScope)
-      scalaDslInheritingClass <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, dependenciesScope).collect { case sc: ScClass => sc; case sct: ScTrait => sct }
+      scalaDslInheritingClass <- psi.stubs.util.ScalaInheritors.directInheritorCandidates(cucumberDslClass, dependenciesScope).collect { case sc: ScClass => sc; case sct: ScTrait => sct }
       glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, dependenciesScope)
       scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
       outerMethodCall <- scConstructorBody.getChildren.collect { case mc: ScMethodCall => mc }
@@ -80,7 +74,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       queue match {
         case Nil => akku
         case a =>
-          val newChildren = psi.stubs.util.ScalaStubsUtil.getClassInheritors(a.head, scope)
+          val newChildren = psi.stubs.util.ScalaInheritors.directInheritorCandidates(a.head, scope)
             .collect { case sc: ScClass => sc; case sct: ScTrait => sct }
             .filterNot(akku.contains)
           rec(a.tail ::: newChildren.toList, akku + a.head)
@@ -100,7 +94,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
       searchScope = module.getModuleContentScope
       globalSearchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
       cucumberDslClass <- JavaPsiFacade.getInstance(project).findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, globalSearchScope).toSeq
-      scalaDslInheritingClass @ (some: ScClass) <- psi.stubs.util.ScalaStubsUtil.getClassInheritors(cucumberDslClass, searchScope)
+      scalaDslInheritingClass @ (some: ScClass) <- psi.stubs.util.ScalaInheritors.directInheritorCandidates(cucumberDslClass, searchScope)
       glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass, searchScope)
       containingFile <- Try(glueCodeClass.getContainingFile).toOption
     } yield containingFile
