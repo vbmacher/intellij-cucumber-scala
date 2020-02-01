@@ -10,7 +10,7 @@ import com.intellij.openapi.diagnostic.Logger
 import java.util.Collections
 
 object ScalaStepDefinition {
-  val LOG = Logger.getInstance(classOf[ScalaStepDefinition])
+  val LOG: Logger = Logger.getInstance(classOf[ScalaStepDefinition])
 }
 
 class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) {
