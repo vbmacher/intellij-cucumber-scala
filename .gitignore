@@ -2,3 +2,10 @@ target
 .idea
 *.iml
 idea
+
+### Gradle ###
+.gradle
+/build/
+build
+classes
+out

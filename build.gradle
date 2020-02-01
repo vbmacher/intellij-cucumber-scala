@@ -1,0 +1,28 @@
+ext.versions = [
+        scala: '2.12',
+        scalaFull: '2.12.8',
+        cucumber: '191.7479.7',
+        gherkin: '191.6707.7',
+        idea: '2019.1.3',
+        scalaPlugin: '2019.1.9'
+]
+
+ext.libs = [
+        jUnit            : 'junit:junit:4.12',
+        scala            : "org.scala-lang:scala-library:${versions.scalaFull}",
+        scalaTest        : "org.scalatest:scalatest_${versions.scala}:3.0.5",
+        cucumber         : "info.cukes:cucumber-scala_${versions.scala}:1.2.4"
+]
+
+subprojects {
+
+    repositories {
+        mavenCentral()
+        maven {
+            url "https://oss.sonatype.org/content/repositories/snapshots/"
+        }
+        maven {
+            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
+        }
+    }
+}

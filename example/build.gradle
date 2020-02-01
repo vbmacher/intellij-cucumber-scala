@@ -1,0 +1,13 @@
+plugins {
+    id 'scala'
+}
+
+version "0.0.1"
+description "Example project Cucumber for Scala"
+
+dependencies {
+    implementation libs.scala
+
+    testCompile libs.jUnit
+    testCompile libs.cucumber
+}

@@ -1,0 +1,30 @@
+plugins {
+  id "org.jetbrains.intellij" version "0.4.9"
+  id "scala"
+}
+
+group 'com.github.danielwegener'
+version "${versions.idea}"
+sourceCompatibility = 1.8
+
+dependencies {
+  implementation libs.scala
+}
+
+intellij {
+  pluginName 'intellij-cucumber-scala'
+  version "IC-${versions.idea}"
+
+  plugins = [
+    "cucumber-java:${versions.cucumber}",
+    "gherkin:${versions.gherkin}",
+    "org.intellij.scala:${versions.scalaPlugin}"
+  ]
+  updateSinceUntilBuild false
+}
+
+publishPlugin {
+  username ''
+  password ''
+  channels ''
+}
