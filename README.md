@@ -14,7 +14,7 @@ Enables Reference tracking of glue code when using cucumber-scala DSL.
 
 # Development
 
-1. `git clone git@github.com:danielwegener/intellij-cucumber-scala.git`
+1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
 2. `./gradlew` will download the idea sdk to the SDK folder and all required plugins
 3. Import the project as gradle project into IDEA.
 
