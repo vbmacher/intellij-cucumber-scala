@@ -1,7 +1,7 @@
 intellij-cucumber-scala
 =======================
 
-[![Build Status](https://travis-ci.org/danielwegener/intellij-cucumber-scala.svg)](https://travis-ci.org/danielwegener/intellij-cucumber-scala)
+[![Build Status](https://travis-ci.com/vbmacher/intellij-cucumber-scala.svg?branch=master)](https://travis-ci.com/vbmacher/intellij-cucumber-scala)
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
 
@@ -23,9 +23,9 @@ Now you can build this plugin with `./gradlew buildPlugin`.
 To start an IDE with the plugin installed in the example project just run `./gradlew runIde`. Import the whole project as gradle project in the sandbox-ide. Wait for indexing to finish. Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
  
 # Publishing
-
+s
 1. Add your publish token to `publishPlugin.token` in `cucumber-scala/build.gradle` (make sure to not check them in!)
-2 run `./gradlew publishPlugin`
+2. run `./gradlew publishPlugin`
 
 # License
 
