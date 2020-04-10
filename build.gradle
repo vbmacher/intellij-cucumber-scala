@@ -1,17 +1,17 @@
 ext.versions = [
         scala: '2.12',
-        scalaFull: '2.12.7',
-        cucumber: '193.5662.7',
-        gherkin: '193.6015.53',
-        idea: '2019.3.2',
-        scalaPlugin: '2019.3.23',
+        scalaFull: '2.12.11',
+        cucumber: '193.6494.1',
+        gherkin: '193.6911.14',
+        idea: '2019.3.4',
+        scalaPlugin: '2019.3.27',
 ]
 
 ext.libs = [
-        jUnit            : 'junit:junit:4.12',
+        jUnit            : 'junit:junit:4.13',
         scala            : "org.scala-lang:scala-library:${versions.scalaFull}",
-        cucumberScala    : "info.cukes:cucumber-scala_${versions.scala}:1.2.4",
-        cucumberJUnit    : 'io.cucumber:cucumber-junit:5.1.1'
+        cucumberScala    : "info.cukes:cucumber-scala_${versions.scala}:1.2.6",
+        cucumberJUnit    : 'io.cucumber:cucumber-junit:5.6.0'
 ]
 
 subprojects {
