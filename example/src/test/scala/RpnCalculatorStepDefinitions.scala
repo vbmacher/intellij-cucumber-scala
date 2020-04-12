@@ -1,7 +1,5 @@
-
-
 import cucumber.api.Scenario
-import cucumber.api.scala.{ScalaDsl, EN}
+import cucumber.api.scala.EN
 import org.junit.Assert._
 
 class RpnCalculatorStepDefinitions extends ScalaDslIndirection with EN {
@@ -14,7 +12,20 @@ class RpnCalculatorStepDefinitions extends ScalaDslIndirection with EN {
     calc push "+"
   }
 
-  Then("^the result is (\\d+)$") { expected: Double =>
+  When("I sub (\\d+)" + " and " + "(\\d+)") {
+    (arg1: Double, arg2: Double) =>
+      calc push arg1
+      calc push arg2
+      calc push "-"
+  }
+
+  When("I div " + (5 + 5) + " by " + (10 - 8)) {
+    calc push 10.0
+    calc push 2.0
+    calc push "/"
+  }
+
+  Then("^the result is ([+-]?\\d+)$") { expected: Double =>
     assertEquals(expected, calc.value, 0.001)
   }
 

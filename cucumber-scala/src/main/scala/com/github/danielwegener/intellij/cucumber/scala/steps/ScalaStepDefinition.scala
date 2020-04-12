@@ -1,13 +1,14 @@
 package com.github.danielwegener.intellij.cucumber.scala.steps
 
+import java.util
+import java.util.Collections
+
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.psi.PsiElement
+import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
-import org.jetbrains.annotations.Nullable
-import com.intellij.psi.PsiElement
-import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
-import java.util
-import com.intellij.openapi.diagnostic.Logger
-import java.util.Collections
+import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
 
 object ScalaStepDefinition {
   val LOG: Logger = Logger.getInstance(classOf[ScalaStepDefinition])
@@ -17,6 +18,8 @@ object ScalaStepDefinition {
 
 class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) {
   import ScalaStepDefinition._
+
+  private final val evaluator = new ScalaConstantExpressionEvaluator()
 
   override def getVariableNames: util.List[String] = {
     val r = for {
@@ -32,15 +35,15 @@ class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition
 
   @Nullable
   override def getCucumberRegexFromElement(element: PsiElement): String = {
-
     element match {
       case mc: ScMethodCall =>
-        val x = for {
+        val literals = for {
           innerMethodCall <- Some(mc.getEffectiveInvokedExpr).toSeq.collect { case some: ScMethodCall => some }
-          literalParameter @ (someOther: ScLiteral) <- innerMethodCall.args.exprs
-          if literalParameter.isString
-        } yield literalParameter.getValue.toString
-        x.headOption.orNull
+          expression <- innerMethodCall.args.exprs
+          literal <- Option(evaluator.computeConstantExpression(expression, throwExceptionOnOverflow = false)).toSeq
+        } yield literal.toString
+
+        literals.headOption.orNull
       case _ => null
     }
   }
