@@ -11,6 +11,8 @@ import java.util.Collections
 
 object ScalaStepDefinition {
   val LOG: Logger = Logger.getInstance(classOf[ScalaStepDefinition])
+
+  def apply(scMethodCall: ScMethodCall): ScalaStepDefinition = new ScalaStepDefinition(scMethodCall)
 }
 
 class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) {
@@ -41,6 +43,5 @@ class ScalaStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition
         x.headOption.orNull
       case _ => null
     }
-
   }
 }
