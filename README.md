@@ -1,7 +1,7 @@
 intellij-cucumber-scala
 =======================
 
-[![Build Status](https://travis-ci.com/vbmacher/intellij-cucumber-scala.svg?branch=master)](https://travis-ci.com/vbmacher/intellij-cucumber-scala)
+![Build for intellij-cucumber-scala](https://github.com/vbmacher/intellij-cucumber-scala/workflows/Build%20for%20intellij-cucumber-scala/badge.svg)
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
 

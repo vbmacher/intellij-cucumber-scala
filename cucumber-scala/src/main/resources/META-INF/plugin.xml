@@ -1,37 +1,40 @@
-<?xml version="1.0" encoding="iso-8859-1"?>
+<?xml version="1.0" encoding="UTF-8"?>
 
 <idea-plugin>
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
-    <version>2019.1.3</version>
-    <vendor email="daniel@wegener.me" url="http://daniel.wegener.me">Daniel Wegener</vendor>
+    <version>2019.3.4</version>
+    <vendor email="pjakubco@gmail.com" url="hhttps://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
       Enables Reference tracking of glue code when using cucumber-scala DSL.
 
       Requires Scala language integration from Community Repo and the JetBrains cucumber plugin.
 
-      Issue tracking at https://github.com/danielwegener/intellij-cucumber-scala/issues
+      Issue tracking at https://github.com/vbmacher/intellij-cucumber-scala/issues
     ]]></description>
 
     <change-notes><![CDATA[
-      0.1.0: Initial release.
-      0.2.0: Supports glue code classes that implement ScalaDsl indirectly.
-      0.3.0: Release for IntelliJ14 (unchanged functionality)
-      0.3.1: Release for IntelliJ 14.1 (unchanged functionality)
-      0.3.2: Release for IntelliJ 15.0 (unchanged functionality)
-      0.3.3: Release for IntelliJ 15.0.2, scala-plugin 2.0.4, support inheriting step definitions from traits (#16)
-      0.3.4: Release for IntelliJ 2016.1 (scala-plugin 3.0.0)
-      0.3.5: Release for IntelliJ 2016.2 (scala-plugin 2016.2.0)
-      0.3.6: Release for IntelliJ 2016.3
-      0.3.7: Release for IntelliJ 2016.3 (fix renamed gherkin dependency)
-      2017.1.1: Release for IntelliJ 2017.1 (scala-plugin 2017.1.8)
-      2017.1.2: fix compatibility with external changes in scala plugin
-      2017.2.0: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4)
-      2017.2.1: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4) (oops :))
-      2017.3.0: Release for IntelliJ 2017.3 (scala-plugin 2017.3.9)
-      2017.3.1: Release for IntelliJ 2017.3.1 (scala-plugin 2017.3.11)
-      2019.1.3: Release for IntelliJ 2019.1.3 (scala-plugin 2019.1.3)
+      <ul>
+      <li>0.1.0: Initial release.</li>
+      <li>0.2.0: Supports glue code classes that implement ScalaDsl indirectly.</li>
+      <li>0.3.0: Release for IntelliJ14 (unchanged functionality)</li>
+      <li>0.3.1: Release for IntelliJ 14.1 (unchanged functionality)</li>
+      <li>0.3.2: Release for IntelliJ 15.0 (unchanged functionality)</li>
+      <li>0.3.3: Release for IntelliJ 15.0.2, scala-plugin 2.0.4, support inheriting step definitions from traits (#16)</li>
+      <li>0.3.4: Release for IntelliJ 2016.1 (scala-plugin 3.0.0)</li>
+      <li>0.3.5: Release for IntelliJ 2016.2 (scala-plugin 2016.2.0)</li>
+      <li>0.3.6: Release for IntelliJ 2016.3</li>
+      <li>0.3.7: Release for IntelliJ 2016.3 (fix renamed gherkin dependency)</li>
+      <li>2017.1.1: Release for IntelliJ 2017.1 (scala-plugin 2017.1.8)</li>
+      <li>2017.1.2: fix compatibility with external changes in scala plugin</li>
+      <li>2017.2.0: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4)</li>
+      <li>2017.2.1: Release for IntelliJ 2017.2 (scala-plugin 2017.2.4) (oops :))</li>
+      <li>2017.3.0: Release for IntelliJ 2017.3 (scala-plugin 2017.3.9)</li>
+      <li>2017.3.1: Release for IntelliJ 2017.3.1 (scala-plugin 2017.3.11)</li>
+      <li>2019.1.3: Release for IntelliJ 2019.1.3 (scala-plugin 2019.1.3)</li>
+      <li>2019.3.4: Release for IntelliJ 2019.3.4 (scala-plugin 2019.3.27)</li>
+      </ul>
     ]]>
     </change-notes>
 
@@ -45,5 +48,4 @@
         <cucumberJvmExtensionPoint
                 implementation="com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension"/>
     </extensions>
-
 </idea-plugin>
