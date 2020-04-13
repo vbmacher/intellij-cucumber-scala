@@ -38,7 +38,7 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="193.0" until-build="194.0" />
+    <idea-version since-build="193" until-build="193.*" />
 
     <depends>com.intellij.modules.java</depends>
     <depends>gherkin</depends>

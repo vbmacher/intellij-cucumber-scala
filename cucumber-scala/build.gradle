@@ -26,6 +26,5 @@ intellij {
 }
 
 publishPlugin {
-  token ''
-  //channels 'default'
+  token findProperty("PUBLISH_TOKEN") ?: System.getenv("PUBLISH_TOKEN")
 }
