@@ -21,7 +21,8 @@
       <li>0.3.0: Release for IntelliJ14 (unchanged functionality)</li>
       <li>0.3.1: Release for IntelliJ 14.1 (unchanged functionality)</li>
       <li>0.3.2: Release for IntelliJ 15.0 (unchanged functionality)</li>
-      <li>0.3.3: Release for IntelliJ 15.0.2, scala-plugin 2.0.4, support inheriting step definitions from traits (#16)</li>
+      <li>0.3.3: Release for IntelliJ 15.0.2, scala-plugin 2.0.4, support inheriting step definitions from traits
+       (<a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/16">#16</a>)</li>
       <li>0.3.4: Release for IntelliJ 2016.1 (scala-plugin 3.0.0)</li>
       <li>0.3.5: Release for IntelliJ 2016.2 (scala-plugin 2016.2.0)</li>
       <li>0.3.6: Release for IntelliJ 2016.3</li>
@@ -34,7 +35,8 @@
       <li>2017.3.1: Release for IntelliJ 2017.3.1 (scala-plugin 2017.3.11)</li>
       <li>2019.1.3: Release for IntelliJ 2019.1.3 (scala-plugin 2019.1.3)</li>
       <li>2019.3.4: Release for IntelliJ 2019.3.4 (scala-plugin 2019.3.27)</li>
-      <li>2020.1: Release for IntelliJ 2020.1 (scala-plugin 2020.1.27)</li>
+      <li>2020.1: Release for IntelliJ 2020.1 (scala-plugin 2020.1.27), support constant expressions in step definitions
+       (<a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/17">#17</a>)</li>
       </ul>
     ]]>
     </change-notes>
