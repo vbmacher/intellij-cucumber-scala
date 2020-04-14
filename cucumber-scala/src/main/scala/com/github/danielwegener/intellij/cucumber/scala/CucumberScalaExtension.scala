@@ -4,9 +4,11 @@ import java.util.{Collection => JavaCollection}
 
 import com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension.JavaList
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScalaStepDefinition
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.util.NullableComputable
 import com.intellij.psi.{JavaPsiFacade, PsiElement, PsiFile}
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
@@ -79,14 +81,18 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
 
   private def findGlueCodeClass(module: Module, project: Project) = {
-    val dependencies = module.getModuleWithDependenciesAndLibrariesScope(true)
-    val psiFacade = JavaPsiFacade.getInstance(project)
+    ApplicationManager.getApplication.runReadAction(new NullableComputable[Seq[ScTypeDefinition]] {
+      override def compute(): Seq[ScTypeDefinition] = {
+        val dependencies = module.getModuleWithDependenciesAndLibrariesScope(true)
+        val psiFacade = JavaPsiFacade.getInstance(project)
 
-    for {
-      cucumberDslClass <- psiFacade.findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependencies).toSeq
-      scalaDslInheritingClass@(some: ScClass) <- psi.stubs.util.ScalaInheritors.withStableScalaInheritors(cucumberDslClass)
-      glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass)
-    } yield glueCodeClass
+        for {
+          cucumberDslClass <- psiFacade.findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependencies).toSeq
+          scalaDslInheritingClass@(some: ScClass) <- psi.stubs.util.ScalaInheritors.withStableScalaInheritors(cucumberDslClass)
+          glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass)
+        } yield glueCodeClass
+      }
+    })
   }
 
   private def classAndItsInheritors(parent: ScTypeDefinition): Iterable[ScTypeDefinition] = {
