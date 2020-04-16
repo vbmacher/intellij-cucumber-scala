@@ -2,37 +2,23 @@ package com.github.danielwegener.intellij.cucumber.scala
 
 import java.util.{Collection => JavaCollection}
 
-import com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension.JavaList
+import com.github.danielwegener.intellij.cucumber.scala.ScalaUtils.glueCodeClasses
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScalaStepDefinition
-import com.intellij.openapi.application.ApplicationManager
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.util.NullableComputable
-import com.intellij.psi.{JavaPsiFacade, PsiElement, PsiFile}
+import com.intellij.psi.{PsiElement, PsiFile}
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
 import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
 import org.jetbrains.plugins.scala.ScalaFileType
-import org.jetbrains.plugins.scala.lang.psi
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScTrait, ScTypeDefinition}
-import org.jetbrains.plugins.scala.lang.psi.stubs.util.ScalaInheritors
 
-import scala.annotation.tailrec
 import scala.collection.JavaConverters
 import scala.util.Try
 
-object CucumberScalaExtension {
-  val LOG: Logger = Logger.getInstance(classOf[CucumberScalaExtension])
-
-  type JavaList[T] = java.util.List[T]
-}
-
 class CucumberScalaExtension extends AbstractCucumberExtension {
-  private final val CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
 
   override def isStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
     child.isInstanceOf[ScalaFile]
@@ -54,13 +40,15 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
     throw new UnsupportedOperationException("You cannot automatically create Steps yet.")
   }
 
-  override def loadStepsFor(featureFile: PsiFile, module: Module): JavaList[AbstractStepDefinition] = {
+  override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
     val project: Project = featureFile.getProject
 
     val stepDefinitions = for {
-      glueCodeClass <- findGlueCodeClass(module, project)
+      glueCodeClass <- glueCodeClasses(module, project)
       scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
       outerMethodCall <- scConstructorBody.getChildren.collect { case mc: ScMethodCall => mc }
+
+      if ScalaUtils.isStepDefinition(outerMethodCall)
     } yield ScalaStepDefinition(outerMethodCall)
 
     JavaConverters.seqAsJavaList(stepDefinitions)
@@ -72,51 +60,10 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
     val stepFiles = for {
       module <- maybeModule.toSeq
-      glueCodeClass <- findGlueCodeClass(module, project)
+      glueCodeClass <- glueCodeClasses(module, project)
       containingFile <- Try(glueCodeClass.getContainingFile).toOption
     } yield containingFile
 
     JavaConverters.seqAsJavaList(stepFiles)
-  }
-
-
-  private def findGlueCodeClass(module: Module, project: Project) = {
-    ApplicationManager.getApplication.runReadAction(new NullableComputable[Seq[ScTypeDefinition]] {
-      override def compute(): Seq[ScTypeDefinition] = {
-        val dependencies = module.getModuleWithDependenciesAndLibrariesScope(true)
-        val psiFacade = JavaPsiFacade.getInstance(project)
-
-        for {
-          cucumberDslClass <- psiFacade.findClasses(CUCUMBER_RUNTIME_SCALA_STEP_DEF_TRAIT, dependencies).toSeq
-          scalaDslInheritingClass@(some: ScClass) <- psi.stubs.util.ScalaInheritors.withStableScalaInheritors(cucumberDslClass)
-          glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass)
-        } yield glueCodeClass
-      }
-    })
-  }
-
-  private def classAndItsInheritors(parent: ScTypeDefinition): Iterable[ScTypeDefinition] = {
-
-    @tailrec
-    def rec(queue: Seq[ScTypeDefinition], accumulator: Set[ScTypeDefinition]): Set[ScTypeDefinition] = {
-      queue match {
-        case Seq() => accumulator
-        case queueHead +: queueTail =>
-
-          val newChildren = ScalaInheritors.findInheritorObjects(queueHead).collect {
-            case sc: ScClass => sc
-            case sct: ScTrait => sct
-          }
-
-          val childrenToExplore = newChildren
-            .map(_.asInstanceOf[ScTypeDefinition])
-            .diff(accumulator)
-            .toSeq
-
-          rec(queueTail ++ childrenToExplore, accumulator + queueHead)
-      }
-    }
-
-    rec(Seq(parent), Set.empty)
   }
 }
