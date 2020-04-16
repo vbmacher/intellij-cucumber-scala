@@ -49,6 +49,12 @@
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
-                implementation="com.github.danielwegener.intellij.cucumber.scala.CucumberScalaExtension"/>
+                implementation="com.github.danielwegener.intellij.cucumber.scala.ScCucumberExtension"/>
+    </extensions>
+
+    <extensions defaultExtensionNs="com.intellij">
+        <pom.declarationSearcher implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
+        <referencesSearch implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
+        <findUsagesHandlerFactory implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
     </extensions>
 </idea-plugin>
