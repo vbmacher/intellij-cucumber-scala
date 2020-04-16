@@ -7,7 +7,7 @@ Enables Reference tracking of glue code when using cucumber-scala DSL.
 ## Features
 
 - [x] Navigate from feature step to step definition
-- [ ] Find usages of step definitions in feature files
+- [x] Find usages of step definitions in feature files
 - [ ] Wizard that creates step definitions for a step in a feature file
 
 
