@@ -60,7 +60,7 @@ class CucumberScalaExtension extends AbstractCucumberExtension {
 
     val stepFiles = for {
       module <- maybeModule.toSeq
-      glueCodeClass <- glueCodeClasses(module, project)
+      glueCodeClass <- glueCodeClasses(module, project, justClasses = true)
       containingFile <- Try(glueCodeClass.getContainingFile).toOption
     } yield containingFile
 
