@@ -1,4 +1,3 @@
-import cucumber.api.Scenario
 import cucumber.api.scala.EN
 import org.junit.Assert._
 
@@ -29,7 +28,7 @@ class RpnCalculatorStepDefinitions extends ScalaDslIndirection with EN {
     assertEquals(expected, calc.value, 0.001)
   }
 
-  Before("~@foo"){ scenario : Scenario =>
-    println("Runs before scenarios *not* tagged with @foo")
+  Before("~@foo") {
+    scenario => println("Runs before scenarios *not* tagged with @foo")
   }
 }
