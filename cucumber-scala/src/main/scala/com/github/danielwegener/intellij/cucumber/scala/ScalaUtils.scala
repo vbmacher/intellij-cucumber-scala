@@ -51,14 +51,17 @@ object ScalaUtils {
     literals
   }
 
-  def glueCodeClasses(module: Module, project: Project): Seq[ScTypeDefinition] = inReadAction {
+  def glueCodeClasses(module: Module, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = inReadAction {
     val dependencies = module.getModuleWithDependenciesAndLibrariesScope(true)
     val psiFacade = JavaPsiFacade.getInstance(project)
 
     for {
       cucumberDslClass <- psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, dependencies).toSeq
-      scalaDslInheritingClass@(some: ScClass) <- ScalaInheritors.withStableScalaInheritors(cucumberDslClass)
-      glueCodeClass <- classAndItsInheritors(scalaDslInheritingClass)
+      candidate <- ScalaInheritors.withStableScalaInheritors(cucumberDslClass).collect {
+        case sc: ScClass => sc
+        case sct: ScTrait if !justClasses => sct
+      }
+      glueCodeClass <- classAndItsInheritors(candidate)
     } yield glueCodeClass
   }
 
