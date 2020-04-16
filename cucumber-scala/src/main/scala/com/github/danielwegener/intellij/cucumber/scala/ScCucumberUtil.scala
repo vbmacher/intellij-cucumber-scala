@@ -1,9 +1,9 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.openapi.module.Module
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.{JavaPsiFacade, PsiMember}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
@@ -14,11 +14,11 @@ import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluato
 
 import scala.annotation.tailrec
 
-object ScalaUtils {
+object ScCucumberUtil {
   private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
   private final val CUCUMBER_SCALA_PACKAGE = "cucumber.api.scala"
 
-  val LOG: Logger = Logger.getInstance(ScalaUtils.getClass)
+  val LOG: Logger = Logger.getInstance(ScCucumberUtil.getClass)
 
   private final val evaluator = new ScalaConstantExpressionEvaluator()
 
@@ -51,12 +51,11 @@ object ScalaUtils {
     literals
   }
 
-  def glueCodeClasses(module: Module, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = inReadAction {
-    val dependencies = module.getModuleWithDependenciesAndLibrariesScope(true)
+  def getStepDefinitionClasses(searchScope: GlobalSearchScope, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = inReadAction {
     val psiFacade = JavaPsiFacade.getInstance(project)
 
     for {
-      cucumberDslClass <- psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, dependencies).toSeq
+      cucumberDslClass <- psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
       candidate <- ScalaInheritors.withStableScalaInheritors(cucumberDslClass).collect {
         case sc: ScClass => sc
         case sct: ScTrait if !justClasses => sct
