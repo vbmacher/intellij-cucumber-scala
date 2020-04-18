@@ -4,6 +4,7 @@
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <version>2020.1</version>
+    <category>Test Tools</category>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
@@ -11,7 +12,7 @@
 
       Requires Scala language integration from Community Repo and the JetBrains cucumber plugin.
 
-      Issue tracking at https://github.com/vbmacher/intellij-cucumber-scala/issues
+      Issue tracking at <a href="https://github.com/vbmacher/intellij-cucumber-scala/issues">GitHub</a>.
     ]]></description>
 
     <change-notes><![CDATA[
@@ -44,8 +45,9 @@
     <idea-version since-build="201" until-build="201.*" />
 
     <depends>com.intellij.modules.java</depends>
-    <depends>gherkin</depends>
     <depends>org.intellij.scala</depends>
+    <depends>gherkin</depends>
+    <depends>cucumber-java</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
@@ -56,5 +58,7 @@
         <pom.declarationSearcher implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
         <referencesSearch implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
         <findUsagesHandlerFactory implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
+
+        <elementDescriptionProvider implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionDescriptionProvider"/>
     </extensions>
 </idea-plugin>
