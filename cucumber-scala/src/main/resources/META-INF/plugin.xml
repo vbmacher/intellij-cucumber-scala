@@ -44,8 +44,9 @@
     <idea-version since-build="201" until-build="201.*" />
 
     <depends>com.intellij.modules.java</depends>
-    <depends>gherkin</depends>
     <depends>org.intellij.scala</depends>
+    <depends>gherkin</depends>
+    <depends>cucumber-java</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
@@ -56,5 +57,8 @@
         <pom.declarationSearcher implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
         <referencesSearch implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
         <findUsagesHandlerFactory implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
+
+        <itemPresentationProvider forClass="org.jetbrains.plugins.scala.lang.psi.impl.expr.ScMethodCallImpl"
+                                  implementationClass="com.github.danielwegener.intellij.cucumber.scala.presentation.StepDefinitionPresentationProvider"/>
     </extensions>
 </idea-plugin>

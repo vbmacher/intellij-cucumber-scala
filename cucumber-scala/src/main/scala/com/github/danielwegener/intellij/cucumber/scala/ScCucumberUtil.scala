@@ -41,6 +41,15 @@ object ScCucumberUtil {
     packageName.contains(CUCUMBER_SCALA_PACKAGE) && getStepName(candidate).nonEmpty
   }
 
+  def getStepDefinitionExpr(stepDefinition: ScMethodCall): Option[ScReferenceExpression] = {
+    if (isStepDefinition(stepDefinition)) {
+      stepDefinition.getEffectiveInvokedExpr match {
+        case ref: ScReferenceExpression => Some(ref)
+        case _ => None
+      }
+    } else None
+  }
+
   def getStepName(stepDefinition: ScMethodCall): Option[String] = {
     val literals = for {
       innerMethod <- innerMethod(stepDefinition)
