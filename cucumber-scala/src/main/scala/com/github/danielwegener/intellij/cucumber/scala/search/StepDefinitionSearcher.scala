@@ -17,17 +17,16 @@ class StepDefinitionSearcher extends QueryExecutorBase[PsiReference, ReferencesS
       val element = getStepDefinition(queryParameters.getElementToSearch)
       val stepName = element.flatMap(ScCucumberUtil.getStepName)
 
-      if (element.isEmpty || stepName.isEmpty) {
-        return
+      if (element.nonEmpty && stepName.nonEmpty) {
+        CucumberUtil.findGherkinReferencesToElement(
+          element.get, stepName.get, consumer, queryParameters.getEffectiveSearchScope
+        )
       }
-
-      CucumberUtil.findGherkinReferencesToElement(
-        element.get, stepName.get, consumer, queryParameters.getEffectiveSearchScope
-      )
     }
   }
 
-  private def getStepDefinition(element: PsiElement): Option[ScMethodCall] = element match {
+  def getStepDefinition(element: PsiElement): Option[ScMethodCall] = element match {
+    case method: ScMethodCall if ScCucumberUtil.isStepDefinition(method) => Some(method)
     case p: PomTargetPsiElement if p.getTarget.isInstanceOf[ScStepDefinition] =>
       Some(p.getTarget.asInstanceOf[ScStepDefinition].getElement.asInstanceOf[ScMethodCall])
     case _ => None

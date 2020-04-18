@@ -1,6 +1,5 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
-import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.search.GlobalSearchScope
@@ -18,27 +17,23 @@ object ScCucumberUtil {
   private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
   private final val CUCUMBER_SCALA_PACKAGE = "cucumber.api.scala"
 
-  val LOG: Logger = Logger.getInstance(ScCucumberUtil.getClass)
-
   private final val evaluator = new ScalaConstantExpressionEvaluator()
 
   def isStepDefinition(candidate: ScMethodCall): Boolean = {
-    val packageName = innerMethod(candidate)
-      .flatMap(inner => Option(inner.getEffectiveInvokedExpr))
-      .flatMap(_ match {
+    val maybePackageName = for {
+      inner <- innerMethod(candidate)
+      packageName <- Option(inner.getEffectiveInvokedExpr).collect {
         case MethodValue(method) => getPackageName(method)
-
-        case expression: ScReferenceExpression =>
-          val navigable = Option(expression.resolve()).map(_.getNavigationElement)
+        case expr: ScReferenceExpression =>
+          val navigable = Option(expr.resolve()).map(_.getNavigationElement)
           navigable match {
             case Some(referencePattern: ScReferencePattern) => getPackageName(referencePattern)
             case _ => None
           }
+      }.flatten
+    } yield packageName
 
-        case _ => None
-      })
-
-    packageName.contains(CUCUMBER_SCALA_PACKAGE) && getStepName(candidate).nonEmpty
+    maybePackageName.contains(CUCUMBER_SCALA_PACKAGE) && getStepName(candidate).nonEmpty
   }
 
   def getStepName(stepDefinition: ScMethodCall): Option[String] = {
