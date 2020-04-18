@@ -4,6 +4,7 @@
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <version>2020.1</version>
+    <category>Test Tools</category>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
@@ -11,7 +12,7 @@
 
       Requires Scala language integration from Community Repo and the JetBrains cucumber plugin.
 
-      Issue tracking at https://github.com/vbmacher/intellij-cucumber-scala/issues
+      Issue tracking at <a href="https://github.com/vbmacher/intellij-cucumber-scala/issues">GitHub</a>.
     ]]></description>
 
     <change-notes><![CDATA[
@@ -60,5 +61,6 @@
 
         <itemPresentationProvider forClass="org.jetbrains.plugins.scala.lang.psi.impl.expr.ScMethodCallImpl"
                                   implementationClass="com.github.danielwegener.intellij.cucumber.scala.presentation.StepDefinitionPresentationProvider"/>
+        <elementDescriptionProvider implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionDescriptionProvider"/>
     </extensions>
 </idea-plugin>

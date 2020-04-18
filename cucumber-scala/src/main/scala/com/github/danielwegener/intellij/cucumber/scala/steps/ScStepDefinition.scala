@@ -1,7 +1,6 @@
 package com.github.danielwegener.intellij.cucumber.scala.steps
 
 import java.util
-import java.util.Collections
 
 import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil
 import com.intellij.ide.util.EditSourceUtil
@@ -10,26 +9,23 @@ import com.intellij.pom.PomNamedTarget
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
-import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall}
 
-object ScStepDefinition {
-  val LOG: Logger = Logger.getInstance(classOf[ScStepDefinition])
-
-  def apply(scMethodCall: ScMethodCall): ScStepDefinition = new ScStepDefinition(scMethodCall)
-}
+import scala.collection.JavaConverters._
 
 class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) with PomNamedTarget {
-  import ScStepDefinition._
 
   override def getVariableNames: util.List[String] = {
-    val r = for {
-      // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
-      arg <- scMethod.args.exprs
-      parentheses <- arg.getChildren
-    } yield (arg, parentheses)
+    // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
 
-    LOG.info(r.toString)
-    Collections.emptyList()
+    val params = for {
+      block <- scMethod.args.exprs.collectFirst({ case b: ScBlockExpr => b })
+      function <- block.getChildren.collectFirst({ case f: ScFunctionExpr => f })
+
+      parameters = function.parameters
+    } yield parameters.map(_.getName())
+
+    seqAsJavaList(params.getOrElse(Seq.empty))
   }
 
   @Nullable
@@ -53,4 +49,10 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
   override def canNavigate: Boolean = EditSourceUtil.canNavigate(getElement)
 
   override def canNavigateToSource: Boolean = canNavigate()
+}
+
+object ScStepDefinition {
+  val LOG: Logger = Logger.getInstance(classOf[ScStepDefinition])
+
+  def apply(scMethodCall: ScMethodCall): ScStepDefinition = new ScStepDefinition(scMethodCall)
 }
