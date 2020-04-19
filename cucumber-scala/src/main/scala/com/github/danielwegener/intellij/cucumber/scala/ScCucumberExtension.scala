@@ -3,7 +3,7 @@ package com.github.danielwegener.intellij.cucumber.scala
 import java.util.{Collection => JavaCollection}
 
 import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil.getStepDefinitionClasses
-import com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition
+import com.github.danielwegener.intellij.cucumber.scala.steps.{ScStepDefinition, ScStepDefinitionCreator}
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.Project
 import com.intellij.psi.{PsiElement, PsiFile}
@@ -37,9 +37,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
   override val getStepFileType: BDDFrameworkType = new BDDFrameworkType(ScalaFileType.INSTANCE)
 
   @NotNull
-  override def getStepDefinitionCreator: StepDefinitionCreator = {
-    throw new UnsupportedOperationException("You cannot automatically create Steps yet.")
-  }
+  override def getStepDefinitionCreator: StepDefinitionCreator = ScStepDefinitionCreator()
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
     val project: Project = featureFile.getProject
