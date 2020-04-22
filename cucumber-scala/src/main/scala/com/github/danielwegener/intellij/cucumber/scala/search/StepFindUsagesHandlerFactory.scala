@@ -9,10 +9,12 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
 class StepFindUsagesHandlerFactory extends FindUsagesHandlerFactory {
 
-  override def canFindUsages(element: PsiElement): Boolean = element match {
-    case method: ScMethodCall => ScCucumberUtil.isStepDefinition(method)
-    case p: PomTargetPsiElement if p.getTarget.isInstanceOf[ScStepDefinition] => true
-    case _ => false
+  override def canFindUsages(element: PsiElement): Boolean = {
+    element match {
+      case method: ScMethodCall => ScCucumberUtil.isStepDefinition(method)
+      case p: PomTargetPsiElement if p.getTarget.isInstanceOf[ScStepDefinition] => true
+      case _ => false
+    }
   }
 
   override def createFindUsagesHandler(element: PsiElement, forHighlightUsages: Boolean): FindUsagesHandler = {

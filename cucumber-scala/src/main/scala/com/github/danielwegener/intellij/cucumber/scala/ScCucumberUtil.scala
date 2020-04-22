@@ -46,7 +46,7 @@ object ScCucumberUtil {
     literals
   }
 
-  def getStepDefinitionClasses(searchScope: GlobalSearchScope, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = inReadAction {
+  def getStepDefinitionClasses(searchScope: GlobalSearchScope, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = {
     val psiFacade = JavaPsiFacade.getInstance(project)
 
     for {

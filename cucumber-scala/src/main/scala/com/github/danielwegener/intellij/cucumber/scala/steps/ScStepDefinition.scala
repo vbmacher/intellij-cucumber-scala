@@ -12,10 +12,11 @@ import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall}
 
 import scala.collection.JavaConverters._
+import scala.util.Try
 
 class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) with PomNamedTarget {
 
-  override def getVariableNames: util.List[String] = {
+  override def getVariableNames: util.List[String] = Try {
     // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
 
     val params = for {
@@ -26,24 +27,22 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
     } yield parameters.map(_.getName())
 
     seqAsJavaList(params.getOrElse(Seq.empty))
-  }
+  }.getOrElse(seqAsJavaList(Seq.empty))
 
   @Nullable
-  override def getCucumberRegexFromElement(element: PsiElement): String = {
+  override def getCucumberRegexFromElement(element: PsiElement): String = Try {
     element match {
       case mc: ScMethodCall => ScCucumberUtil.getStepName(mc).orNull
       case _ => null
     }
-  }
+  }.getOrElse(null)
 
   override def getName: String = getCucumberRegex
 
-  override def isValid: Boolean = {
-    Option(getElement).exists(_.isValid)
-  }
+  override def isValid: Boolean = getElement.isValid
 
-  override def navigate(requestFocus: Boolean): Unit = {
-    Option(EditSourceUtil.getDescriptor(getElement)).foreach(_.navigate(requestFocus))
+  override def navigate(requestFocus: Boolean): Unit = Try {
+      Option(EditSourceUtil.getDescriptor(getElement)).foreach(_.navigate(requestFocus))
   }
 
   override def canNavigate: Boolean = EditSourceUtil.canNavigate(getElement)

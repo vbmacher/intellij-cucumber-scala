@@ -24,6 +24,12 @@ intellij {
     updateSinceUntilBuild false
 }
 
+runIde {
+    jvmArgs '-Didea.debugger.trace=ALL'
+}
+
+buildSearchableOptions.enabled = false
+
 publishPlugin {
     token findProperty("PUBLISH_TOKEN") ?: System.getenv("PUBLISH_TOKEN")
 }
