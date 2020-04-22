@@ -1,6 +1,5 @@
 package com.github.danielwegener.intellij.cucumber.scala.search
 
-//import com.github.danielwegener.intellij.cucumber.scala.inReadAction
 import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition
 import com.intellij.lang.injection.InjectedLanguageManager
@@ -15,7 +14,7 @@ import scala.util.Try
 
 class StepDeclarationSearcher extends PomDeclarationSearcher {
 
-  override def findDeclarationsAt(psiElement: PsiElement, offsetInElement: Int, consumer: Consumer[PomTarget]): Unit = Try {
+  override def findDeclarationsAt(psiElement: PsiElement, offsetInElement: Int, consumer: Consumer[PomTarget]): Unit = {
     val host = InjectedLanguageManager.getInstance(psiElement.getProject).getInjectionHost(psiElement)
 
     // Currently works just for literal regexes

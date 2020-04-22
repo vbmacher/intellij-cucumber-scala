@@ -1,8 +1,8 @@
 package com.github.danielwegener.intellij.cucumber.scala.search
 
-import com.github.danielwegener.intellij.cucumber.scala.{ScCucumberUtil, inReadAction, invokeAndWait}
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition
-import com.intellij.openapi.application.{ApplicationManager, QueryExecutorBase}
+import com.github.danielwegener.intellij.cucumber.scala.{ScCucumberUtil, inReadAction}
+import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.pom.PomTargetPsiElement
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.{PsiElement, PsiReference}
