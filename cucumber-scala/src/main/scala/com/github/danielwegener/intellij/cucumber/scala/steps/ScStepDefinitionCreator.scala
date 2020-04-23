@@ -93,9 +93,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
         PsiDocumentManager.getInstance(project).commitAllDocuments()
       }
 
-      if (isUnitTestMode) return true
-
-      if (withTemplate) {
+      if (!isUnitTestMode && withTemplate) {
         // TODO
       }
       true
