@@ -1,9 +1,12 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
+import com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
+import com.intellij.pom.PomNamedTarget
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.{JavaPsiFacade, PsiMember}
+import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager}
+import com.intellij.psi.{JavaPsiFacade, PsiDocumentManager, PsiElement, PsiMember}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
@@ -13,11 +16,18 @@ import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluato
 
 import scala.annotation.tailrec
 
+class ScCucumberUtil
 object ScCucumberUtil {
   private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
   private final val CUCUMBER_SCALA_PACKAGE = "cucumber.api.scala"
 
   private final val evaluator = new ScalaConstantExpressionEvaluator()
+
+  def isStepDefinition(candidate: PsiElement): Boolean = candidate match {
+    case sc: ScMethodCall => isStepDefinition(sc)
+    case pt: PomNamedTarget if pt.isInstanceOf[ScStepDefinition] => true
+    case _ => false
+  }
 
   def isStepDefinition(candidate: ScMethodCall): Boolean = {
     val maybePackageName = for {
@@ -57,6 +67,30 @@ object ScCucumberUtil {
       }
       glueCodeClass <- classAndItsInheritors(candidate)
     } yield glueCodeClass
+  }
+
+  def getCachedStepDefinition(statement: ScMethodCall): Option[ScStepDefinition] = {
+    Option(CachedValuesManager.getCachedValue(statement, () => {
+      val document = Option(statement.getContainingFile)
+        .map(PsiDocumentManager.getInstance(statement.getProject).getDocument)
+
+      document
+        .map(d => CachedValueProvider.Result.create(ScStepDefinition(statement), d))
+        .getOrElse(CachedValueProvider.Result.create(ScStepDefinition(statement)))
+    }))
+  }
+
+  def getStepDefinitionExpr(stepDefinition: ScMethodCall): Option[ScReferenceExpression] = {
+    if (isStepDefinition(stepDefinition)) {
+      stepDefinition.getEffectiveInvokedExpr match {
+        case ref: ScReferenceExpression => Some(ref)
+        case mc: ScMethodCall => mc.getEffectiveInvokedExpr match {
+          case r: ScReferenceExpression => Some(r)
+          case _ => None
+        }
+        case _ => None
+      }
+    } else None
   }
 
 

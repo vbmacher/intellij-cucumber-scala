@@ -42,7 +42,7 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="201" until-build="201.*" />
+    <idea-version since-build="201" until-build="201.*"/>
 
     <depends>com.intellij.modules.java</depends>
     <depends>org.intellij.scala</depends>
@@ -55,10 +55,20 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <pom.declarationSearcher implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
-        <referencesSearch implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
-        <findUsagesHandlerFactory implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
+        <pom.declarationSearcher
+                implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
+        <referencesSearch
+                implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
+        <findUsagesHandlerFactory
+                implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
 
-        <elementDescriptionProvider implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionDescriptionProvider"/>
+        <elementDescriptionProvider
+                implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionDescriptionProvider"/>
+        <codeInsight.lineMarkerProvider
+                implementationClass="com.github.danielwegener.intellij.cucumber.scala.search.ScCucumberLineMarkerProvider"
+                language="Scala"/>
+
+        <itemPresentationProvider forClass="com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition"
+                                  implementationClass="com.github.danielwegener.intellij.cucumber.scala.presentation.StepDefinitionPresentationProvider"/>
     </extensions>
 </idea-plugin>

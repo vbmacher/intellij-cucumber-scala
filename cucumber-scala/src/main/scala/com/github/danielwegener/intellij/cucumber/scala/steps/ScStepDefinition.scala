@@ -4,6 +4,7 @@ import java.util
 
 import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil
 import com.intellij.ide.util.EditSourceUtil
+import com.intellij.navigation.{ItemPresentation, ItemPresentationProviders, NavigationItem}
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.pom.PomNamedTarget
 import com.intellij.psi.PsiElement
@@ -14,7 +15,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExp
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) with PomNamedTarget {
+class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) with PomNamedTarget with NavigationItem {
 
   override def getVariableNames: util.List[String] = Try {
     // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
@@ -48,6 +49,8 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
   override def canNavigate: Boolean = EditSourceUtil.canNavigate(getElement)
 
   override def canNavigateToSource: Boolean = canNavigate()
+
+  override def getPresentation: ItemPresentation = ItemPresentationProviders.getItemPresentation(this)
 }
 
 object ScStepDefinition {
