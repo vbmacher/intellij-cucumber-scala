@@ -1,4 +1,4 @@
 
-import io.cucumber.scala.ScalaDsl
+import cucumber.api.scala.ScalaDsl
 
 trait ScalaDslIndirection extends ScalaDsl

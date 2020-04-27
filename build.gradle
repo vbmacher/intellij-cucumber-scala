@@ -10,7 +10,8 @@ ext.versions = [
 ext.libs = [
         jUnit            : 'junit:junit:4.13',
         scala            : "org.scala-lang:scala-library:${versions.scalaFull}",
-        cucumberScala    : "io.cucumber:cucumber-scala_${versions.scala}:4.7.1",
+        cucumberScala4x  : "io.cucumber:cucumber-scala_${versions.scala}:4.7.1",
+        cucumberScala    : "io.cucumber:cucumber-scala_${versions.scala}:5.6.0",
         cucumberJUnit    : 'io.cucumber:cucumber-junit:5.6.0'
 ]
 

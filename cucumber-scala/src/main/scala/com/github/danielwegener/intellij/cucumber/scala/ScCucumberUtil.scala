@@ -18,8 +18,11 @@ import scala.annotation.tailrec
 
 class ScCucumberUtil
 object ScCucumberUtil {
-  private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
-  private final val CUCUMBER_SCALA_PACKAGE = "cucumber.api.scala"
+
+  private final val CUCUMBER_4X_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
+  private final val CUCUMBER_4X_SCALA_PACKAGE = "cucumber.api.scala"
+  private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "io.cucumber.scala.ScalaDsl"
+  private final val CUCUMBER_SCALA_PACKAGE = "io.cucumber.scala"
 
   private final val evaluator = new ScalaConstantExpressionEvaluator()
 
@@ -43,7 +46,7 @@ object ScCucumberUtil {
       }.flatten
     } yield packageName
 
-    maybePackageName.contains(CUCUMBER_SCALA_PACKAGE) && getStepName(candidate).nonEmpty
+    (maybePackageName.contains(CUCUMBER_4X_SCALA_PACKAGE) || maybePackageName.contains(CUCUMBER_SCALA_PACKAGE)) && getStepName(candidate).nonEmpty
   }
 
   def getStepName(stepDefinition: ScMethodCall): Option[String] = {
@@ -59,8 +62,11 @@ object ScCucumberUtil {
   def getStepDefinitionClasses(searchScope: GlobalSearchScope, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = {
     val psiFacade = JavaPsiFacade.getInstance(project)
 
+    val cucumberDsl4xClasses = psiFacade.findClasses(CUCUMBER_4X_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
+    val cucumberDsl5xClasses = psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
+
     for {
-      cucumberDslClass <- psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
+      cucumberDslClass <- cucumberDsl4xClasses ++ cucumberDsl5xClasses
       candidate <- ScalaInheritors.withStableScalaInheritors(cucumberDslClass).collect {
         case sc: ScClass => sc
         case sct: ScTrait if !justClasses => sct

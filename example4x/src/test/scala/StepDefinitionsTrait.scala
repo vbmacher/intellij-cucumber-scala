@@ -1,4 +1,4 @@
-import io.cucumber.scala.EN
+import cucumber.api.scala.EN
 import org.junit.Assert.assertEquals
 
 trait StepDefinitionsTrait extends ScalaDslIndirection with EN {
