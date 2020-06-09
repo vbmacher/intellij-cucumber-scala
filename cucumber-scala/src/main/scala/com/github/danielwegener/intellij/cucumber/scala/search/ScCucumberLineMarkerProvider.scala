@@ -1,29 +1,37 @@
 package com.github.danielwegener.intellij.cucumber.scala.search
 
-import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil
+import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil._
 import com.intellij.codeInsight.daemon.{LineMarkerInfo, LineMarkerProvider}
 import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.impl.source.tree.LeafPsiElement
 import icons.CucumberIcons
-import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
 
 class ScCucumberLineMarkerProvider extends LineMarkerProvider {
 
-  override def getLineMarkerInfo(element: PsiElement): LineMarkerInfo[_ <: PsiElement] = {
-    if (ScCucumberUtil.isStepDefinition(element)) {
-      val anchor: PsiElement = PsiTreeUtil.getDeepestFirst(element)
+  override def getLineMarkerInfo(element: PsiElement): LineMarkerInfo[PsiElement] = {
+    val result = element match {
 
-      val presentableText = ScCucumberUtil
-        .getCachedStepDefinition(element.asInstanceOf[ScMethodCall])
-        .map(_.getPresentation.getPresentableText)
+      case id: LeafPsiElement => // according to javadoc, we should relate to leaf elements due to performance reasons
+        for {
+          expr <- Option(id.getParent)
+          if expr.isInstanceOf[ScReferenceExpression]
 
-      presentableText.map(text => {
-        new LineMarkerInfo[PsiElement](
-          anchor, anchor.getTextRange, CucumberIcons.Cucumber, (_: PsiElement) => text,
-          null, GutterIconRenderer.Alignment.RIGHT
-        )
-      }).orNull
-    } else null
+          inner <- Option(expr.getParent)
+          outer <- Option(inner.getParent)
+          if isStepDefinition(outer)
+
+          stepName <- getStepName(outer.asInstanceOf[ScMethodCall])
+        } yield {
+          new LineMarkerInfo[PsiElement](
+            element, element.getTextRange, CucumberIcons.Cucumber, (_: PsiElement) => stepName,
+            null, GutterIconRenderer.Alignment.RIGHT
+          )
+        }
+      case _ => None
+    }
+
+    result.orNull
   }
 }

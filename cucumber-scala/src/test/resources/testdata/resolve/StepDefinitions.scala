@@ -1,6 +1,9 @@
-class StepDefinitions extends StepDefinitionsTrait {
+import io.cucumber.scala.ScalaDsl
 
-  When("""^I add (\d+) and (\d+)$"""){ (arg1: Double, arg2: Double) =>
+class StepDefinitions extends ScalaDsl {
+  val calc = new Calculator
+
+  When("^I add (\\d+) and (\\d+)$") { (arg1: Double, arg2: Double) =>
     calc push arg1
     calc push arg2
     calc push "+"
@@ -17,5 +20,13 @@ class StepDefinitions extends StepDefinitionsTrait {
     calc push 10.0
     calc push 2.0
     calc push "/"
+  }
+
+  And("nothing else") {
+
+  }
+
+  Then("^the result is ([+-]?\\d+)$") { expected: Double =>
+    assertEquals(expected, calc.value, 0.001)
   }
 }

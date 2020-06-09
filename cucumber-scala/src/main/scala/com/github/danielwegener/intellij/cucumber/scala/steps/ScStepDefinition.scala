@@ -3,11 +3,9 @@ package com.github.danielwegener.intellij.cucumber.scala.steps
 import java.util
 
 import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil
-import com.intellij.ide.util.EditSourceUtil
-import com.intellij.navigation.{ItemPresentation, ItemPresentationProviders, NavigationItem}
 import com.intellij.openapi.diagnostic.Logger
-import com.intellij.pom.PomNamedTarget
 import com.intellij.psi.PsiElement
+import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall}
@@ -15,7 +13,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExp
 import scala.collection.JavaConverters._
 import scala.util.Try
 
-class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod) with PomNamedTarget with NavigationItem {
+class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod.getFirstChild) {
 
   override def getVariableNames: util.List[String] = Try {
     // WHEN("""regexp""") { (arg0:Int, arg1:String) <-- we want to match these
@@ -32,25 +30,12 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
 
   @Nullable
   override def getCucumberRegexFromElement(element: PsiElement): String = Try {
-    element match {
-      case mc: ScMethodCall => ScCucumberUtil.getStepName(mc).orNull
+    scMethod match {
+      case mc: ScMethodCall => ScCucumberUtil.getStepRegex(mc).orNull
       case _ => null
     }
   }.getOrElse(null)
 
-  override def getName: String = getCucumberRegex
-
-  override def isValid: Boolean = getElement.isValid
-
-  override def navigate(requestFocus: Boolean): Unit = Try {
-      Option(EditSourceUtil.getDescriptor(getElement)).foreach(_.navigate(requestFocus))
-  }
-
-  override def canNavigate: Boolean = EditSourceUtil.canNavigate(getElement)
-
-  override def canNavigateToSource: Boolean = canNavigate()
-
-  override def getPresentation: ItemPresentation = ItemPresentationProviders.getItemPresentation(this)
 }
 
 object ScStepDefinition {

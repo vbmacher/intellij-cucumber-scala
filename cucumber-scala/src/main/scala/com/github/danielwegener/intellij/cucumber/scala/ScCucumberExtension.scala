@@ -1,12 +1,16 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
+import java.util
 import java.util.{Collection => JavaCollection}
 
-import com.github.danielwegener.intellij.cucumber.scala.ScCucumberUtil.getStepDefinitionClasses
 import com.github.danielwegener.intellij.cucumber.scala.steps.{ScStepDefinition, ScStepDefinitionCreator}
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
-import com.intellij.openapi.project.Project
-import com.intellij.psi.{PsiElement, PsiFile}
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.{PsiElement, PsiFile, PsiManager, PsiMethodCallExpression}
+import com.intellij.util.indexing.{FileBasedIndex, ID, IdFilter}
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
@@ -16,10 +20,13 @@ import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
 import scala.collection.JavaConverters
-import collection.JavaConverters._
+import scala.collection.JavaConverters._
 import scala.util.Try
 
 class ScCucumberExtension extends AbstractCucumberExtension {
+
+//  FileBasedIndex.getInstance().requestRebuild(ScCucumberStepIndex.INDEX_ID)
+
 
   override def isStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
     child.isInstanceOf[ScalaFile]
@@ -40,20 +47,36 @@ class ScCucumberExtension extends AbstractCucumberExtension {
   override def getStepDefinitionCreator: StepDefinitionCreator = ScStepDefinitionCreator()
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
-    val project: Project = featureFile.getProject
-    val searchScope = Option(featureFile)
-      .map(_.getResolveScope)
-      .getOrElse(module.getModuleWithDependenciesAndLibrariesScope(true))
+    val fileBasedIndex = FileBasedIndex.getInstance()
+    val searchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
+    val scalaFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(searchScope, ScalaFileType.INSTANCE)
+    val project = module.getProject
 
-    val stepDefinitions = for {
-      glueCodeClass <- getStepDefinitionClasses(searchScope, project)
-      scConstructorBody <- glueCodeClass.extendsBlock.templateBody.toSeq
-      outerMethodCall <- scConstructorBody.getChildren.collect { case mc: ScMethodCall => mc }
+    val result = collection.mutable.Buffer.empty[AbstractStepDefinition]
 
-      if ScCucumberUtil.isStepDefinition(outerMethodCall)
-    } yield ScStepDefinition(outerMethodCall)
+    fileBasedIndex.processValues(ScCucumberStepIndex.INDEX_ID, java.lang.Boolean.TRUE, null, {
+      (file: VirtualFile, value: util.List[Integer]) => {
 
-    JavaConverters.seqAsJavaList(stepDefinitions)
+        ProgressManager.checkCanceled()
+        val psiFile = PsiManager.getInstance(project).findFile(file)
+        if (psiFile != null) {
+          for (offset <- value.asScala) {
+            val element = psiFile.findElementAt(offset + 1)
+
+            val stepElement = for {
+              inner <- Option(PsiTreeUtil.getParentOfType(element, classOf[ScMethodCall]))
+              outer <- Option(inner.getParent)
+              if outer.isInstanceOf[ScMethodCall]
+            } yield outer.asInstanceOf[ScMethodCall]
+
+            stepElement.foreach(result += ScStepDefinition(_))
+          }
+        }
+        java.lang.Boolean.TRUE.booleanValue()
+      }
+    }, scalaFiles)
+
+    result.asJava
   }
 
   override def getStepDefinitionContainers(featureFile: GherkinFile): JavaCollection[_ <: PsiFile] = {

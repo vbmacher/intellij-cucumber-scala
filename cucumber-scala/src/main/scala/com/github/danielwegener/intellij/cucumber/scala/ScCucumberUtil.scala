@@ -1,28 +1,23 @@
 package com.github.danielwegener.intellij.cucumber.scala
 
 import com.github.danielwegener.intellij.cucumber.scala.steps.ScStepDefinition
-import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.pom.PomNamedTarget
-import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager}
-import com.intellij.psi.{JavaPsiFacade, PsiDocumentManager, PsiElement, PsiMember}
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.{PsiElement, PsiMember}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.{ScClass, ScTrait, ScTypeDefinition}
-import org.jetbrains.plugins.scala.lang.psi.stubs.util.ScalaInheritors
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
 
-import scala.annotation.tailrec
-
-class ScCucumberUtil
 object ScCucumberUtil {
 
-  private final val CUCUMBER_4X_SCALA_STEP_DEF_TRAIT = "cucumber.api.scala.ScalaDsl"
-  private final val CUCUMBER_4X_SCALA_PACKAGE = "cucumber.api.scala"
-  private final val CUCUMBER_SCALA_STEP_DEF_TRAIT = "io.cucumber.scala.ScalaDsl"
-  private final val CUCUMBER_SCALA_PACKAGE = "io.cucumber.scala"
+  private final val CUCUMBER_4X_SCALA_PACKAGE = "cucumber.api.scala."
+  private final val CUCUMBER_5X_SCALA_PACKAGE = "io.cucumber.scala."
+  final val CUCUMBER_PACKAGES = Seq(
+    CUCUMBER_4X_SCALA_PACKAGE,
+    CUCUMBER_5X_SCALA_PACKAGE
+  )
 
   private final val evaluator = new ScalaConstantExpressionEvaluator()
 
@@ -46,10 +41,21 @@ object ScCucumberUtil {
       }.flatten
     } yield packageName
 
-    (maybePackageName.contains(CUCUMBER_4X_SCALA_PACKAGE) || maybePackageName.contains(CUCUMBER_SCALA_PACKAGE)) && getStepName(candidate).nonEmpty
+    maybePackageName.forall(pkg => CUCUMBER_PACKAGES.exists(_.startsWith(pkg))) && getStepName(candidate).nonEmpty
   }
 
   def getStepName(stepDefinition: ScMethodCall): Option[String] = {
+    val literals = for {
+      innerMethod <- innerMethod(stepDefinition)
+      keyword <- Option(PsiTreeUtil.findChildOfType(innerMethod, classOf[ScReferenceExpression]))
+      regex <- getStepRegex(stepDefinition)
+
+    } yield keyword.getText + " " + regex
+
+    literals
+  }
+
+  def getStepRegex(stepDefinition: ScMethodCall): Option[String] = {
     val literals = for {
       innerMethod <- innerMethod(stepDefinition)
       expression <- innerMethod.args.exprs.headOption
@@ -57,33 +63,6 @@ object ScCucumberUtil {
     } yield literal.toString
 
     literals
-  }
-
-  def getStepDefinitionClasses(searchScope: GlobalSearchScope, project: Project, justClasses: Boolean = false): Seq[ScTypeDefinition] = {
-    val psiFacade = JavaPsiFacade.getInstance(project)
-
-    val cucumberDsl4xClasses = psiFacade.findClasses(CUCUMBER_4X_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
-    val cucumberDsl5xClasses = psiFacade.findClasses(CUCUMBER_SCALA_STEP_DEF_TRAIT, searchScope).toSeq
-
-    for {
-      cucumberDslClass <- cucumberDsl4xClasses ++ cucumberDsl5xClasses
-      candidate <- ScalaInheritors.withStableScalaInheritors(cucumberDslClass).collect {
-        case sc: ScClass => sc
-        case sct: ScTrait if !justClasses => sct
-      }
-      glueCodeClass <- classAndItsInheritors(candidate)
-    } yield glueCodeClass
-  }
-
-  def getCachedStepDefinition(statement: ScMethodCall): Option[ScStepDefinition] = {
-    Option(CachedValuesManager.getCachedValue(statement, () => {
-      val document = Option(statement.getContainingFile)
-        .map(PsiDocumentManager.getInstance(statement.getProject).getDocument)
-
-      document
-        .map(d => CachedValueProvider.Result.create(ScStepDefinition(statement), d))
-        .getOrElse(CachedValueProvider.Result.create(ScStepDefinition(statement)))
-    }))
   }
 
   def getStepDefinitionExpr(stepDefinition: ScMethodCall): Option[ScReferenceExpression] = {
@@ -109,30 +88,5 @@ object ScCucumberUtil {
 
   private def innerMethod(outerMethod: ScMethodCall) = {
     Option(outerMethod.getEffectiveInvokedExpr).collect { case some: ScMethodCall => some }
-  }
-
-  private def classAndItsInheritors(parent: ScTypeDefinition): Iterable[ScTypeDefinition] = {
-
-    @tailrec
-    def rec(queue: Seq[ScTypeDefinition], accumulator: Set[ScTypeDefinition]): Set[ScTypeDefinition] = {
-      queue match {
-        case Seq() => accumulator
-        case queueHead +: queueTail =>
-
-          val newChildren = ScalaInheritors.findInheritorObjects(queueHead).collect {
-            case sc: ScClass => sc
-            case sct: ScTrait => sct
-          }
-
-          val childrenToExplore = newChildren
-            .map(_.asInstanceOf[ScTypeDefinition])
-            .diff(accumulator)
-            .toSeq
-
-          rec(queueTail ++ childrenToExplore, accumulator + queueHead)
-      }
-    }
-
-    rec(Seq(parent), Set.empty)
   }
 }
