@@ -4,12 +4,20 @@
 
 Enables Reference tracking of glue code when using cucumber-scala DSL.
 
+The plugin depends on:
+- [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
+- [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
+- project [cucumber-jvm-scala](https://github.com/cucumber/cucumber-jvm-scala)
+
 ## Features
 
 - [x] Navigate from feature step to step definition
 - [x] Find usages of step definitions in feature files
-- [x] Wizard that creates step definitions for a step in a feature file
-
+- [x] Automated step definition creation
+- [ ] Wizard for step definition creation (templating, see #1)
+- [x] Indexing of step definitions for better performance
+- [x] Support "constant expressions" in step definition names
+- [ ] Find step definitions in libraries (in dependencies)
 
 ## Development
 
@@ -19,18 +27,21 @@ Enables Reference tracking of glue code when using cucumber-scala DSL.
 
 Now you can build this plugin with `./gradlew buildPlugin`.
 
-To start an IDE with the plugin installed in the example project just run `./gradlew runIde`. Import the whole project as gradle project in the sandbox-ide. Wait for indexing to finish. Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
+To start an IDE with the plugin installed in the example project just run `./gradlew runIde`. Import the whole project
+as gradle project in the sandbox-ide. Wait for indexing to finish.
+Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
 
 ## Contributing
 
 Anyone can contribute. The best is to pick up some issue tagged with `help_wanted`, or bringing new ideas by creating new issues.
 
-Git branch `development` is used for developing upcoming version. When the plugin is to be released, the
-branch is merged into `master` branch, which is then used for the release. The release commit is tagged.
+Git branch `development` is used for developing upcoming version. Upon releasing the plugin, the branch will be merged
+into `master` branch, which is then used for the release. The release commit is tagged with version.
  
 ## Publishing
 
-A "publish token" must be set up in order to publish the plugin to [JetBrains plugins portal](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala). The token can be set up either by system variable or Gradle property named `PUBLISH_TOKEN` (e.g. put it in `gradle.properties` file, but do not commit it!).
+A "publish token" must be set up in order to publish the plugin to [JetBrains plugins portal](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala).
+The token can be set up either by system variable or Gradle property named `PUBLISH_TOKEN` (e.g. put it in `gradle.properties` file, but do not commit it!).
 
 Then, run `./gradlew publishPlugin`
 

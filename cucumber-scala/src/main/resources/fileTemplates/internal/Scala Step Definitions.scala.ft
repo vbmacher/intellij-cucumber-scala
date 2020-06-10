@@ -1,8 +1,6 @@
 #if ((${PACKAGE_NAME} && ${PACKAGE_NAME} != ""))package ${PACKAGE_NAME} #end
 #parse("File Header.java")
 import io.cucumber.scala.{EN, ScalaDsl}
-// You can use following imports for Cucumber Scala 4.x
-//import cucumber.api.scala.{EN, ScalaDsl}
 
 class ${NAME} extends ScalaDsl with EN {
 

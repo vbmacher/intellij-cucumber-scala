@@ -1,6 +1,6 @@
 package com.github.danielwegener.intellij.cucumber.scala.steps
 
-import java.util.Properties
+import java.util.{Locale, Properties}
 
 import com.github.danielwegener.intellij.cucumber.scala.{inWriteAction, isUnitTestMode}
 import com.intellij.codeInsight.CodeInsightUtilCore
@@ -8,12 +8,12 @@ import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTe
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.roots.ProjectRootManager
+import com.intellij.openapi.roots.{FileIndexFacade, ModuleRootManager}
 import com.intellij.psi._
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
-import cucumber.runtime.snippets.{CamelCaseConcatenator, FunctionNameGenerator, SnippetGenerator}
-import gherkin.formatter.model.{Comment, Step}
+import io.cucumber.core.snippets.{SnippetGenerator, SnippetType}
+import io.cucumber.cucumberexpressions.ParameterTypeRegistry
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import org.jetbrains.plugins.cucumber.AbstractStepDefinitionCreator
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
@@ -28,8 +28,7 @@ import scala.collection.JavaConverters._
 import scala.util.{Failure, Success, Try}
 
 class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
-
-  import ScStepDefinitionCreator.LOG
+  private final val LOG = Logger.getInstance(classOf[ScStepDefinitionCreator])
 
   private final val containerTemplate = "Scala Step Definitions.scala"
 
@@ -59,14 +58,16 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
   override def getDefaultStepFileName(gherkinStep: GherkinStep): String = "StepDefinitions"
 
-  override def getDefaultStepDefinitionFolder(step: GherkinStep): PsiDirectory = {
+  override def getDefaultStepDefinitionFolderPath(step: GherkinStep): String = {
     val featureFile = step.getContainingFile
 
-    val javaSourceRoots = ProjectRootManager.getInstance(featureFile.getProject)
-      .getModuleSourceRoots(Set(JavaSourceRootType.TEST_SOURCE).asJava)
+    val fileIndexFacade = FileIndexFacade.getInstance(featureFile.getProject)
+    val module = fileIndexFacade.getModuleForFile(featureFile.getVirtualFile)
+    val testSourceRoots = ModuleRootManager.getInstance(module)
+      .getSourceRoots(JavaSourceRootType.TEST_SOURCE)
       .asScala
 
-    javaSourceRoots.headOption.map(featureFile.getManager.findDirectory).orNull
+    testSourceRoots.headOption.map(featureFile.getManager.findDirectory).map(_.getVirtualFile.getPath).orNull
   }
 
   override def createStepDefinition(step: GherkinStep, file: PsiFile, withTemplate: Boolean): Boolean = {
@@ -94,6 +95,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
       }
 
       if (!isUnitTestMode && withTemplate) {
+        LOG.info("Templating yay!")
         // TODO
       }
       true
@@ -107,16 +109,13 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
 
   private def createMethodCall(step: GherkinStep, context: PsiElement): ScMethodCall = {
-    val cucumberStep = new Step(Seq.empty[Comment].asJava, step.getKeyword.getText, step.getName, 0, null, null)
-    val generator = new SnippetGenerator(new ScalaSnippet())
-
-    val snippet = generator.getSnippet(cucumberStep, new FunctionNameGenerator(new CamelCaseConcatenator()))
+    val generator = new SnippetGenerator(ScStepSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
+    val snippet = generator.getSnippet(CucumberStep(step), SnippetType.CAMELCASE).get(0)
     ScalaPsiElementFactory.createExpressionFromText(snippet, context).asInstanceOf[ScMethodCall]
   }
 }
 
 object ScStepDefinitionCreator {
-  private final val LOG = Logger.getInstance(classOf[ScStepDefinitionCreator])
 
   def apply(): ScStepDefinitionCreator = new ScStepDefinitionCreator()
 }

@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.4.18"
+    id "org.jetbrains.intellij" version "0.4.21"
     id "scala"
 }
 
@@ -8,6 +8,14 @@ version "${versions.idea}"
 
 dependencies {
     compileOnly libs.scala
+    implementation(libs.cucumberScala) {
+        exclude group: 'org.scala-lang', module: 'scala-library'
+    }
+
+    testImplementation libs.scala
+    testImplementation libs.jUnit
+    testImplementation libs.cucumberJUnit
+    testImplementation libs.scalatest
 }
 
 intellij {
@@ -18,14 +26,18 @@ intellij {
     plugins = [
             "java",
             "org.intellij.scala:${versions.scalaPlugin}",
-            "gherkin:${versions.gherkin}",
-            "cucumber-java:${versions.cucumber}"
+            "gherkin:${versions.gherkin}"
     ]
-    updateSinceUntilBuild false
+    updateSinceUntilBuild true
 }
 
 runIde {
     jvmArgs '-Didea.debugger.trace=ALL'
+}
+
+patchPluginXml {
+    sinceBuild "202.5103"
+    untilBuild "202.5103.*"
 }
 
 buildSearchableOptions.enabled = false
