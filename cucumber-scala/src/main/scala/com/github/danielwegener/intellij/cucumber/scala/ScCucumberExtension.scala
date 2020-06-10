@@ -9,8 +9,8 @@ import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.GlobalSearchScope
 import com.intellij.psi.util.PsiTreeUtil
-import com.intellij.psi.{PsiElement, PsiFile, PsiManager, PsiMethodCallExpression}
-import com.intellij.util.indexing.{FileBasedIndex, ID, IdFilter}
+import com.intellij.psi.{PsiElement, PsiFile, PsiManager}
+import com.intellij.util.indexing.FileBasedIndex
 import org.jetbrains.annotations.NotNull
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
@@ -57,8 +57,6 @@ class ScCucumberExtension extends AbstractCucumberExtension {
     fileBasedIndex.processValues(ScCucumberStepIndex.INDEX_ID, java.lang.Boolean.TRUE, null, {
       (file: VirtualFile, value: util.List[Integer]) => {
 
-        println("FILE: " + file)
-
         ProgressManager.checkCanceled()
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile != null) {
@@ -78,7 +76,6 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       }
     }, scalaFiles)
 
-    println("FOUND: " + result.mkString(","))
     result.asJava
   }
 

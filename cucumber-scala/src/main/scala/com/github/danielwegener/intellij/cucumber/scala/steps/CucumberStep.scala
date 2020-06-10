@@ -42,7 +42,7 @@ class CucumberStep(step: GherkinStep) extends Step {
 
   override def getPreviousGivenWhenThenKeyWord: String = null
 
-  override def getText: String = step.getText
+  override def getText: String = step.getSubstitutedName
 
   override def getId: String = step.getName
 
