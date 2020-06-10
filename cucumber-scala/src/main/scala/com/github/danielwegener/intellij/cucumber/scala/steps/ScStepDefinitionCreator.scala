@@ -95,6 +95,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
       }
 
       if (!isUnitTestMode && withTemplate) {
+        LOG.info("Templating yay!")
         // TODO
       }
       true

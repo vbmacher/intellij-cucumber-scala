@@ -25,9 +25,6 @@ import scala.util.Try
 
 class ScCucumberExtension extends AbstractCucumberExtension {
 
-//  FileBasedIndex.getInstance().requestRebuild(ScCucumberStepIndex.INDEX_ID)
-
-
   override def isStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
     child.isInstanceOf[ScalaFile]
   }

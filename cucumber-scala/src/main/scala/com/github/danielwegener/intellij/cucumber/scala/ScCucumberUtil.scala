@@ -65,20 +65,6 @@ object ScCucumberUtil {
     literals
   }
 
-  def getStepDefinitionExpr(stepDefinition: ScMethodCall): Option[ScReferenceExpression] = {
-    if (isStepDefinition(stepDefinition)) {
-      stepDefinition.getEffectiveInvokedExpr match {
-        case ref: ScReferenceExpression => Some(ref)
-        case mc: ScMethodCall => mc.getEffectiveInvokedExpr match {
-          case r: ScReferenceExpression => Some(r)
-          case _ => None
-        }
-        case _ => None
-      }
-    } else None
-  }
-
-
   private def getPackageName(member: PsiMember): Option[String] = {
     for {
       containingClass <- Option(member.getContainingClass)

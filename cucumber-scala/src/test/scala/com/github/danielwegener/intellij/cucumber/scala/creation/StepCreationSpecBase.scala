@@ -10,7 +10,7 @@ import com.intellij.psi.{PsiDocumentManager, PsiFile}
 import org.jetbrains.plugins.cucumber.inspections.CucumberStepInspection
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
 
-class StepCreationSpecBase extends StepResolveSpecBase {
+abstract class StepCreationSpecBase extends StepResolveSpecBase {
 
   def checkStepCreation(feature: PsiFile, stepDef: PsiFile, expectedStepDef: String) = {
     myFixture.enableInspections(classOf[CucumberStepInspection])
