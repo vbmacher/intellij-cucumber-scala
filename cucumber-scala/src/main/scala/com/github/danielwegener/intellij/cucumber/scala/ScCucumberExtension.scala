@@ -57,6 +57,8 @@ class ScCucumberExtension extends AbstractCucumberExtension {
     fileBasedIndex.processValues(ScCucumberStepIndex.INDEX_ID, java.lang.Boolean.TRUE, null, {
       (file: VirtualFile, value: util.List[Integer]) => {
 
+        println("FILE: " + file)
+
         ProgressManager.checkCanceled()
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile != null) {
@@ -76,6 +78,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       }
     }, scalaFiles)
 
+    println("FOUND: " + result.mkString(","))
     result.asJava
   }
 

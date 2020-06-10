@@ -16,7 +16,7 @@ class StepResolveSpec extends StepResolveSpecBase {
 
   @Test
   def testWithParameters(): Unit = {
-    checkResolveDirect("When I add 4 and 5")
+    checkResolveDirect("I add 4 and 5")  // does not include "When", because test regex is within ^$
   }
 
   @Test
@@ -27,5 +27,14 @@ class StepResolveSpec extends StepResolveSpecBase {
   @Test
   def testResolveIndirect(): Unit = {
     checkResolveIndirect("When I div 10 by 2")
+  }
+
+  @Test
+  def testResolveMultipleDefinitions(): Unit = {
+    multiResolve(2,
+      "resolveMultiple/testcase.feature",
+      "resolveMultiple/StepDefs1.scala",
+      "resolveMultiple/StepDefs2.scala"
+    )("the result is 9")
   }
 }

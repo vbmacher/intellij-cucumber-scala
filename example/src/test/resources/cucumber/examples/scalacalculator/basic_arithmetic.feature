@@ -1,10 +1,13 @@
 @foo
 Feature: Basic Arithmetic
 
-  Scenario: Adding
-    # Try to change one of the values below to provoke a failure
-    When I add 4 and 5
-    Then the result is 9
+  Scenario Outline: Adding
+    When I add <fst> and <snd>
+    Then the result is <result>
+    Examples:
+      | fst | snd | result |
+      | 5   | 6   | 11     |
+      | -5  | 6   | 1      |
 
   Scenario: Subtracting
     When I sub 4 and 5
