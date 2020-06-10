@@ -24,6 +24,7 @@
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/56">Find usages of step definitions</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/54">Fix: Glue code no longer recognized in traits since latest update</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/51">Fix: On change of step definitions, feature file should be re-parsed</a></li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/11">Fix: Multiple step implementations make selection dropdown too wide to read content</a></li>
           </ol>
       </li>
       <li>2020.1: Release for IntelliJ 2020.1. Main changes include:
