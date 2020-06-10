@@ -8,7 +8,7 @@ class StepFindUsagesHandlerFactory extends FindUsagesHandlerFactory {
   override def canFindUsages(element: PsiElement): Boolean = {
     element match {
       case p: PomTargetPsiElement if p.getTarget.isInstanceOf[StepDeclaration] => true
-      case o => false
+      case _ => false
     }
   }
 
