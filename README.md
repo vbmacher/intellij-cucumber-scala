@@ -2,7 +2,8 @@
 
 ![Build for intellij-cucumber-scala](https://github.com/vbmacher/intellij-cucumber-scala/workflows/Build%20for%20intellij-cucumber-scala/badge.svg)
 
-Enables Reference tracking of glue code when using cucumber-scala DSL.
+A [plugin to IntelliJ IDEA](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala),
+enabling navigation between step definitions and gherkin steps when using cucumber-scala DSL.
 
 The plugin depends on:
 - [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
@@ -14,10 +15,9 @@ The plugin depends on:
 - [x] Navigate from feature step to step definition
 - [x] Find usages of step definitions in feature files
 - [x] Automated step definition creation
-- [ ] Wizard for step definition creation (templating, see #1)
+- [x] Wizard for step definition creation (templating)
 - [x] Indexing of step definitions for better performance
 - [x] Support "constant expressions" in step definition names
-- [ ] Find step definitions in libraries (in dependencies)
 
 ## Development
 
