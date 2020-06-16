@@ -16,6 +16,7 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 import io.cucumber.core.snippets.{SnippetGenerator, SnippetType}
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry
+import io.cucumber.scala.ScalaSnippet
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import org.jetbrains.plugins.cucumber.AbstractStepDefinitionCreator
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
@@ -113,7 +114,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
 
   private def createMethodCall(step: GherkinStep, context: PsiElement): ScMethodCall = {
-    val generator = new SnippetGenerator(ScStepSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
+    val generator = new SnippetGenerator(new ScalaSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
     val snippet = generator.getSnippet(CucumberStep(step), SnippetType.CAMELCASE).get(0)
     ScalaPsiElementFactory.createExpressionFromText(snippet, context).asInstanceOf[ScMethodCall]
   }
