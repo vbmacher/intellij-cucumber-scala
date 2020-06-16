@@ -2,16 +2,19 @@ package com.github.danielwegener.intellij.cucumber.scala.steps
 
 import java.util.{Locale, Properties}
 
-import com.github.danielwegener.intellij.cucumber.scala.{inWriteAction, isUnitTestMode}
+import com.github.danielwegener.intellij.cucumber.scala.{ScCucumberStepIndex, ScCucumberUtil, inWriteAction, isUnitTestMode}
 import com.intellij.codeInsight.CodeInsightUtilCore
+import com.intellij.codeInsight.template.{Template, TemplateBuilderFactory, TemplateBuilderImpl, TemplateEditingAdapter, TemplateManager}
 import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTemplateUtil}
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.roots.{FileIndexFacade, ModuleRootManager}
+import com.intellij.openapi.util.TextRange
 import com.intellij.psi._
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
+import com.intellij.util.indexing.FileBasedIndex
 import io.cucumber.core.snippets.{SnippetGenerator, SnippetType}
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry
 import org.jetbrains.jps.model.java.JavaSourceRootType
@@ -80,6 +83,10 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
       closeActiveTemplateBuilders(file)
 
+      inWriteAction {
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
+      }
+
       val element = PsiTreeUtil.getChildOfType(file, classOf[PsiClass]) match {
         case clazz: ScTypeDefinition => clazz.extendsBlock.templateBody.map(templateBody => {
           templateBody.addBefore(createMethodCall(step, templateBody), templateBody.getLastChild).asInstanceOf[ScMethodCall]
@@ -88,15 +95,13 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
         case _ => null
       }
 
-      element.map(e => CodeInsightUtilCore.forcePsiPostprocessAndRestoreElement(e))
-
-      inWriteAction {
-        PsiDocumentManager.getInstance(project).commitAllDocuments()
+      if (!isUnitTestMode && withTemplate) {
+        element.foreach(runTemplateBuilder(project, _))
       }
 
-      if (!isUnitTestMode && withTemplate) {
-        LOG.info("Templating yay!")
-        // TODO
+      element.map(e => CodeInsightUtilCore.forcePsiPostprocessAndRestoreElement(e))
+      inWriteAction {
+        PsiDocumentManager.getInstance(project).commitAllDocuments()
       }
       true
     } match {
@@ -112,6 +117,34 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
     val generator = new SnippetGenerator(ScStepSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
     val snippet = generator.getSnippet(CucumberStep(step), SnippetType.CAMELCASE).get(0)
     ScalaPsiElementFactory.createExpressionFromText(snippet, context).asInstanceOf[ScMethodCall]
+  }
+
+  private def runTemplateBuilder(project: Project, scMethod: ScMethodCall): Unit = {
+    val editor = FileEditorManager.getInstance(project).getSelectedTextEditor
+    val builder = TemplateBuilderFactory.getInstance().createTemplateBuilder(scMethod).asInstanceOf[TemplateBuilderImpl]
+
+    for (argument <- ScCucumberUtil.getStepArguments(scMethod)) {
+      val name = argument.getName()
+      val range = new TextRange(0, argument.getName().length)
+      builder.replaceElement(argument, range, name)
+    }
+
+    val documentManager = PsiDocumentManager.getInstance(project)
+    documentManager.doPostponedOperationsAndUnblockDocument(editor.getDocument)
+
+    val template = builder.buildInlineTemplate()
+    editor.getCaretModel.moveToOffset(scMethod.getTextRange.getStartOffset)
+
+    val adapter = new TemplateEditingAdapter() {
+
+      override def templateFinished(template: Template, brokenOff: Boolean): Unit = {
+        inWriteAction {
+          documentManager.commitDocument(editor.getDocument)
+        }
+      }
+    }
+
+    TemplateManager.getInstance(project).startTemplate(editor, template, adapter)
   }
 }
 

@@ -1,7 +1,7 @@
 ext.versions = [
         scala      : '2.12',
         scalaFull  : '2.12.11',
-        gherkin    : '202.5103.3',
+        gherkin    : '202.5428.22',
         idea       : '202-EAP-SNAPSHOT',
         scalaPlugin: '2020.2.8'
 ]

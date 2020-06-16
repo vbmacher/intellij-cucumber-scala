@@ -7,7 +7,8 @@ import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiElement, PsiMember}
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall, ScReferenceExpression}
+import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
 
 object ScCucumberUtil {
@@ -63,6 +64,15 @@ object ScCucumberUtil {
     } yield literal.toString
 
     literals
+  }
+
+  def getStepArguments(stepDefinition: ScMethodCall): Seq[ScParameter] = {
+    (for {
+      block <- stepDefinition.args.exprs.collectFirst({ case b: ScBlockExpr => b })
+      function <- block.getChildren.collectFirst({ case f: ScFunctionExpr => f })
+
+      parameters = function.parameters
+    } yield parameters).getOrElse(Seq.empty)
   }
 
   private def getPackageName(member: PsiMember): Option[String] = {
