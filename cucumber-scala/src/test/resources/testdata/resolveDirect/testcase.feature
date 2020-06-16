@@ -12,3 +12,4 @@ Feature: Basic Arithmetic
     When I div 10 by 2
     Then the result is 5
     And nothing else
+    And Some 55 parameter with 3.14
