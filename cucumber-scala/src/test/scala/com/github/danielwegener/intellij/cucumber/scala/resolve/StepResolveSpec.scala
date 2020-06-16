@@ -30,6 +30,11 @@ class StepResolveSpec extends StepResolveSpecBase {
   }
 
   @Test
+  def testResolveDirectWithCucumberParameters(): Unit = {
+    checkResolveDirect("Some 55 parameter with 3.14")
+  }
+
+  @Test
   def testResolveMultipleDefinitions(): Unit = {
     multiResolve(2,
       "resolveMultiple/testcase.feature",

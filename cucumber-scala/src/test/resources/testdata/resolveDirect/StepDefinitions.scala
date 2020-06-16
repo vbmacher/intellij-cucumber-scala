@@ -26,6 +26,10 @@ class StepDefinitions extends ScalaDsl {
 
   }
 
+  And("Some {int} parameter with {float}") {
+
+  }
+
   Then("^the result is ([+-]?\\d+)$") { expected: Double =>
     assertEquals(expected, calc.value, 0.001)
   }
