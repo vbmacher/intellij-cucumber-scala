@@ -2,9 +2,9 @@ package com.github.danielwegener.intellij.cucumber.scala.steps
 
 import java.util.{Locale, Properties}
 
-import com.github.danielwegener.intellij.cucumber.scala.{ScCucumberStepIndex, ScCucumberUtil, inWriteAction, isUnitTestMode}
+import com.github.danielwegener.intellij.cucumber.scala.{ScCucumberUtil, inWriteAction, isUnitTestMode}
 import com.intellij.codeInsight.CodeInsightUtilCore
-import com.intellij.codeInsight.template.{Template, TemplateBuilderFactory, TemplateBuilderImpl, TemplateEditingAdapter, TemplateManager}
+import com.intellij.codeInsight.template._
 import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTemplateUtil}
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
@@ -14,7 +14,6 @@ import com.intellij.openapi.util.TextRange
 import com.intellij.psi._
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
-import com.intellij.util.indexing.FileBasedIndex
 import io.cucumber.core.snippets.{SnippetGenerator, SnippetType}
 import io.cucumber.cucumberexpressions.ParameterTypeRegistry
 import org.jetbrains.jps.model.java.JavaSourceRootType
@@ -95,13 +94,13 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
         case _ => null
       }
 
-      if (!isUnitTestMode && withTemplate) {
-        element.foreach(runTemplateBuilder(project, _))
-      }
-
       element.map(e => CodeInsightUtilCore.forcePsiPostprocessAndRestoreElement(e))
       inWriteAction {
         PsiDocumentManager.getInstance(project).commitAllDocuments()
+      }
+
+      if (!isUnitTestMode && withTemplate) {
+        element.foreach(runTemplateBuilder(project, _))
       }
       true
     } match {
