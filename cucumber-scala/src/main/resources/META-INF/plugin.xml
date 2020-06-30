@@ -62,19 +62,19 @@
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
-                implementation="com.github.danielwegener.intellij.cucumber.scala.ScCucumberExtension"/>
+                implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberExtension"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <fileBasedIndex implementation="com.github.danielwegener.intellij.cucumber.scala.ScCucumberStepIndex"/>
+        <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
-        <pom.declarationSearcher implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
+        <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
 
-        <referencesSearch implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepDefinitionUsageSearcher"/>
-        <findUsagesHandlerFactory implementation="com.github.danielwegener.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
+        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDefinitionUsageSearcher"/>
+        <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
 
         <codeInsight.lineMarkerProvider
-                implementationClass="com.github.danielwegener.intellij.cucumber.scala.search.ScCucumberLineMarkerProvider"
+                implementationClass="com.github.vbmacher.intellij.cucumber.scala.search.ScCucumberLineMarkerProvider"
                 language="Scala"/>
     </extensions>
 </idea-plugin>
