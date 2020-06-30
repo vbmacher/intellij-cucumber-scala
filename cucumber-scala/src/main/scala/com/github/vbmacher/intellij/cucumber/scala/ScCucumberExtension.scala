@@ -7,7 +7,7 @@ import com.github.vbmacher.intellij.cucumber.scala.steps.{ScStepDefinition, ScSt
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VirtualFile
-import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.search.{GlobalSearchScope, ProjectScope}
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiElement, PsiFile, PsiManager}
 import com.intellij.util.indexing.FileBasedIndex
@@ -45,9 +45,12 @@ class ScCucumberExtension extends AbstractCucumberExtension {
 
   override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
     val fileBasedIndex = FileBasedIndex.getInstance()
-    val searchScope = module.getModuleWithDependenciesAndLibrariesScope(true)
-    val scalaFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(searchScope, ScalaFileType.INSTANCE)
     val project = module.getProject
+
+    val searchScope = module
+      .getModuleWithDependenciesAndLibrariesScope(true)
+      .uniteWith(ProjectScope.getLibrariesScope(project))
+    val scalaFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(searchScope, ScalaFileType.INSTANCE)
 
     val result = collection.mutable.Buffer.empty[AbstractStepDefinition]
 
