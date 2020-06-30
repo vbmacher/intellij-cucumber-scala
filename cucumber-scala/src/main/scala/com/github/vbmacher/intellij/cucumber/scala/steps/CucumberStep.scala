@@ -5,7 +5,8 @@ import java.util
 import CucumberStep.DT
 import io.cucumber.core.gherkin
 import io.cucumber.core.gherkin.{DataTableArgument, Step, StepType}
-import io.cucumber.core.internal.gherkin.GherkinDialectProvider
+import io.cucumber.gherkin.GherkinDialectProvider
+import io.cucumber.plugin.event.Location
 import org.jetbrains.plugins.cucumber.psi.{GherkinStep, GherkinTable}
 
 import scala.collection.JavaConverters._
@@ -27,26 +28,28 @@ class CucumberStep(step: GherkinStep) extends Step {
     if (table.nonEmpty) new DT(table.get) else null
   }
 
-  override val getKeyWord: String = step.getKeyword.getText
-
   override def getType: StepType = {
-    val keyword = getKeyWord.trim
+    val keyword = getKeyword.trim
     if (StepType.isAstrix(keyword)) StepType.OTHER
     else {
       keywordStepType.getOrElse(
         keyword,
-        throw new IllegalStateException("Keyword " + getKeyWord + " was neither given, when, then, and, but nor *")
+        throw new IllegalStateException(s"Keyword $getKeyword was neither given, when, then, and, but nor *")
       )
     }
   }
-
-  override def getPreviousGivenWhenThenKeyWord: String = null
 
   override def getText: String = step.getSubstitutedName
 
   override def getId: String = step.getName
 
   override def getLine: Int = 0
+
+  override val getPreviousGivenWhenThenKeyword: String = null
+
+  override val getKeyword: String = step.getKeyword.getText
+
+  override val getLocation: Location = null
 }
 object CucumberStep {
 
