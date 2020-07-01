@@ -1,0 +1,35 @@
+plugins {
+  id 'scala'
+  id 'maven-publish'
+}
+
+
+group 'com.github.vbmacher.cucumber'
+version '1.0.0'
+
+dependencies {
+    implementation libs.scala
+    implementation(libs.cucumberScala) {
+        exclude group: 'org.scala-lang', module: 'scala-library'
+    }
+}
+
+java {
+    withJavadocJar()
+    withSourcesJar()
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+}
+
+
+publishing {
+    publications {
+        maven(MavenPublication) {
+            from components.java
+        }
+    }
+}
+

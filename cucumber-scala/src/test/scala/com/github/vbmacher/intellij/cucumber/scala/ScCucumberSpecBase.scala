@@ -13,7 +13,7 @@ abstract class ScCucumberSpecBase extends BasePlatformTestCase with AnyFunSpecLi
   protected lazy val LOG = Logger.getRootLogger
 
   val DESCRIPTOR = new LibraryLightProjectDescriptor(
-    RemoteDependency("io.cucumber:cucumber-scala_2.12:5.7.0")
+    //RemoteDependency("io.cucumber:cucumber-scala_2.12:6.1.2")
   )
 
   @Before

@@ -3,7 +3,6 @@ package com.github.vbmacher.intellij.cucumber.scala;
 import com.intellij.lang.LighterAST;
 import com.intellij.lang.LighterASTNode;
 import com.intellij.openapi.vfs.VirtualFile;
-import com.intellij.psi.impl.source.JavaFileElementType;
 import com.intellij.psi.impl.source.tree.RecursiveLighterASTNodeWalkingVisitor;
 import com.intellij.util.indexing.*;
 import org.jetbrains.annotations.NotNull;
@@ -11,7 +10,10 @@ import org.jetbrains.plugins.cucumber.CucumberStepIndex;
 import org.jetbrains.plugins.scala.ScalaFileType;
 import org.jetbrains.plugins.scala.lang.parser.ScalaElementType;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ScCucumberStepIndex extends CucumberStepIndex {
     private final static String[] PACKAGES = new String[ScCucumberUtil.CUCUMBER_PACKAGES().length()];
@@ -25,7 +27,7 @@ public class ScCucumberStepIndex extends CucumberStepIndex {
     private final FileBasedIndex.InputFilter inputFilter = new DefaultFileTypeSpecificInputFilter(ScalaFileType.INSTANCE) {
         @Override
         public boolean acceptInput(@NotNull VirtualFile file) {
-            return super.acceptInput(file) && JavaFileElementType.isInSourceContent(file);
+            return super.acceptInput(file);
         }
     };
 
