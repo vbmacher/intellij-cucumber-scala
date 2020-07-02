@@ -20,6 +20,7 @@ The plugin depends on:
 - [x] Wizard for step definition creation (templating)
 - [x] Indexing of step definitions for better performance
 - [x] Support "constant expressions" in step definition names
+- [x] Find step definitions in libraries with attached sources
 
 ## Development
 

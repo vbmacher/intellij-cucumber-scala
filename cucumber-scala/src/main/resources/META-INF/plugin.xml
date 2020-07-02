@@ -18,7 +18,8 @@
       <ul>
       <li>2020.2: Release for IntelliJ 2020.2. Main changes include:
           <ol>
-            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/62">Upgrade to Cucumber 5.7.0</a></li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/64">Be able to navigate to step definitions from libraries</a></li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/71">Upgrade to Cucumber 6.1.2</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/65">Unit tests</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/1">Step creation wizard implementation</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/56">Find usages of step definitions</a></li>
