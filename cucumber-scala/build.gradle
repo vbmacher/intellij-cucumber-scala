@@ -6,6 +6,9 @@ plugins {
 group 'com.github.danielwegener'
 version "${versions.idea}"
 
+compileScala.sourceCompatibility = "1.8"
+compileScala.targetCompatibility = "1.8"
+
 dependencies {
     compileOnly libs.scala
     implementation(libs.cucumberScala) {
@@ -36,8 +39,8 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild "202.5958"
-    untilBuild "202.5958.*"
+    sinceBuild "202.6109"
+    untilBuild "202.6109.*"
 }
 
 buildSearchableOptions.enabled = false
