@@ -5,11 +5,6 @@
 A [plugin to IntelliJ IDEA](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala),
 enabling navigation between step definitions and gherkin steps when using cucumber-scala DSL.
 
-The plugin depends on:
-- [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
-- [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
-- project [cucumber-jvm-scala](https://github.com/cucumber/cucumber-jvm-scala)
-
 ## Features
 
 - [x] Navigate from feature step to step definition
@@ -23,11 +18,18 @@ The plugin depends on:
 
 ## Development
 
-1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
-2. `./gradlew` will download the idea sdk to the SDK folder and all required plugins
-3. Import the project as gradle project into IDEA.
+The plugin depends on:
+- [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
+- [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
+- project [cucumber-jvm-scala](https://github.com/cucumber/cucumber-jvm-scala)
 
-Now you can build this plugin with `./gradlew buildPlugin`.
+To setup the development environment, follow these steps:
+
+1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
+2. Open the project in IDEA
+3. Wait until `gradle-intellij-plugin` downloads Idea SDK and required plugins.
+
+Now you can build this plugin with `build` task.
 
 To start an IDE with the plugin installed in the example project, run `runIde` task. Import the whole project
 as gradle project in the sandbox-ide. Wait for indexing to finish.
@@ -45,7 +47,7 @@ into `master` branch, which is then used for the release. The release commit is 
 A "publish token" must be set up in order to publish the plugin to [JetBrains plugins portal](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala).
 The token can be set up either by system variable or Gradle property named `PUBLISH_TOKEN` (e.g. put it in `gradle.properties` file, but do not commit it!).
 
-Then, run `./gradlew publishPlugin`
+Then, run `publishPlugin` task.
 
 ## License
 
