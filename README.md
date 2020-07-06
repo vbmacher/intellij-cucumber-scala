@@ -2,8 +2,6 @@
 
 ![Build for intellij-cucumber-scala](https://github.com/vbmacher/intellij-cucumber-scala/workflows/Build%20for%20intellij-cucumber-scala/badge.svg)
 
-<a href="https://www.buymeacoffee.com/vbmacher" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
-
 A [plugin to IntelliJ IDEA](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala),
 enabling navigation between step definitions and gherkin steps when using cucumber-scala DSL.
 
@@ -21,6 +19,7 @@ The plugin depends on:
 - [x] Indexing of step definitions for better performance
 - [x] Support "constant expressions" in step definition names
 - [x] Find step definitions in libraries with attached sources
+- [ ] Support for Java annotations
 
 ## Development
 
@@ -30,7 +29,7 @@ The plugin depends on:
 
 Now you can build this plugin with `./gradlew buildPlugin`.
 
-To start an IDE with the plugin installed in the example project just run `./gradlew runIde`. Import the whole project
+To start an IDE with the plugin installed in the example project, run `runIde` task. Import the whole project
 as gradle project in the sandbox-ide. Wait for indexing to finish.
 Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
 
@@ -51,3 +50,5 @@ Then, run `./gradlew publishPlugin`
 ## License
 
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).
+
+<a href="https://www.buymeacoffee.com/vbmacher" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
