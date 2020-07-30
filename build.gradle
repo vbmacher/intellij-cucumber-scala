@@ -1,9 +1,9 @@
 ext.versions = [
         scala      : '2.12',
         scalaFull  : '2.12.11',
-        gherkin    : '202.6109.19',
-        idea       : '202.6109.22-EAP-SNAPSHOT',
-        scalaPlugin: '2020.2.13'
+        gherkin    : '202.6397.21',
+        idea       : '2020.2',
+        scalaPlugin: '2020.2.17'
 ]
 
 ext.libs = [
@@ -22,9 +22,9 @@ subprojects {
         maven {
             url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
         }
-        maven {
-            url 'https://www.jetbrains.com/intellij-repository/snapshots'
-        }
+//        maven {
+//            url 'https://www.jetbrains.com/intellij-repository/snapshots'
+//        }
         maven { url "https://www.jetbrains.com/intellij-repository/releases" }
         maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
     }
