@@ -16,7 +16,15 @@
 
     <change-notes><![CDATA[
       <ul>
-      <li>2020.2: Release for IntelliJ 2020.2. Main changes include:
+      <li>2020.2.2: Release for IntelliJ 2020.2.2.
+          <ol>
+            <li>Upgrade Scala plugin to 2020.2.27</li>
+            <li>Upgrade to Scala 2.12.12</li>
+            <li>Upgrade to Cucumber 6.7.0</li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/78">Fix: Line markers are shown incorrectly</li>
+          </ol>
+      </li>
+      <li>2020.2: Release for IntelliJ 2020.2.
           <ol>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/64">Be able to navigate to step definitions from libraries</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/74">Upgrade to Cucumber 6.2.0</a></li>
@@ -28,7 +36,7 @@
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/11">Fix: Multiple step implementations make selection dropdown too wide to read content</a></li>
           </ol>
       </li>
-      <li>2020.1: Release for IntelliJ 2020.1. Main changes include:
+      <li>2020.1: Release for IntelliJ 2020.1.
           <ol>
             <li><a href="https://plugins.jetbrains.com/plugin/1347-scala/update/83102">scala-plugin: 2020.1.27</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/17">support constant expressions in step definitions</a></li>
