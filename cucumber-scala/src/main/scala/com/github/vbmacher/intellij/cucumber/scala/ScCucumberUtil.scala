@@ -33,12 +33,8 @@ object ScCucumberUtil {
 
 
   def isStepDefinition(candidate: PsiElement): Boolean = candidate match {
-    case sc: ScMethodCall =>
-    println("  it's a method call!")
-      isStepDefinition(sc)
-    case pt: PomNamedTarget if pt.isInstanceOf[ScStepDefinition] =>
-      println("  it's a pom target")
-      true
+    case sc: ScMethodCall => isStepDefinition(sc)
+    case pt: PomNamedTarget if pt.isInstanceOf[ScStepDefinition] => true
     case _ => false
   }
 

@@ -21,7 +21,6 @@ class ScCucumberLineMarkerProvider extends LineMarkerProvider {
           inner <- Option(expr.getParent)
           outer <- Option(inner.getParent)
 
-          _ = println(s"Wondering if $outer is a stepdef!")
           if isStepDefinition(outer)
 
           stepName <- getStepName(outer.asInstanceOf[ScMethodCall])
