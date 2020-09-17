@@ -2,12 +2,16 @@ package com.github.vbmacher.intellij.cucumber.scala
 
 import java.io.File
 
+import com.intellij.codeInsight.daemon.LineMarkerInfo
+import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl.getLineMarkers
 import com.intellij.psi._
+import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.apache.log4j.Logger
 import org.junit.{After, Before}
 import org.scalatest.funspec.AnyFunSpecLike
 import org.scalatest.matchers.should.Matchers
+import collection.JavaConverters._
 
 abstract class ScCucumberSpecBase extends BasePlatformTestCase with AnyFunSpecLike with Matchers {
   protected lazy val LOG = Logger.getRootLogger
@@ -33,5 +37,19 @@ abstract class ScCucumberSpecBase extends BasePlatformTestCase with AnyFunSpecLi
 
   def loadTestCase(files: String*): Array[PsiFile] = {
     myFixture.configureByFiles(files.map(getTestDataPath + File.separator + _): _*)
+  }
+
+  def findLineMarkers() = {
+    val editor = myFixture.getEditor
+    val project = myFixture.getProject
+
+    myFixture.doHighlighting()
+
+    var lineMarkers = collection.mutable.Seq.empty[LineMarkerInfo[_]]
+    UsefulTestCase.edt(() => {
+      getLineMarkers(editor.getDocument, project).asScala.foreach(lineMarkers +:= _)
+    })
+
+    lineMarkers
   }
 }

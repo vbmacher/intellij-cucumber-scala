@@ -5,11 +5,13 @@ import com.intellij.openapi.util.text.StringUtil
 import com.intellij.pom.PomNamedTarget
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiElement, PsiMember}
+import io.cucumber.gherkin.GherkinDialectProvider
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall, ScReferenceExpression}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
+import collection.JavaConverters._
 
 object ScCucumberUtil {
 
@@ -20,11 +22,23 @@ object ScCucumberUtil {
     CUCUMBER_5X_SCALA_PACKAGE
   )
 
-  private final val evaluator = new ScalaConstantExpressionEvaluator()
+  private lazy val evaluator = new ScalaConstantExpressionEvaluator()
+  private lazy val allKeywords = {
+    val provider = new GherkinDialectProvider()
+    val languages = provider.getLanguages.asScala
+    val dialects = languages.map(provider.getDialect(_, null))
+
+    dialects.flatMap(_.getStepKeywords.asScala.map(_.trim)).toSet
+  }
+
 
   def isStepDefinition(candidate: PsiElement): Boolean = candidate match {
-    case sc: ScMethodCall => isStepDefinition(sc)
-    case pt: PomNamedTarget if pt.isInstanceOf[ScStepDefinition] => true
+    case sc: ScMethodCall =>
+    println("  it's a method call!")
+      isStepDefinition(sc)
+    case pt: PomNamedTarget if pt.isInstanceOf[ScStepDefinition] =>
+      println("  it's a pom target")
+      true
     case _ => false
   }
 
@@ -42,15 +56,17 @@ object ScCucumberUtil {
       }.flatten
     } yield packageName
 
-    maybePackageName.forall(pkg => CUCUMBER_PACKAGES.exists(_.startsWith(pkg))) && getStepName(candidate).nonEmpty
+    maybePackageName.forall(pkg => CUCUMBER_PACKAGES.exists(pkg.startsWith)) && getStepName(candidate).nonEmpty
   }
 
   def getStepName(stepDefinition: ScMethodCall): Option[String] = {
     val literals = for {
       innerMethod <- innerMethod(stepDefinition)
-      keyword <- Option(PsiTreeUtil.findChildOfType(innerMethod, classOf[ScReferenceExpression]))
-      regex <- getStepRegex(stepDefinition)
 
+      keyword <- Option(PsiTreeUtil.findChildOfType(innerMethod, classOf[ScReferenceExpression]))
+      if isKeywordValid(keyword.getText)
+
+      regex <- getStepRegex(stepDefinition)
     } yield keyword.getText + " " + regex
 
     literals
@@ -85,4 +101,6 @@ object ScCucumberUtil {
   private def innerMethod(outerMethod: ScMethodCall) = {
     Option(outerMethod.getEffectiveInvokedExpr).collect { case some: ScMethodCall => some }
   }
+
+  private def isKeywordValid(keyword: String) = allKeywords.contains(keyword)
 }
