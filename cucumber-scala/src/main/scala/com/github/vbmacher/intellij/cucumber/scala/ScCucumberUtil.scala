@@ -15,11 +15,9 @@ import collection.JavaConverters._
 
 object ScCucumberUtil {
 
-  private final val CUCUMBER_4X_SCALA_PACKAGE = "cucumber.api.scala."
-  private final val CUCUMBER_5X_SCALA_PACKAGE = "io.cucumber.scala."
   final val CUCUMBER_PACKAGES = Seq(
-    CUCUMBER_4X_SCALA_PACKAGE,
-    CUCUMBER_5X_SCALA_PACKAGE
+    "cucumber.api.scala", // 4.x
+    "io.cucumber.scala"   // 5.x, 6.x
   )
 
   private lazy val evaluator = new ScalaConstantExpressionEvaluator()
@@ -51,7 +49,7 @@ object ScCucumberUtil {
           }
       }.flatten
     } yield packageName
-
+    
     maybePackageName.forall(pkg => CUCUMBER_PACKAGES.exists(pkg.startsWith)) && getStepName(candidate).nonEmpty
   }
 
@@ -59,11 +57,13 @@ object ScCucumberUtil {
     val literals = for {
       innerMethod <- innerMethod(stepDefinition)
 
-      keyword <- Option(PsiTreeUtil.findChildOfType(innerMethod, classOf[ScReferenceExpression]))
-      if isKeywordValid(keyword.getText)
+      keywordExpression <- Option(PsiTreeUtil.findChildOfType(innerMethod, classOf[ScReferenceExpression]))
+      keyword = keywordExpression.getText.trim
+
+      if isKeywordValid(keyword)
 
       regex <- getStepRegex(stepDefinition)
-    } yield keyword.getText + " " + regex
+    } yield keyword + " " + regex
 
     literals
   }
