@@ -16,6 +16,13 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2020.2.3: Release for IntelliJ 2020.2.3
+          <ol>
+            <li>Upgrade Scala plugin to 2020.2.49</li>
+            <li>Upgrade Gherkin plugin to 202.7660.3</li>
+            <li>Upgrade to Cucumber 6.8.2</li>
+          </ol>
+      </li>
       <li>2020.2.2: Release for IntelliJ 2020.2.2.
           <ol>
             <li>Upgrade Scala plugin to 2020.2.27</li>
