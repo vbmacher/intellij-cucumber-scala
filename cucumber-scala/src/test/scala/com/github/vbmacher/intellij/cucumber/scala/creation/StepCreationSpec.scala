@@ -32,7 +32,7 @@ class StepCreationSpec extends StepCreationSpecBase {
         |
         |class StepDefinitions extends ScalaDsl {
         |
-        |  When(${tripleDoubleQuotes}I sub {int} and {int}${tripleDoubleQuotes}) { (int1: Int, int2: Int) =>
+        |  When(${tripleDoubleQuotes}I sub {int} and {int}$tripleDoubleQuotes) { (int1: Int, int2: Int) =>
         |    // Write code here that turns the phrase above into concrete actions
         |    throw new io.cucumber.scala.PendingException()
         |  }
@@ -48,7 +48,7 @@ class StepCreationSpec extends StepCreationSpecBase {
         |
         |class StepDefinitions extends ScalaDsl {
         |
-        |  When(${tripleDoubleQuotes}I add {int} and {int}${tripleDoubleQuotes}) { (int1: Int, int2: Int) =>
+        |  When(${tripleDoubleQuotes}I add {int} and {int}$tripleDoubleQuotes) { (int1: Int, int2: Int) =>
         |    // Write code here that turns the phrase above into concrete actions
         |    throw new io.cucumber.scala.PendingException()
         |  }
@@ -64,7 +64,7 @@ class StepCreationSpec extends StepCreationSpecBase {
         |
         |class StepDefinitions extends ScalaDsl {
         |
-        |  Given(${tripleDoubleQuotes}the following data${tripleDoubleQuotes}) { (dataTable: io.cucumber.datatable.DataTable) =>
+        |  Given(${tripleDoubleQuotes}the following data$tripleDoubleQuotes) { (dataTable: io.cucumber.datatable.DataTable) =>
         |    // Write code here that turns the phrase above into concrete actions
         |    throw new io.cucumber.scala.PendingException()
         |  }

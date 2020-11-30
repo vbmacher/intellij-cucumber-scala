@@ -16,6 +16,12 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2020.2.4: Release for IntelliJ 2020.2.4
+          <ol>
+            <li>Upgrade Gherkin plugin to 202.8194.7</li>
+            <li>Upgrade to Cucumber 6.9.0</li>
+          </ol>
+      </li>
       <li>2020.2.3: Release for IntelliJ 2020.2.3
           <ol>
             <li>Upgrade Scala plugin to 2020.2.49</li>
@@ -73,6 +79,7 @@
     </change-notes>
 
     <depends>com.intellij.modules.java</depends>
+    <depends>org.intellij.intelliLang</depends>
     <depends>org.intellij.scala</depends>
     <depends>gherkin</depends>
 

@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.6.2"
+    id "org.jetbrains.intellij" version "0.6.5"
     id "scala"
 }
 
@@ -27,6 +27,7 @@ intellij {
     type "IC"
 
     plugins = [
+            "org.intellij.intelliLang",
             "java",
             "org.intellij.scala:${versions.scalaPlugin}",
             "gherkin:${versions.gherkin}"
@@ -39,7 +40,7 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild "202.6397"
+    sinceBuild "202.8194"
     untilBuild "202.*"
 }
 
