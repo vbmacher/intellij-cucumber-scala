@@ -27,7 +27,7 @@ class ScCucumberLineMarkerProvider extends LineMarkerProvider {
         } yield {
           new LineMarkerInfo(
             element, element.getTextRange, CucumberIcons.Cucumber, (_: PsiElement) => stepName,
-            null, GutterIconRenderer.Alignment.RIGHT, null
+            null, GutterIconRenderer.Alignment.RIGHT, () => stepName
           )
         }
       case _ => None
