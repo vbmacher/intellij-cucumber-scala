@@ -16,7 +16,7 @@ class StepCreationSpec extends StepCreationSpecBase {
         |
         |class StepDefinitions extends ScalaDsl {
         |
-        |  When(${tripleDoubleQuotes}I do anything${tripleDoubleQuotes}) { () =>
+        |  When(${tripleDoubleQuotes}I do anything$tripleDoubleQuotes) { () =>
         |    // Write code here that turns the phrase above into concrete actions
         |    throw new io.cucumber.scala.PendingException()
         |  }

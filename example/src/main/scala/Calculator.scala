@@ -18,15 +18,16 @@ class Calculator {
   private def op(f: (Double, Double) => Double) =
     stack push f(stack.pop(), stack.pop())
 
-  def push(arg: Arg) {
+  def push(arg: Arg): Unit = {
     arg match {
       case Op("+") => op(_ + _)
       case Op("-") => op(_ - _)
       case Op("*") => op(_ * _)
       case Op("/") => op(_ / _)
       case Val(value) => stack push value
+      case _ => throw new RuntimeException("should not happen!")
     }
   }
 
-  def value = stack.head
+  def value: Double = stack.head
 }

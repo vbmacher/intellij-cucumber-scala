@@ -9,7 +9,7 @@ import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod.getFirstChild) {
@@ -29,10 +29,10 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
     "\\{double\\}" -> FLOAT_REGEXP,
     "\\{word\\}" -> WORD_REGEXP,
     "\\{string\\}" -> "(.*)"
-  ).mapValues("(" + _ + ")")
+  ).view.mapValues("(" + _ + ")")
 
   override def getVariableNames: util.List[String] = {
-    seqAsJavaList(ScCucumberUtil.getStepArguments(scMethod).map(_.getName()))
+    ScCucumberUtil.getStepArguments(scMethod).map(_.getName()).asJava
   }
 
   @Nullable

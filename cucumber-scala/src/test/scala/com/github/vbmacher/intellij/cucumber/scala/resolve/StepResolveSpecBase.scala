@@ -1,13 +1,12 @@
 package com.github.vbmacher.intellij.cucumber.scala.resolve
 
-import com.github.vbmacher.intellij.cucumber.scala.inReadAction
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberExtension, ScCucumberSpecBase}
-import org.jetbrains.plugins.cucumber.{CucumberJvmExtensionPoint, CucumberUtil}
+import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberExtension, ScCucumberSpecBase, inReadAction}
+import org.jetbrains.plugins.cucumber.CucumberJvmExtensionPoint
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
 import org.jetbrains.plugins.cucumber.steps.{AbstractStepDefinition, CucumberStepHelper}
 import org.scalatest.Assertion
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 abstract class StepResolveSpecBase extends ScCucumberSpecBase {
 
@@ -19,7 +18,7 @@ abstract class StepResolveSpecBase extends ScCucumberSpecBase {
   def findAllMatchingDefinitions(text: String): Seq[AbstractStepDefinition] = {
     val extension = CucumberJvmExtensionPoint.EP_NAME.getExtensionList().get(0).asInstanceOf[ScCucumberExtension]
     val allSteps = extension.loadStepsFor(myFixture.getFile, myFixture.getModule).asScala
-    allSteps.filter(_.matches(text))
+    allSteps.filter(_.matches(text)).toSeq
   }
 
   def singleResolve(files: String*)(step: String): Assertion = {

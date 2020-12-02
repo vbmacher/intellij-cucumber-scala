@@ -11,7 +11,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScBlockExpr, ScFunctionExpr, ScMethodCall, ScReferenceExpression}
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
-import collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 object ScCucumberUtil {
 

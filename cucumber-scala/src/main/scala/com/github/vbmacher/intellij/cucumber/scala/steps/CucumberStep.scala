@@ -9,7 +9,7 @@ import io.cucumber.gherkin.GherkinDialectProvider
 import io.cucumber.plugin.event.Location
 import org.jetbrains.plugins.cucumber.psi.{GherkinStep, GherkinTable}
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 class CucumberStep(step: GherkinStep) extends Step {
   private val dialect = new GherkinDialectProvider().getDefaultDialect
