@@ -25,9 +25,9 @@ class ScCucumberLineMarkerProvider extends LineMarkerProvider {
 
           stepName <- getStepName(outer.asInstanceOf[ScMethodCall])
         } yield {
-          new LineMarkerInfo[PsiElement](
+          new LineMarkerInfo(
             element, element.getTextRange, CucumberIcons.Cucumber, (_: PsiElement) => stepName,
-            null, GutterIconRenderer.Alignment.RIGHT
+            null, GutterIconRenderer.Alignment.RIGHT, null
           )
         }
       case _ => None
