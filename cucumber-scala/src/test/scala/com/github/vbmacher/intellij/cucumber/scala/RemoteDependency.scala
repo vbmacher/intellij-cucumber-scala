@@ -48,7 +48,7 @@ class RemoteDependency(coordinates: Seq[String]) extends Dependency {
     Try(IntelliJProjectConfiguration.getRemoteRepositoryDescriptions.asScala.map {
       repository => new RemoteRepositoryDescription(repository.getId, repository.getName, repository.getUrl)
     }) match {
-      case Success(value) => value
+      case Success(value) => value.toSeq
       case Failure(_) => Seq(
         RemoteRepositoryDescription.MAVEN_CENTRAL
       )

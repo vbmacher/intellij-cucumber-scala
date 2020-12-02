@@ -19,7 +19,7 @@ abstract class StepResolveSpecBase extends ScCucumberSpecBase {
   def findAllMatchingDefinitions(text: String): Seq[AbstractStepDefinition] = {
     val extension = CucumberJvmExtensionPoint.EP_NAME.getExtensionList().get(0).asInstanceOf[ScCucumberExtension]
     val allSteps = extension.loadStepsFor(myFixture.getFile, myFixture.getModule).asScala
-    allSteps.filter(_.matches(text))
+    allSteps.filter(_.matches(text)).toSeq
   }
 
   def singleResolve(files: String*)(step: String): Assertion = {
