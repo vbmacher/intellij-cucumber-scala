@@ -19,8 +19,7 @@ import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
-import scala.collection.JavaConverters
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ScCucumberExtension extends AbstractCucumberExtension {
@@ -90,6 +89,6 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       if isWritableStepLikeFile(psiFile, psiDirectory)
     } yield psiFile
 
-    JavaConverters.seqAsJavaList(stepFiles)
+    stepFiles.asJava
   }
 }

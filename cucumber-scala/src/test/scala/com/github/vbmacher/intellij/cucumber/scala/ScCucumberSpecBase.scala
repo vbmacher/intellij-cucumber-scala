@@ -11,7 +11,7 @@ import org.apache.log4j.Logger
 import org.scalatest.funspec.AnyFunSpecLike
 import org.scalatest.matchers.should.Matchers
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 
 abstract class ScCucumberSpecBase extends BasePlatformTestCase with AnyFunSpecLike with Matchers {
   protected lazy val LOG = Logger.getRootLogger

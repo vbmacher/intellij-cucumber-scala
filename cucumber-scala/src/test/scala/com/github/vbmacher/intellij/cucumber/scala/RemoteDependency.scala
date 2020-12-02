@@ -8,7 +8,7 @@ import com.intellij.openapi.roots.{DependencyScope, ModifiableRootModel}
 import com.intellij.project.IntelliJProjectConfiguration
 import org.jetbrains.idea.maven.utils.library.RepositoryLibraryProperties
 
-import scala.collection.JavaConverters._
+import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
 class RemoteDependency(coordinates: Seq[String]) extends Dependency {
