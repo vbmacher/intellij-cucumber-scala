@@ -14,7 +14,11 @@ enabling navigation between step definitions and gherkin steps when using cucumb
 - [x] Indexing of step definitions for better performance
 - [x] Support "constant expressions" in step definition names
 - [x] Find step definitions in libraries with attached sources
-- [ ] Support for Java annotations
+- [x] Navigate custom types and java type annotations*
+- [ ] Support for Java annotations  
+- [ ] Warn on non-matching custom types/java annotations definition
+  
+_(*cannot resolve the exact regex, so the navigation works, but it will not warn you if your input doesn't match the regex of the type)_
 
 ## Development
 
@@ -25,9 +29,10 @@ The plugin depends on:
 
 To setup the development environment, follow these steps:
 
-1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
-2. Open the project in IDEA
-3. Wait until `gradle-intellij-plugin` downloads Idea SDK and required plugins.
+1. configure`jdk-11`
+2. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
+3. Open the project in IDEA
+4. Wait until `gradle-intellij-plugin` downloads Idea SDK and required plugins.
 
 Now you can build this plugin with `build` task.
 

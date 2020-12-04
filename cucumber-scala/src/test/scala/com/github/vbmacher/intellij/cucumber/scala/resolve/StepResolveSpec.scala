@@ -6,8 +6,10 @@ import org.junit.runners.JUnit4
 
 @RunWith(classOf[JUnit4])
 class StepResolveSpec extends StepResolveSpecBase {
-  private val checkResolveDirect = singleResolve("resolveDirect/testcase.feature", "resolveDirect/StepDefinitions.scala") _
-  private val checkResolveIndirect = singleResolve("resolveIndirect/testcase.feature", "resolveIndirect/StepDefinitions.scala") _
+  private val checkResolveDirect =
+    singleResolve("resolveDirect/testcase.feature", "resolveDirect/StepDefinitions.scala") _
+  private val checkResolveIndirect =
+    singleResolve("resolveIndirect/testcase.feature", "resolveIndirect/StepDefinitions.scala") _
 
   @Test
   def testResolveSimple(): Unit = {
@@ -16,7 +18,7 @@ class StepResolveSpec extends StepResolveSpecBase {
 
   @Test
   def testWithParameters(): Unit = {
-    checkResolveDirect("I add 4 and 5")  // does not include "When", because test regex is within ^$
+    checkResolveDirect("I add 4 and 5") // does not include "When", because test regex is within ^$
   }
 
   @Test
@@ -35,8 +37,26 @@ class StepResolveSpec extends StepResolveSpecBase {
   }
 
   @Test
+  def testCustomTypeIsSupported(): Unit = {
+    checkResolveDirect("I move at 10km/h for 1h")
+  }
+
+  @Test
+  def testAlternativeTextSupport(): Unit = {
+    checkResolveDirect("We divide 10 by 1")
+    checkResolveDirect("I divide 10 by 1")
+  }
+
+  @Test
+  def testOptionalTextSupport(): Unit = {
+    checkResolveDirect("I do 10 nop")
+    checkResolveDirect("I do 10 nops")
+  }
+
+  @Test
   def testResolveMultipleDefinitions(): Unit = {
-    multiResolve(2,
+    multiResolve(
+      expectedCount = 2,
       "resolveMultiple/testcase.feature",
       "resolveMultiple/StepDefs1.scala",
       "resolveMultiple/StepDefs2.scala"
