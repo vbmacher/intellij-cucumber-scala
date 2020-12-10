@@ -28,7 +28,10 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
     "\\{float\\}" -> FLOAT_REGEXP,
     "\\{double\\}" -> FLOAT_REGEXP,
     "\\{word\\}" -> WORD_REGEXP,
-    "\\{string\\}" -> "(.*)"
+    "\\{string\\}" -> "(.*)",
+    "\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
+    "\\{[^\\s]*\\}" -> "(.*)", // Parameter type
+    "([^\\s]*)/([^\\s]*)" -> "(?:$1|$2)" // Alternative text
   ).view.mapValues("(" + _ + ")")
 
   override def getVariableNames: util.List[String] = {
@@ -38,7 +41,8 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
   @Nullable
   override def getCucumberRegexFromElement(element: PsiElement): String = Try {
     scMethod match {
-      case mc: ScMethodCall => ScCucumberUtil.getStepRegex(mc).map(replaceParametersWithRegex).orNull
+      case mc: ScMethodCall =>
+        ScCucumberUtil.getStepRegex(mc).map(replaceParametersWithRegex).orNull
       case _ => null
     }
   }.getOrElse(null)
