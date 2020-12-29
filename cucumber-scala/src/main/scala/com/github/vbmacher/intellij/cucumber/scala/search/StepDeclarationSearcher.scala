@@ -1,15 +1,16 @@
 package com.github.vbmacher.intellij.cucumber.scala.search
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumberUtil._
 import com.github.vbmacher.intellij.cucumber.scala.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition
+import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition.implicits._
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.pom.{PomDeclarationSearcher, PomTarget}
 import com.intellij.psi.PsiElement
-import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager, PsiTreeUtil}
+import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager}
 import com.intellij.util.Consumer
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
-import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScArgumentExprList, ScExpression, ScInfixExpr, ScMethodCall}
+import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScInfixExpr}
 
 class StepDeclarationSearcher extends PomDeclarationSearcher {
 
@@ -30,14 +31,9 @@ class StepDeclarationSearcher extends PomDeclarationSearcher {
 
   private def findStepDeclaration(element: ScExpression): Option[StepDeclaration] = {
     for {
-      arguments <- Option(PsiTreeUtil.getParentOfType(element, classOf[ScArgumentExprList]))
-      innerMethod <- Option(arguments.getParent)
-      outerMethod <- Option(innerMethod.getParent)
-
-      if isStepDefinition(outerMethod)
-
-      stepName <- getStepName(outerMethod.asInstanceOf[ScMethodCall])
-      stepDeclaration <- getStepDeclaration(innerMethod, stepName)
+      stepDefinition <- StepDefinition.fromScExpression(element)
+      stepName <- stepDefinition.getName
+      stepDeclaration <- getStepDeclaration(stepDefinition.getFirstChild, stepName)
     } yield stepDeclaration
   }
 
