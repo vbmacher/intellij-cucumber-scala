@@ -105,6 +105,4 @@ object StepDefinition {
       case _ => false
     }
   }
-
-
 }

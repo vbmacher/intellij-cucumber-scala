@@ -18,29 +18,32 @@ object CustomParameterType {
   }
 
   private def find(klass: PsiClass, processed: Seq[PsiClass]): Seq[CustomParameterType] = {
-      val thisClassParamTypes = for {
-        body <- Option(PsiTreeUtil.findChildOfAnyType(klass, classOf[ScTemplateBody])).toSeq
-        m <- body.getChildren.collect({ case c: ScMethodCall => c })
 
-        mm = m.getFirstChild
-        if mm.isInstanceOf[ScMethodCall]
+    println("At: " + klass.getName)
 
-        r = mm.getFirstChild
-        if r.isInstanceOf[ScReferenceExpression]
-        if r.textMatches("ParameterType")
+    val thisClassParamTypes = for {
+      body <- Option(PsiTreeUtil.findChildOfAnyType(klass, classOf[ScTemplateBody])).toSeq
+      m <- body.getChildren.collect({ case c: ScMethodCall => c })
 
-        args = mm.asInstanceOf[ScMethodCall].args.exprs
-        if args.size == 2
+      mm = m.getFirstChild
+      if mm.isInstanceOf[ScMethodCall]
 
-        eargs = for {
-          arg <- args
-          earg <- Option(evaluator.computeConstantExpression(arg, throwExceptionOnOverflow = false)).toSeq
-        } yield earg.toString
-        if eargs.size == 2
+      r = mm.getFirstChild
+      if r.isInstanceOf[ScReferenceExpression]
+      if r.textMatches("ParameterType")
 
-      } yield CustomParameterType(eargs.head, eargs(1))
+      args = mm.asInstanceOf[ScMethodCall].args.exprs
+      if args.size == 2
 
-      val supers = klass.getSupers.filterNot(processed.contains)
-      thisClassParamTypes ++ supers.flatMap(s => find(s, klass +: supers))
+      eargs = for {
+        arg <- args
+        earg <- Option(evaluator.computeConstantExpression(arg, throwExceptionOnOverflow = false)).toSeq
+      } yield earg.toString
+      if eargs.size == 2
+
+    } yield CustomParameterType(eargs.head, eargs(1))
+
+    val supers = klass.getSupers.filterNot(processed.contains)
+    thisClassParamTypes ++ supers.flatMap(s => find(s, klass +: supers))
   }
 }

@@ -1,6 +1,14 @@
 import io.cucumber.scala.ScalaDsl
 
-class StepDefinitions extends ScalaDsl with CustomTypes {
+case class Speed(kmPerHour: Double)
+case class Time(hours: Double)
+
+class StepDefinitions extends ScalaDsl {
+
+  ParameterType("speed", "\\\\d+km/h") { speed: String => Speed(speed.split(' ').head.toDouble) }
+  ParameterType("time", "\\\\d+h") { time: String => Time(time.split(' ').head.toDouble) }
+
+
   val calc = new Calculator
 
   When("^I add (\\d+) and (\\d+)$") { (arg1: Double, arg2: Double) =>
