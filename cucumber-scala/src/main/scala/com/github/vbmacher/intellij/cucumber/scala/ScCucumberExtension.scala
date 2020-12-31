@@ -1,14 +1,11 @@
 package com.github.vbmacher.intellij.cucumber.scala
 
-import java.util
-import java.util.{Collection => JavaCollection}
-
+import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition
 import com.github.vbmacher.intellij.cucumber.scala.steps.{ScStepDefinition, ScStepDefinitionCreator}
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.{GlobalSearchScope, ProjectScope}
-import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.psi.{PsiElement, PsiFile, PsiManager}
 import com.intellij.util.indexing.FileBasedIndex
 import org.jetbrains.annotations.NotNull
@@ -17,8 +14,9 @@ import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, Abstract
 import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
 import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
-import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
+import java.util
+import java.util.{Collection => JavaCollection}
 import scala.jdk.CollectionConverters._
 import scala.util.Try
 
@@ -61,17 +59,12 @@ class ScCucumberExtension extends AbstractCucumberExtension {
         if (psiFile != null) {
           for (offset <- value.asScala) {
             val element = psiFile.findElementAt(offset + 1)
-
-            val stepElement = for {
-              inner <- Option(PsiTreeUtil.getParentOfType(element, classOf[ScMethodCall]))
-              outer <- Option(inner.getParent)
-              if outer.isInstanceOf[ScMethodCall]
-            } yield outer.asInstanceOf[ScMethodCall]
+            val stepElement = StepDefinition.fromIndexedElement(element)
 
             stepElement.foreach(result += ScStepDefinition(_))
           }
         }
-        java.lang.Boolean.TRUE.booleanValue()
+        true
       }
     }, scalaFiles)
 

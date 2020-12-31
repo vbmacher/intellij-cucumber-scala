@@ -1,16 +1,15 @@
 package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import java.util
-
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumberUtil
+import com.github.vbmacher.intellij.cucumber.scala.psi.CustomParameterType
+import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition.implicits._
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
+import java.util
 import scala.jdk.CollectionConverters._
-import scala.util.Try
 
 class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod.getFirstChild) {
   private val INTEGER_REGEXP = "-?\\\\d+"
@@ -30,26 +29,28 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
     "\\{word\\}" -> WORD_REGEXP,
     "\\{string\\}" -> "(.*)",
     "\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
-    "\\{[^\\s]*\\}" -> "(.*)", // Parameter type
     "([^\\s]*)/([^\\s]*)" -> "(?:$1|$2)" // Alternative text
   ).view.mapValues("(" + _ + ")")
 
   override def getVariableNames: util.List[String] = {
-    ScCucumberUtil.getStepArguments(scMethod).map(_.getName()).asJava
+    scMethod.getArguments.map(_.getName()).asJava
   }
 
   @Nullable
-  override def getCucumberRegexFromElement(element: PsiElement): String = Try {
-    scMethod match {
-      case mc: ScMethodCall =>
-        ScCucumberUtil.getStepRegex(mc).map(replaceParametersWithRegex).orNull
-      case _ => null
-    }
-  }.getOrElse(null)
+  override def getCucumberRegexFromElement(element: PsiElement): String = {
+    scMethod.getRegex.map(replaceParametersWithRegex).orNull
+  }
 
-  def replaceParametersWithRegex(regex: String): String = {
-    paramRegexp.foldLeft(regex) {
+  private def replaceParametersWithRegex(regex: String): String = {
+    val constantReplacement = paramRegexp.foldLeft(regex) {
       case (acc, (key, replacement)) => acc.replaceAll(key, replacement)
+    }
+
+    val paramTypes = CustomParameterType.findAll(scMethod)
+    paramTypes.foldLeft(constantReplacement) {
+      case (acc, CustomParameterType(name, regex)) =>
+        val key = s"\\{$name\\}"
+        acc.replaceAll(key, s"($regex)")
     }
   }
 }

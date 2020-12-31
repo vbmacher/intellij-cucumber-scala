@@ -1,9 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import java.util.{Locale, Properties}
-
+import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition.implicits._
 import com.github.vbmacher.intellij.cucumber.scala.{inWriteAction, isUnitTestMode}
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumberUtil
 import com.intellij.codeInsight.CodeInsightUtilCore
 import com.intellij.codeInsight.template._
 import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTemplateUtil}
@@ -28,6 +26,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScTypeDefinitio
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.refactoring.ScalaNamesValidator
 
+import java.util.{Locale, Properties}
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -124,9 +123,9 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
     val editor = FileEditorManager.getInstance(project).getSelectedTextEditor
     val builder = TemplateBuilderFactory.getInstance().createTemplateBuilder(scMethod).asInstanceOf[TemplateBuilderImpl]
 
-    for (argument <- ScCucumberUtil.getStepArguments(scMethod)) {
+    for (argument <- scMethod.getArguments) {
       val name = argument.getName()
-      val range = new TextRange(0, argument.getName().length)
+      val range = new TextRange(0, name.length)
       builder.replaceElement(argument, range, name)
     }
 
