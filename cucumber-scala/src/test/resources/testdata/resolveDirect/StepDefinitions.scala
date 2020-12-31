@@ -7,6 +7,7 @@ class StepDefinitions extends ScalaDsl {
 
   ParameterType("speed", "\\\\d+km/h") { speed: String => Speed(speed.split(' ').head.toDouble) }
   ParameterType("time", "\\\\d+h") { time: String => Time(time.split(' ').head.toDouble) }
+  ParameterType("kilograms", "\\\\d+kg") { time: String => Time(time.split(' ').head.toDouble) }
 
 
   val calc = new Calculator
@@ -49,5 +50,11 @@ class StepDefinitions extends ScalaDsl {
     calc push "/"
   }
 
-  When("""I do {int} nop(s)""") { (arg1: Int) => (0 to arg1).foreach { _ => /* NOP */ } }
+  When("""I do {int} nop(s)""") { (arg1: Int) =>
+    ()
+  }
+
+  When("""my weight is {kilograms}""") { (arg1: Int) =>
+    ()
+  }
 }

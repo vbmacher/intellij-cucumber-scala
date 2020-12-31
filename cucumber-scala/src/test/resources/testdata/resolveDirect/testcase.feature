@@ -31,3 +31,7 @@ Feature: Basic Arithmetic
     When I do 10 nops
     When I do 10 nop
     Then the result is 5
+
+  Scenario: Weight
+    When my weight is 10kg
+    When my weight is 10
