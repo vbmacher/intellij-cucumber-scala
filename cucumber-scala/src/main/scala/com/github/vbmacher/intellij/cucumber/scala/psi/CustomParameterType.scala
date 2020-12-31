@@ -1,7 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.psi
 
 import com.intellij.psi.PsiClass
-import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.util.{CachedValuesManager, PsiTreeUtil}
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBody
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
@@ -14,13 +14,12 @@ object CustomParameterType {
 
   def findAll(stepDefinition: ScMethodCall): Seq[CustomParameterType] = {
     val klass = PsiTreeUtil.getParentOfType(stepDefinition, classOf[PsiClass])
-    find(klass, Seq.empty).distinctBy(_.name)
+    CachedValuesManager.getProjectPsiDependentCache(klass, (context: PsiClass) => {
+      find(context, Seq.empty).distinctBy(_.name)
+    })
   }
 
   private def find(klass: PsiClass, processed: Seq[PsiClass]): Seq[CustomParameterType] = {
-
-    println("At: " + klass.getName)
-
     val thisClassParamTypes = for {
       body <- Option(PsiTreeUtil.findChildOfAnyType(klass, classOf[ScTemplateBody])).toSeq
       m <- body.getChildren.collect({ case c: ScMethodCall => c })
