@@ -9,9 +9,17 @@ enabling navigation between step definitions and gherkin steps when using cucumb
 
 1. Navigation from feature step to step definition (and back)
   - [x] Indexing of step definitions for better performance
-  - [x] Supports "constant expressions" in step definition names (e.g. `"When 5 + 5, it's" + (5+5)`)
-  - [x] Supports navigation of custom parameter types
   - [x] Finds step definitions also in libraries with attached sources
+  - [x] Supports "constant expressions" in step definition names (e.g. `"When("""I do 5 + 5, it's""" + (5+5))`)
+  - [x] Supports using [parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#parameter-types) in 
+        step definition names (e.g. `When("""I divide {int} by {int}""")`)  
+  - [x] Supports navigation of [custom parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#custom-parameter-types)
+        (using `ParameterType(name, regex)` definitions)
+  - [x] Supports [alternative text](https://cucumber.io/docs/cucumber/cucumber-expressions/#alternative-text)
+        in step definition names (e.g. `When("""I/We divide (\d+) by (\d+)""")`)  
+  - [x] Supports [optional text](https://cucumber.io/docs/cucumber/cucumber-expressions/#optional-text)
+        in step definition names (e.g. `When("""I do some nop(s)""")`)
+  - [ ] Does not support [escaping](https://cucumber.io/docs/cucumber/cucumber-expressions/#escaping) yet, see #87
     
 2. Support of automated creation of a step definition
 
@@ -24,10 +32,10 @@ The plugin depends on:
 
 To setup the development environment, follow these steps:
 
-1. configure`jdk-11`
-2. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
+1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
+2. Configure JDK 11
 3. Open the project in IDEA
-4. Wait until `gradle-intellij-plugin` downloads Idea SDK and required plugins.
+4. Wait until `gradle-intellij-plugin` downloads IntelliJ SDK and required plugins.
 
 Now you can build this plugin with `build` task.
 
