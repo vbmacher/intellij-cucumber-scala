@@ -7,18 +7,13 @@ enabling navigation between step definitions and gherkin steps when using cucumb
 
 ## Features
 
-- [x] Navigate from feature step to step definition
-- [x] Find usages of step definitions in feature files
-- [x] Automated step definition creation
-- [x] Wizard for step definition creation (templating)
-- [x] Indexing of step definitions for better performance
-- [x] Support "constant expressions" in step definition names
-- [x] Find step definitions in libraries with attached sources
-- [x] Navigate custom types and java type annotations*
-- [ ] Support for Java annotations  
-- [ ] Warn on non-matching custom types/java annotations definition
-  
-_(*cannot resolve the exact regex, so the navigation works, but it will not warn you if your input doesn't match the regex of the type)_
+1. Navigation from feature step to step definition (and back)
+  - [x] Indexing of step definitions for better performance
+  - [x] Supports "constant expressions" in step definition names (e.g. `"When 5 + 5, it's" + (5+5)`)
+  - [x] Supports navigation of custom parameter types
+  - [x] Finds step definitions also in libraries with attached sources
+    
+2. Support of automated creation of a step definition
 
 ## Development
 
