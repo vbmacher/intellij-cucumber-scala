@@ -16,6 +16,15 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2020.3.1: Release for IntelliJ 2020.3.1
+          <ol>
+              <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/pull/85">Enable matching parameter types, optional text, alternative</a></li>
+              <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/88">Enable matching custom parameter types</a></li>
+              <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/87">Enable escaping parameters</a></li>
+              <li>Upgrade cucumber-jvm-scala to 6.9.1</li>
+              <li>Upgrade Scala plugin to 2020.3.18</li>
+          </ol>
+      </li>
       <li>2020.3: Release for IntelliJ 2020.3
           <ol>
             <li>Upgrade Gherkin plugin to 203.5981.155</li>
