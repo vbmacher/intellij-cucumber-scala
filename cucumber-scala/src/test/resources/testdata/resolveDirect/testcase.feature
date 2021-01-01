@@ -35,3 +35,6 @@ Feature: Basic Arithmetic
   Scenario: Weight
     When my weight is 10kg
     When my weight is 10
+
+  Scenario: Escaping
+    When I have 42 \{int} cucumbers in my belly \(amazing!)

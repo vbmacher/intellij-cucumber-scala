@@ -18,19 +18,22 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
 
   // See: io.cucumber.cucumberexpressions.ParameterTypeRegistry
   private val paramRegexp = Map(
-    "\\{biginteger\\}" -> INTEGER_REGEXP,
-    "\\{int\\}" -> INTEGER_REGEXP,
-    "\\{byte\\}" -> INTEGER_REGEXP,
-    "\\{short\\}" -> INTEGER_REGEXP,
-    "\\{long\\}" -> INTEGER_REGEXP,
-    "\\{bigdecimal\\}" -> FLOAT_REGEXP,
-    "\\{float\\}" -> FLOAT_REGEXP,
-    "\\{double\\}" -> FLOAT_REGEXP,
-    "\\{word\\}" -> WORD_REGEXP,
-    "\\{string\\}" -> "(.*)",
-    "\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
+    "(?<!\\\\)\\{biginteger\\}" -> INTEGER_REGEXP,
+    "(?<!\\\\)\\{int\\}" -> INTEGER_REGEXP,
+    "(?<!\\\\)\\{byte\\}" -> INTEGER_REGEXP,
+    "(?<!\\\\)\\{short\\}" -> INTEGER_REGEXP,
+    "(?<!\\\\)\\{long\\}" -> INTEGER_REGEXP,
+    "(?<!\\\\)\\{bigdecimal\\}" -> FLOAT_REGEXP,
+    "(?<!\\\\)\\{float\\}" -> FLOAT_REGEXP,
+    "(?<!\\\\)\\{double\\}" -> FLOAT_REGEXP,
+    "(?<!\\\\)\\{word\\}" -> WORD_REGEXP,
+    "(?<!\\\\)\\{string\\}" -> "(.*)",
+    "(?<!\\\\)\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
     "([^\\s]*)/([^\\s]*)" -> "(?:$1|$2)" // Alternative text
-  ).view.mapValues("(" + _ + ")")
+  ).view.mapValues("(" + _ + ")") ++ Map(
+    "\\\\\\{([^\\s]*)\\}" -> "\\\\{$1\\\\}", // escape \{}
+    "\\\\\\(([^\\s]*)\\)" -> "\\\\($1\\\\)"  // escape \()
+  )
 
   override def getVariableNames: util.List[String] = {
     scMethod.getArguments.map(_.getName()).asJava

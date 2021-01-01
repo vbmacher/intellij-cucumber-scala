@@ -50,6 +50,11 @@ class StepResolveSpec extends StepResolveSpecBase {
   }
 
   @Test
+  def testEscapingWorks(): Unit = {
+    checkSingleOccurrenceDirect("I have 42 {int} cucumbers in my belly (amazing!)")
+  }
+
+  @Test
   def testAlternativeTextSupport(): Unit = {
     checkSingleOccurrenceDirect("We divide 10 by 1")
     checkSingleOccurrenceDirect("I divide 10 by 1")

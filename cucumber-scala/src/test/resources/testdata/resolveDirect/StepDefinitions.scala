@@ -57,4 +57,8 @@ class StepDefinitions extends ScalaDsl {
   When("""my weight is {kilograms}""") { (arg1: Int) =>
     ()
   }
+
+  When("""I have 42 \{int} cucumbers in my belly \(amazing!)""") {
+    () => ()
+  }
 }
