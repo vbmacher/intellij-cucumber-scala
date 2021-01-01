@@ -6,51 +6,64 @@ import org.junit.runners.JUnit4
 
 @RunWith(classOf[JUnit4])
 class StepResolveSpec extends StepResolveSpecBase {
-  private val checkResolveDirect =
+  private val checkSingleOccurrenceDirect =
     singleResolve("resolveDirect/testcase.feature", "resolveDirect/StepDefinitions.scala") _
-  private val checkResolveIndirect =
+  private val checkNoOccurrenceDirect =
+    multiResolve(0, "resolveDirect/testcase.feature", "resolveDirect/StepDefinitions.scala") _
+  private val checkSingleOccurrenceIndirect =
     singleResolve("resolveIndirect/testcase.feature", "resolveIndirect/StepDefinitions.scala") _
 
   @Test
   def testResolveSimple(): Unit = {
-    checkResolveDirect("And nothing else")
+    checkSingleOccurrenceDirect("And nothing else")
   }
 
   @Test
   def testWithParameters(): Unit = {
-    checkResolveDirect("I add 4 and 5") // does not include "When", because test regex is within ^$
+    checkSingleOccurrenceDirect("I add 4 and 5") // does not include "When", because test regex is within ^$
   }
 
   @Test
   def testScalaExpressionInName(): Unit = {
-    checkResolveDirect("When I div 10 by 2")
+    checkSingleOccurrenceDirect("When I div 10 by 2")
   }
 
   @Test
   def testResolveIndirect(): Unit = {
-    checkResolveIndirect("When I div 10 by 2")
+    checkSingleOccurrenceIndirect("When I div 10 by 2")
   }
 
   @Test
   def testResolveDirectWithCucumberParameters(): Unit = {
-    checkResolveDirect("Some 55 parameter with 3.14")
+    checkSingleOccurrenceDirect("Some 55 parameter with 3.14")
   }
 
   @Test
   def testCustomTypeIsSupported(): Unit = {
-    checkResolveDirect("I move at 10km/h for 1h")
+    checkSingleOccurrenceDirect("I move at 10km/h for 1h")
+  }
+
+  @Test
+  def testCustomTypeRegexIsConsidered(): Unit = {
+    checkNoOccurrenceDirect("my weight is 10")
+    checkSingleOccurrenceDirect("my weight is 10kg")
+  }
+
+  @Test
+  def testEscapingWorks(): Unit = {
+    checkSingleOccurrenceDirect("I have 42 {int} cucumbers in my belly (amazing!)")
   }
 
   @Test
   def testAlternativeTextSupport(): Unit = {
-    checkResolveDirect("We divide 10 by 1")
-    checkResolveDirect("I divide 10 by 1")
+    checkSingleOccurrenceDirect("We divide 10 by 1")
+    checkSingleOccurrenceDirect("I divide 10 by 1")
   }
 
   @Test
   def testOptionalTextSupport(): Unit = {
-    checkResolveDirect("I do 10 nop")
-    checkResolveDirect("I do 10 nops")
+    checkSingleOccurrenceDirect("I do 10 nop")
+    checkSingleOccurrenceDirect("I do 10 nops")
   }
 
   @Test

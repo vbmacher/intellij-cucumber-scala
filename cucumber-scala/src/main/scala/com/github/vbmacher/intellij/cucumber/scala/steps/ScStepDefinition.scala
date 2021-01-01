@@ -30,7 +30,12 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
     "\\{string\\}" -> "(.*)",
     "\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
     "([^\\s]*)/([^\\s]*)" -> "(?:$1|$2)" // Alternative text
-  ).view.mapValues("(" + _ + ")")
+  ).map {
+    case (k, v) => s"(?<!\\\\)$k" -> s"($v)" // non-escaped
+  } ++ Map(
+    "\\\\\\{([^\\s]*)\\}" -> "\\\\{$1\\\\}", // escaping \{}
+    "\\\\\\(([^\\s]*)\\)" -> "\\\\($1\\\\)" // escaping \()
+  )
 
   override def getVariableNames: util.List[String] = {
     scMethod.getArguments.map(_.getName()).asJava
