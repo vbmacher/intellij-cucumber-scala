@@ -19,7 +19,8 @@ enabling navigation between step definitions and gherkin steps when using cucumb
         in step definition names (e.g. `When("""I/We divide (\d+) by (\d+)""")`)  
   - [x] Supports [optional text](https://cucumber.io/docs/cucumber/cucumber-expressions/#optional-text)
         in step definition names (e.g. `When("""I do some nop(s)""")`)
-  - [ ] Does not support [escaping](https://cucumber.io/docs/cucumber/cucumber-expressions/#escaping) yet, see #87
+  - [x] Supports [escaping](https://cucumber.io/docs/cucumber/cucumber-expressions/#escaping)
+        (e.g. `When("""I have 42 \{int} cucumbers in my belly \(amazing!)""")`)
     
 2. Support of automated creation of a step definition
 
