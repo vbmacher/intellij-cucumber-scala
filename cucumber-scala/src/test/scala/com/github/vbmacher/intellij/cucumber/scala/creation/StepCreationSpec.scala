@@ -1,9 +1,9 @@
 package com.github.vbmacher.intellij.cucumber.scala.creation
 
+import io.cucumber.scala.ScalaSnippet.tripleDoubleQuotes
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
-import io.cucumber.scala.ScalaSnippet.tripleDoubleQuotes
 
 @RunWith(classOf[JUnit4])
 class StepCreationSpec extends StepCreationSpecBase {
