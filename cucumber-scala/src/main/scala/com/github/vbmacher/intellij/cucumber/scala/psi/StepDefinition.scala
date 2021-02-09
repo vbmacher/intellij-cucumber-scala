@@ -19,18 +19,20 @@ object StepDefinition {
 
     implicit class ScMethodCallExt(stepDefinition: ScMethodCall) {
       private lazy val evaluator = new ScalaConstantExpressionEvaluator()
-      private lazy val stepDefinitionInnerMethod = innerMethod(stepDefinition).get
+      private lazy val stepDefinitionInnerMethod = innerMethod(stepDefinition)
 
       def getRegex: Option[String] = {
         for {
-          expression <- stepDefinitionInnerMethod.args.exprs.headOption
+          inner <- stepDefinitionInnerMethod
+          expression <- inner.args.exprs.headOption
           literal <- Option(evaluator.computeConstantExpression(expression, throwExceptionOnOverflow = false))
         } yield literal.toString
       }
 
       def getName: Option[String] = {
         for {
-          keywordExpression <- Option(PsiTreeUtil.findChildOfType(stepDefinitionInnerMethod, classOf[ScReferenceExpression]))
+          inner <- stepDefinitionInnerMethod
+          keywordExpression <- Option(PsiTreeUtil.findChildOfType(inner, classOf[ScReferenceExpression]))
           keyword = keywordExpression.getText.trim
 
           if isKeywordValid(keyword)
@@ -48,7 +50,7 @@ object StepDefinition {
 
       def isStepDefinition: Boolean = {
         val maybePackageName = for {
-          inner <- innerMethod(stepDefinition)
+          inner <- stepDefinitionInnerMethod
           packageName <- Option(inner.getEffectiveInvokedExpr).collect {
             case MethodValue(method) => getPackageName(method)
             case expr: ScReferenceExpression =>
