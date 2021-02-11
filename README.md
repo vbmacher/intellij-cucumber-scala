@@ -7,22 +7,24 @@ enabling navigation between step definitions and gherkin steps when using cucumb
 
 ## Features
 
-1. Navigation from feature step to step definition (and back)
-  - [x] Indexing of step definitions for better performance
-  - [x] Finds step definitions also in libraries with attached sources
-  - [x] Supports "constant expressions" in step definition names (e.g. `"When("""I do 5 + 5, it's""" + (5+5))`)
-  - [x] Supports using [parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#parameter-types) in 
-        step definition names (e.g. `When("""I divide {int} by {int}""")`)  
-  - [x] Supports navigation of [custom parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#custom-parameter-types)
-        (using `ParameterType(name, regex)` definitions)
-  - [x] Supports [alternative text](https://cucumber.io/docs/cucumber/cucumber-expressions/#alternative-text)
-        in step definition names (e.g. `When("""I/We divide (\d+) by (\d+)""")`)  
-  - [x] Supports [optional text](https://cucumber.io/docs/cucumber/cucumber-expressions/#optional-text)
-        in step definition names (e.g. `When("""I do some nop(s)""")`)
-  - [x] Supports [escaping](https://cucumber.io/docs/cucumber/cucumber-expressions/#escaping)
-        (e.g. `When("""I have 42 \{int} cucumbers in my belly \(amazing!)""")`)
-    
-2. Support of automated creation of a step definition
+### Navigation from feature step to step definition (and back)
+  - Indexing of step definitions for better performance
+  - Finds step definitions also in libraries with attached sources
+  - Supports "constant expressions" in step definition names (e.g. `"When("""I do 5 + 5, it's""" + (5+5))`)
+  - Supports using [parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#parameter-types) in 
+    step definition names (e.g. `When("""I divide {int} by {int}""")`)  
+  - Supports navigation of [custom parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#custom-parameter-types)
+    (using `ParameterType(name, regex)` definitions)
+  - Supports [alternative text](https://cucumber.io/docs/cucumber/cucumber-expressions/#alternative-text)
+    in step definition names (e.g. `When("""I/We divide (\d+) by (\d+)""")`)  
+  - Supports [optional text](https://cucumber.io/docs/cucumber/cucumber-expressions/#optional-text)
+    in step definition names (e.g. `When("""I do some nop(s)""")`)
+  - Supports [escaping](https://cucumber.io/docs/cucumber/cucumber-expressions/#escaping)
+    (e.g. `When("""I have 42 \{int} cucumbers in my belly \(amazing!)""")`)
+
+### Support of automated creation of a step definition
+
+  - Supports template filling wizard
 
 ## Development
 
