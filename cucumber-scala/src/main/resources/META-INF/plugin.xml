@@ -16,6 +16,12 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2020.3.2: Release for IntelliJ 2020.3.2
+          <ol>
+              <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/95">High CPU usage and lots of exceptions in idea.log</a></li>
+              <li>Upgrade Scala plugin to 2020.3.19</li>
+          </ol>
+      </li>
       <li>2020.3.1: Release for IntelliJ 2020.3.1
           <ol>
               <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/pull/85">Enable matching parameter types, optional text, alternative</a></li>
