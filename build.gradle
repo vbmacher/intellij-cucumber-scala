@@ -1,9 +1,9 @@
 ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
-        gherkin    : '203.5981.155',
-        idea       : '2020.3.3',
-        scalaPlugin: '2020.3.23',
+        gherkin    : '211.6693.111',
+        idea       : '2021.1',
+        scalaPlugin: '2021.1.16',
         cucumber   : '6.10.2'
 ]
 
