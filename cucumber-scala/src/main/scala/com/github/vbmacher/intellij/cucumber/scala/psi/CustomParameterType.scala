@@ -5,6 +5,7 @@ import com.intellij.psi.util.{CachedValuesManager, PsiTreeUtil}
 import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScMethodCall, ScReferenceExpression}
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBody
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
+import scala.collection.immutable.ArraySeq.unsafeWrapArray
 
 case class CustomParameterType(name: String, regex: String)
 
@@ -42,7 +43,7 @@ object CustomParameterType {
 
     } yield CustomParameterType(eargs.head, eargs(1))
 
-    val supers = klass.getSupers.filterNot(processed.contains)
+    val supers = unsafeWrapArray(klass.getSupers.filterNot(processed.contains))
     thisClassParamTypes ++ supers.flatMap(s => find(s, klass +: supers))
   }
 }
