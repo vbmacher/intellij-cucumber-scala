@@ -16,6 +16,13 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2021.1: Release for IntelliJ 2021.2
+          <ol>
+            <li>Gherkin plugin 212.4746.57</li>
+            <li>Scala plugin 2021.2.15</li>
+            <li>cucumber-jvm-scala 6.10.4</li>
+          </ol>
+      </li>
       <li>2021.1: Release for IntelliJ 2021.1
           <ol>
             <li>Gherkin plugin 211.6693.111</li>
