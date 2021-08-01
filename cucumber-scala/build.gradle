@@ -3,7 +3,7 @@ plugins {
     id "scala"
 }
 
-group 'com.github.danielwegener'
+group 'com.github.vbmacher'
 version "${versions.idea}"
 
 dependencies {
@@ -37,8 +37,8 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild "211.6693"
-    untilBuild "211.*"
+    sinceBuild "212.4746"
+    untilBuild "212.*"
 }
 
 buildSearchableOptions.enabled = false

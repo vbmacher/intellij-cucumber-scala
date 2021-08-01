@@ -1,10 +1,10 @@
 ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
-        gherkin    : '211.6693.111',
-        idea       : '2021.1',
-        scalaPlugin: '2021.1.16',
-        cucumber   : '6.10.2'
+        gherkin    : '212.4746.57',
+        idea       : '2021.2',
+        scalaPlugin: '2021.2.15',
+        cucumber   : '6.10.4'
 ]
 
 ext.libs = [
@@ -13,10 +13,10 @@ ext.libs = [
         cucumberScala  : "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
         cucumberJUnit  : "io.cucumber:cucumber-junit:${versions.cucumber}",
         scalatest      : [
-                "org.scalatest:scalatest_${versions.scala}:3.2.3",
-                "org.scalatestplus:junit-4-12_${versions.scala}:3.2.2.0",
+                "org.scalatest:scalatest_${versions.scala}:3.2.9",
+                "org.scalatestplus:junit-4-13_${versions.scala}:3.2.9.0",
         ],
-        slf4j          : "org.slf4j:slf4j-log4j12:1.7.30"
+        slf4j          : "org.slf4j:slf4j-log4j12:1.7.32"
 ]
 
 subprojects {
