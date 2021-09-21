@@ -4,7 +4,7 @@ ext.versions = [
         gherkin    : '212.4746.57',
         idea       : '2021.2.2',
         scalaPlugin: '2021.2.22',
-        cucumber   : '6.10.4',
+        cucumber   : '7.1.0',
         scalaTest  : '3.2.10'
 ]
 
@@ -12,7 +12,7 @@ ext.libs = [
         jUnit          : 'junit:junit:4.13',
         scala          : "org.scala-lang:scala-library:${versions.scalaFull}",
         cucumberScala  : "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
-        cucumberJUnit  : "io.cucumber:cucumber-junit:${versions.cucumber}",
+        cucumberJUnit  : "io.cucumber:cucumber-junit:6.11.0",
         scalatest      : [
                 "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}",
                 "org.scalatestplus:junit-4-13_${versions.scala}:${versions.scalaTest}.0",
@@ -36,5 +36,5 @@ subprojects {
 
 repositories {
     maven { url "https://www.jetbrains.com/intellij-repository/releases" }
-    maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
+    maven { url "https://cache-redirector.jetbrains.com/intellij-dependencies" }
 }
