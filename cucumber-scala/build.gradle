@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "0.7.2"
+    id "org.jetbrains.intellij" version "1.1.6"
     id "scala"
 }
 
@@ -19,9 +19,9 @@ dependencies {
 }
 
 intellij {
-    pluginName 'intellij-cucumber-scala'
-    version "${versions.idea}"
-    type "IC"
+    pluginName = 'intellij-cucumber-scala'
+    version = "${versions.idea}"
+    type = "IC"
 
     plugins = [
             "org.intellij.intelliLang",
@@ -29,7 +29,7 @@ intellij {
             "org.intellij.scala:${versions.scalaPlugin}",
             "gherkin:${versions.gherkin}"
     ]
-    updateSinceUntilBuild true
+    updateSinceUntilBuild = true
 }
 
 runIde {
@@ -37,12 +37,12 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild "212.4746"
-    untilBuild "212.*"
+    sinceBuild = "212.4746"
+    untilBuild = "212.*"
 }
 
 buildSearchableOptions.enabled = false
 
 publishPlugin {
-    token findProperty("PUBLISH_TOKEN") ?: System.getenv("PUBLISH_TOKEN")
+    token = findProperty("PUBLISH_TOKEN") ?: System.getenv("PUBLISH_TOKEN")
 }

@@ -2,9 +2,10 @@ ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
         gherkin    : '212.4746.57',
-        idea       : '2021.2',
-        scalaPlugin: '2021.2.15',
-        cucumber   : '6.10.4'
+        idea       : '2021.2.2',
+        scalaPlugin: '2021.2.22',
+        cucumber   : '6.10.4',
+        scalaTest  : '3.2.10'
 ]
 
 ext.libs = [
@@ -13,8 +14,8 @@ ext.libs = [
         cucumberScala  : "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
         cucumberJUnit  : "io.cucumber:cucumber-junit:${versions.cucumber}",
         scalatest      : [
-                "org.scalatest:scalatest_${versions.scala}:3.2.9",
-                "org.scalatestplus:junit-4-13_${versions.scala}:3.2.9.0",
+                "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}",
+                "org.scalatestplus:junit-4-13_${versions.scala}:${versions.scalaTest}.0",
         ],
         slf4j          : "org.slf4j:slf4j-log4j12:1.7.32"
 ]
@@ -23,14 +24,13 @@ subprojects {
 
     repositories {
         mavenCentral()
-        maven {
-            url 'https://dl.bintray.com/jetbrains/intellij-plugin-service'
-        }
 //        maven {
 //            url 'https://www.jetbrains.com/intellij-repository/snapshots'
 //        }
         maven { url "https://www.jetbrains.com/intellij-repository/releases" }
-        maven { url "https://jetbrains.bintray.com/intellij-third-party-dependencies" }
+        maven {
+            url 'https://cache-redirector.jetbrains.com/intellij-dependencies'
+        }
     }
 }
 

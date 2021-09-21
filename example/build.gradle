@@ -7,6 +7,6 @@ description "Example project Cucumber for Scala"
 
 dependencies {
     implementation libs.scala
-    testCompile libs.cucumberScala
-    testCompile libs.jUnit
+    testImplementation libs.cucumberScala
+    testImplementation libs.jUnit
 }
