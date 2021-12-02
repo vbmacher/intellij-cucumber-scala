@@ -1,10 +1,10 @@
 ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
-        gherkin    : '212.4746.57',
-        idea       : '2021.2.2',
-        scalaPlugin: '2021.2.22',
-        cucumber   : '7.1.0',
+        gherkin    : '213.5744.223',
+        idea       : '2021.3',
+        scalaPlugin: '2021.3.14',
+        cucumber   : '8.1.0',
         scalaTest  : '3.2.10'
 ]
 
@@ -12,7 +12,7 @@ ext.libs = [
         jUnit          : 'junit:junit:4.13',
         scala          : "org.scala-lang:scala-library:${versions.scalaFull}",
         cucumberScala  : "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
-        cucumberJUnit  : "io.cucumber:cucumber-junit:6.11.0",
+        cucumberJUnit  : "io.cucumber:cucumber-junit:7.1.0",
         scalatest      : [
                 "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}",
                 "org.scalatestplus:junit-4-13_${versions.scala}:${versions.scalaTest}.0",

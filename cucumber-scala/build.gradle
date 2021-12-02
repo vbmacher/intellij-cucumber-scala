@@ -1,5 +1,5 @@
 plugins {
-    id "org.jetbrains.intellij" version "1.1.6"
+    id "org.jetbrains.intellij" version "1.2.1"
     id "scala"
 }
 
@@ -37,8 +37,8 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild = "212.4746"
-    untilBuild = "212.*"
+    sinceBuild = "213.5744.223"
+    untilBuild = "213.*"
 }
 
 buildSearchableOptions.enabled = false
