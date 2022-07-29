@@ -14,7 +14,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScInfixExpr}
 
 class StepDeclarationSearcher extends PomDeclarationSearcher {
 
-  override def findDeclarationsAt(psiElement: PsiElement, offsetInElement: Int, consumer: Consumer[PomTarget]): Unit = {
+  override def findDeclarationsAt(psiElement: PsiElement, offsetInElement: Int, consumer: Consumer[_ >: PomTarget]): Unit = {
     val injectionHost = InjectedLanguageManager.getInstance(psiElement.getProject).getInjectionHost(psiElement)
     val injectionHostOrElement = Option(injectionHost).getOrElse(psiElement)
 
