@@ -20,7 +20,7 @@
           <ol>
             <li>Scala plugin 2022.3.14</li>
             <li>Gherkin plugin 223.7571.113</li>
-            <li>cucumber-jvm-scala 8.6.0</li>
+            <li>cucumber-jvm-scala 8.13.0</li>
           </ol>
       </li>
       <li>2022.2: Release for IntelliJ 2022.2
