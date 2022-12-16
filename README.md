@@ -36,7 +36,7 @@ The plugin depends on:
 To setup the development environment, follow these steps:
 
 1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
-2. Configure JDK 11
+2. Configure JDK 17
 3. Open the project in IDEA
 4. Wait until `gradle-intellij-plugin` downloads IntelliJ SDK and required plugins.
 
@@ -63,5 +63,3 @@ Then, run `publishPlugin` task.
 ## License
 
 This project is released under the __Apache License, Version 2.0__ (http://www.apache.org/licenses/LICENSE-2.0).
-
-<a href="https://www.buymeacoffee.com/vbmacher" target="_blank"><img src="https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png" alt="Buy Me A Coffee" style="height: 41px !important;width: 174px !important;box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 3px 2px 0px rgba(190, 190, 190, 0.5) !important;" ></a>
