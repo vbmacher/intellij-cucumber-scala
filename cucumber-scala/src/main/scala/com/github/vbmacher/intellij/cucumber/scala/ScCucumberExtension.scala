@@ -51,13 +51,13 @@ class ScCucumberExtension extends AbstractCucumberExtension {
 
     val result = collection.mutable.Buffer.empty[AbstractStepDefinition]
 
-    fileBasedIndex.processValues(ScCucumberStepIndex.INDEX_ID, java.lang.Boolean.TRUE, null, {
-      (file: VirtualFile, value: util.List[Integer]) => {
+    fileBasedIndex.processValues(ScCucumberStepIndex.INDEX_ID, true, null, {
+      (file: VirtualFile, value: Seq[Int]) => {
 
         ProgressManager.checkCanceled()
         val psiFile = PsiManager.getInstance(project).findFile(file)
         if (psiFile != null) {
-          for (offset <- value.asScala) {
+          for (offset <- value) {
             val element = psiFile.findElementAt(offset + 1)
             val stepElement = StepDefinition.fromIndexedElement(element)
 

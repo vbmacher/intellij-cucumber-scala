@@ -25,6 +25,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.typedef.ScTypeDefinition
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.refactoring.ScalaNamesValidator
+import org.jetbrains.plugins.scala.project.ProjectContext
 
 import java.util.{Locale, Properties}
 import scala.jdk.CollectionConverters._
@@ -78,6 +79,8 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
       if (step == null || file == null || !file.isInstanceOf[ScalaFile]) return false
 
       val project = file.getProject
+      implicit val pc: ProjectContext = ProjectContext.fromProject(project)
+
       val editor = FileEditorManager.getInstance(project).getSelectedTextEditor
       assert(editor != null)
 
@@ -113,7 +116,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
   }
 
 
-  private def createMethodCall(step: GherkinStep, context: PsiElement): ScMethodCall = {
+  private def createMethodCall(step: GherkinStep, context: PsiElement)(implicit pc: ProjectContext): ScMethodCall = {
     val generator = new SnippetGenerator(new ScalaSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
     val snippet = generator.getSnippet(CucumberStep(step), SnippetType.CAMELCASE).get(0)
     ScalaPsiElementFactory.createExpressionFromText(snippet, context).asInstanceOf[ScMethodCall]
