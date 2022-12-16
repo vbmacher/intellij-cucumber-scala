@@ -14,9 +14,12 @@ object ScCucumberUtil {
   private lazy val allKeywords = {
     val provider = new GherkinDialectProvider()
     val languages = provider.getLanguages.asScala
-    val dialects = languages.map(provider.getDialect(_, null))
+    val dialects = languages.map(provider.getDialect)
 
-    dialects.flatMap(_.getStepKeywords.asScala.map(_.trim)).toSet
+    dialects.flatMap(d => Option(d.orElseGet(null)) match {
+      case None => Seq.empty
+      case Some(dialect) => dialect.getStepKeywords.asScala.map(_.trim)
+    }).toSet
   }
 
   def isKeywordValid(keyword: String): Boolean = allKeywords.contains(keyword)
