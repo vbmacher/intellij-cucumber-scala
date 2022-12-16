@@ -16,7 +16,7 @@
 
     <change-notes><![CDATA[
       <ul>
-      <li>2022.3: Release for IntelliJ 223.7571-EAP
+      <li>2022.3: Release for IntelliJ 2022.3
           <ol>
             <li>Scala plugin 2022.3.14</li>
             <li>Gherkin plugin 223.7571.113</li>

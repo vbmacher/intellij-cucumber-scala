@@ -2,7 +2,7 @@ ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
         gherkin    : '223.7571.113',
-        idea       : '223.7571-EAP-CANDIDATE-SNAPSHOT',
+        idea       : '2022.3',
         scalaPlugin: '2022.3.14',
         cucumber   : '8.13.0',
         scalaTest  : '3.2.14'
@@ -25,16 +25,16 @@ subprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
-        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-        maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
+     //   maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+     //   maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
         maven { url "https://www.jetbrains.com/intellij-repository/releases" }
         maven { url 'https://cache-redirector.jetbrains.com/intellij-dependencies' }
     }
 }
 
 repositories {
-    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+   // maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://www.jetbrains.com/intellij-repository/releases" }
-    maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
+  //  maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
     maven { url "https://cache-redirector.jetbrains.com/intellij-dependencies" }
 }
