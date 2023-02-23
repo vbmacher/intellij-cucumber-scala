@@ -1,10 +1,10 @@
 ext.versions = [
         scala      : '2.13',
         scalaFull  : '2.13.+',
-        gherkin    : '223.7571.113',
-        idea       : '2022.3',
-        scalaPlugin: '2022.3.14',
-        cucumber   : '8.13.0',
+        gherkin    : '231.7515.9',
+        idea       : '231.7515.13-EAP-SNAPSHOT',
+        scalaPlugin: '2023.1.8',
+        cucumber   : '8.14.1',
         scalaTest  : '3.2.14'
 ]
 
@@ -12,7 +12,7 @@ ext.libs = [
         jUnit        : 'junit:junit:4.13.2',
         scala        : "org.scala-lang:scala-library:${versions.scalaFull}",
         cucumberScala: "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
-        cucumberJUnit: "io.cucumber:cucumber-junit:7.10.0",
+        cucumberJUnit: "io.cucumber:cucumber-junit:7.11.1",
         scalatest    : [
                 "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}",
                 "org.scalatestplus:junit-4-13_${versions.scala}:${versions.scalaTest}.0",
@@ -25,16 +25,16 @@ subprojects {
     repositories {
         mavenCentral()
         gradlePluginPortal()
-     //   maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
-     //   maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
+        maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+        maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
         maven { url "https://www.jetbrains.com/intellij-repository/releases" }
         maven { url 'https://cache-redirector.jetbrains.com/intellij-dependencies' }
     }
 }
 
 repositories {
-   // maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
+    maven { url "https://oss.sonatype.org/content/repositories/snapshots/" }
     maven { url "https://www.jetbrains.com/intellij-repository/releases" }
-  //  maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
+    maven { url 'https://www.jetbrains.com/intellij-repository/snapshots' }
     maven { url "https://cache-redirector.jetbrains.com/intellij-dependencies" }
 }
