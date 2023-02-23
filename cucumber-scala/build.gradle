@@ -20,7 +20,7 @@ dependencies {
 
 test {
     jvmArgs = [
-             '--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED',
+            '--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED',
             '--add-opens=java.desktop/javax.swing=ALL-UNNAMED',
             '--add-opens=java.desktop/java.awt=ALL-UNNAMED',
             '--add-opens=java.desktop/java.awt.event=ALL-UNNAMED',
@@ -49,8 +49,8 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild = "223.7571"
-    untilBuild = "223.*"
+    sinceBuild = "231.7515"
+    untilBuild = "231.7515.*"
 }
 
 buildSearchableOptions.enabled = false
