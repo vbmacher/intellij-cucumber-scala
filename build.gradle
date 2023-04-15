@@ -1,23 +1,26 @@
 ext.versions = [
-        scala      : '2.13',
-        scalaFull  : '2.13.+',
-        gherkin    : '231.7515.9',
-        idea       : '231.7515.13-EAP-SNAPSHOT',
-        scalaPlugin: '2023.1.8',
-        cucumber   : '8.14.1',
-        scalaTest  : '3.2.14'
+        scala        : '2.13',
+        scalaFull    : '2.13.+',
+        gherkin      : '231.8109.91',
+        idea         : '2023.1',
+        scalaPlugin  : '2023.1.16',
+        cucumber     : '8.14.2',
+        junit        : '4.13.2',
+        cucumberJunit: '7.11.2',
+        scalaTest    : '3.2.14',
+        slf4j        : '2.0.5'
 ]
 
 ext.libs = [
-        jUnit        : 'junit:junit:4.13.2',
+        jUnit        : "junit:junit:${versions.junit}",
         scala        : "org.scala-lang:scala-library:${versions.scalaFull}",
         cucumberScala: "io.cucumber:cucumber-scala_${versions.scala}:${versions.cucumber}",
-        cucumberJUnit: "io.cucumber:cucumber-junit:7.11.1",
+        cucumberJUnit: "io.cucumber:cucumber-junit:${versions.cucumberJunit}",
         scalatest    : [
                 "org.scalatest:scalatest_${versions.scala}:${versions.scalaTest}",
                 "org.scalatestplus:junit-4-13_${versions.scala}:${versions.scalaTest}.0",
         ],
-        slf4j        : "org.slf4j:slf4j-log4j12:1.7.32"
+        slf4j        : "org.slf4j:slf4j-log4j12:${versions.slf4j}"
 ]
 
 subprojects {

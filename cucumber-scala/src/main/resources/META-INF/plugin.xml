@@ -16,6 +16,13 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2023.1: Release for IntelliJ 2023.1 (build 231.8109.175)
+          <ol>
+            <li>Scala plugin 2023.1.16</li>
+            <li>Gherkin plugin 231.8109.91</li>
+            <li>cucumber-jvm-scala 8.14.2</li>
+          </ol>
+      </li>
       <li>231.7515.13-EAP: Release for IntelliJ 2023.1-EAP (build 231.7515.13)
           <ol>
             <li>Scala plugin 2023.1.8</li>
