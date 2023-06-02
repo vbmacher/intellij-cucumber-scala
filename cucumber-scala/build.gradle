@@ -49,8 +49,8 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild = "231.8109"
-    untilBuild = "231.*"
+    sinceBuild = "232.6734"
+    untilBuild = "232.6734.*"
 }
 
 buildSearchableOptions.enabled = false
