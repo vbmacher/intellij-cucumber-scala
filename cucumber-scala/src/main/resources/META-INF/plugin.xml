@@ -16,6 +16,12 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>232.2: Release for IntelliJ 2023.2 (build 232.8660.185)
+          <ol>
+            <li>Scala plugin 2023.2.17</li>
+            <li>Gherkin plugin 232.8860.88</li>
+          </ol>
+      </li>
       <li>232.6734.9-EAP-SNAPSHOT: Release for IntelliJ 2023.2 EAP (build 232.6734.9-EAP-SNAPSHOT)
           <ol>
             <li>Scala plugin 2023.2.3</li>
