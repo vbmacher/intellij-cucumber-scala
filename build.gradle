@@ -2,7 +2,7 @@ ext.versions = [
         scala        : '2.13',
         scalaFull    : '2.13.+',
         gherkin      : '232.8860.88',
-        idea         : '232.2',
+        idea         : '2023.2',
         scalaPlugin  : '2023.2.17',
         cucumber     : '8.15.0',
         junit        : '4.13.2',
