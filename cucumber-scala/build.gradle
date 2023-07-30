@@ -49,7 +49,7 @@ runIde {
 }
 
 patchPluginXml {
-    sinceBuild = "232.8860"
+    sinceBuild = "232.8660"
     untilBuild = "232.*"
 }
 
