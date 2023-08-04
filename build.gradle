@@ -4,9 +4,9 @@ ext.versions = [
         gherkin      : '232.8660.88',
         idea         : '2023.2',
         scalaPlugin  : '2023.2.17',
-        cucumber     : '8.15.0',
+        cucumber     : '8.16.0',
         junit        : '4.13.2',
-        cucumberJunit: '7.12.0',
+        cucumberJunit: '7.13.0',
         scalaTest    : '3.2.16',
         slf4j        : '2.0.7'
 ]
