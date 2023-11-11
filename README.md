@@ -33,18 +33,20 @@ The plugin depends on:
 - [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
 - project [cucumber-jvm-scala](https://github.com/cucumber/cucumber-jvm-scala)
 
-To setup the development environment, follow these steps:
+To setup the development environment, follow the following steps:
 
 1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
 2. Configure JDK 17
 3. Open the project in IDEA
-4. Wait until `gradle-intellij-plugin` downloads IntelliJ SDK and required plugins.
 
-Now you can build this plugin with `build` task.
+The plugin is using [sbt-idea-plugin](https://github.com/JetBrains/sbt-idea-plugin). Please refer to that plugin documentation
+to get information about available tasks.
 
-To start an IDE with the plugin installed in the example project, run `runIde` task. Import the whole project
+To start an IDE with the plugin installed in the example project, run `runIDE` task. Import the whole project
 as gradle project in the sandbox-ide. Wait for indexing to finish.
 Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
+
+In order to build the plugin (and package the plugin ZIP), run: `sbt test && sbt cucumber-scala / packageArtifactZip`
 
 ## Contributing
 
@@ -56,7 +58,12 @@ into `master` branch, which is then used for the release. The release commit is 
 ## Publishing
 
 A "publish token" must be set up in order to publish the plugin to [JetBrains plugins portal](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala).
-The token can be set up either by system variable or Gradle property named `PUBLISH_TOKEN` (e.g. put it in `gradle.properties` file, but do not commit it!).
+The token can be set to a system variable named `IJ_PLUGIN_REPO_TOKEN`, or in a file `~/.ij-plugin-repo-token`. Please
+refer to [sbt-idea-plugin](https://github.com/JetBrains/sbt-idea-plugin#publishplugin-channel--inputkeystring) for more
+information.
+
+In order to sign the plugin, set system variables `PLUGIN_SIGN_KEY`, `PLUGIN_SIGN_CERT` and `PLUGIN_SIGN_KEY_PWD` (again,
+please refer to [sbt-idea-plugin](https://github.com/JetBrains/sbt-idea-plugin#signplugin--taskkeyfile) for more information, or https://plugins.jetbrains.com/docs/intellij/plugin-signing.html#signing-methods).
 
 Then, run `publishPlugin` task.
 
