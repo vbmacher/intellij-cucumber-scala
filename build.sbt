@@ -1,6 +1,7 @@
 import org.jetbrains.sbtidea.Keys.*
 
 lazy val commonSettings = Seq(
+  fork := true,
   javaOptions ++= Seq(
     "--add-opens", "java.desktop/javax.swing.plaf.basic=ALL-UNNAMED",
     "--add-opens", "java.desktop/com.sun.java.swing.platf.gtk=ALL-UNNAMED",
