@@ -43,4 +43,6 @@ Feature: Basic Arithmetic
     When I div 10 by 2
     When I do 10 nops
     When I do 10 nop
+    Given basic step with string "a"
+    And basic step with string "a" suffix
     Then the result is 5
