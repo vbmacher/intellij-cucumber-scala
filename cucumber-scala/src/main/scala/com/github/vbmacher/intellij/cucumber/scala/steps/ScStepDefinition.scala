@@ -21,47 +21,44 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
   parameterTypeByName.setAccessible(true)
 
   // See: io.cucumber.cucumberexpressions.ParameterTypeRegistry
-  private val knownParameterTypes = parameterTypeByName
+  private val knownParamTypes = parameterTypeByName
     .get(paramRegistry)
     .asInstanceOf[util.Map[String, ParameterType[_]]]
     .asScala
     .toSeq
     .filter(_._1.nonEmpty)
 
-  // Replacements of parameters with their regexps
-  // e.g. "{int}" => (-?\d+)
-  private val paramReplacements: Seq[(Pattern, String)] = {
-    val knownReplacements = knownParameterTypes.map {
+  private val knownParamsReplacements = {
+    val replacements = knownParamTypes.map {
       case (name, paramType) =>
         s"\\{$name\\}" -> paramType.getRegexps.asScala.foldLeft("") {
           case ("", r) => Matcher.quoteReplacement(r)
           case (acc, r) => s"$acc|${Matcher.quoteReplacement(r)}"
         }
-    }
+    }.map { case (k, v) => s"(?<!\\\\)$k" -> v }
 
-    val escapeReplacements = Seq(
+    replacements ++ Seq(
       "\\\\\\{([^\\s]*)\\}" -> "\\\\{$1\\\\}", // escaping \{}
       "\\\\\\(([^\\s]*)\\)" -> "\\\\($1\\\\)" // escaping \()
     )
-
-    val preventEscapedMatchReplacements = knownReplacements
-      .map { case (k, v) => s"(?<!\\\\)$k" -> v }
-
-    (preventEscapedMatchReplacements ++ escapeReplacements).map {
-      case (k, v) => Pattern.compile(k) -> v
-    }
+  }.map {
+    case (k, v) => k -> s"($v)"
   }
 
-  private val additionalOneTimeReplacements: Seq[(Pattern, String)] = {
+  private val parenthesisReplacements = {
     val optAltReplacements = Seq(
       "\\(([^\\s]*)\\)" -> "(?:$1)?", // Optional text
       "([^\\s]+)/([^\\s]+)" -> "(?:$1|$2)" // Alternative text
     )
-    optAltReplacements
-      .map { case (k, v) => s"(?<!\\\\)$k" -> v }
-      .map {
-        case (k, v) => Pattern.compile(k) -> v
-      }
+    optAltReplacements.map { case (k, v) => s"(?<!\\\\)$k" -> s"($v)" }
+  }
+
+  // Groups of replacements of parameters with their regexps (e.g. "{int}" => (-?\d+))
+  // Each group is applied as the whole. Only after one group is fully applied, another group can continue.
+  private val paramReplacementSets: Seq[Seq[(Pattern, String)]] = {
+    Seq(parenthesisReplacements, knownParamsReplacements).map(_.map {
+      case (k, v) => Pattern.compile(k) -> v
+    })
   }
 
   override def getVariableNames: util.List[String] = {
@@ -75,24 +72,25 @@ class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(sc
   }
 
   private def replaceParametersWithRegex(regex: String): String = {
-    val constantReplacement = additionalOneTimeReplacements.foldLeft(regex) {
-      case (acc, (pattern, replacement)) =>
-        pattern.matcher(acc).replaceAll(replacement)
-    }
-
-    // Replace known parameter names with their regexps
-    val knownReplaced = paramReplacements.foldLeft(constantReplacement) {
-      case (acc, (pattern, replacement)) =>
-        pattern.matcher(acc).replaceAll(replacement)
+    // Replace known parameter names with their regexp
+    val knownReplaced = paramReplacementSets.foldLeft(regex) {
+      case (acc, replacements) =>
+        replacements.foldLeft(acc) {
+          case (acc, (pattern, replacement)) =>
+            pattern.matcher(acc).replaceAll(replacement)
+        }
     }
 
     // Replace custom parameters with their regexps
     val paramTypes = CustomParameterType.findAll(scMethod)
-    paramTypes.foldLeft(knownReplaced) {
+    val replaced = paramTypes.foldLeft(knownReplaced) {
       case (acc, CustomParameterType(name, regex)) =>
         val key = s"\\{$name\\}"
         acc.replaceAll(key, s"($regex)")
     }
+
+    val rs = if (replaced.startsWith("^")) replaced else s"^$replaced"
+    if (rs.endsWith("$")) rs else s"$rs$$"
   }
 }
 

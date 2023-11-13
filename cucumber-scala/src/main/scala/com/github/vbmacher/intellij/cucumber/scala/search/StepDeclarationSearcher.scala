@@ -14,6 +14,9 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScExpression, ScInfixExpr}
 
 class StepDeclarationSearcher extends PomDeclarationSearcher {
 
+  // This function is used from both sides:
+  // - when user searches for a step definition from feature file
+  // - and when user searches for a step usage in the feature file from step definition
   override def findDeclarationsAt(psiElement: PsiElement, offsetInElement: Int, consumer: Consumer[_ >: PomTarget]): Unit = {
     val injectionHost = InjectedLanguageManager.getInstance(psiElement.getProject).getInjectionHost(psiElement)
     val injectionHostOrElement = Option(injectionHost).getOrElse(psiElement)
@@ -21,9 +24,9 @@ class StepDeclarationSearcher extends PomDeclarationSearcher {
     ProgressManager.checkCanceled()
     val stepDeclaration = inReadAction {
       injectionHostOrElement.getParent match {
-        case literal: ScLiteral => findStepDeclaration(literal)
-        case expr: ScInfixExpr => findStepDeclaration(expr)
-        case _ => None
+        case literal: ScLiteral => findStepDeclaration(literal).toSeq
+        case expr: ScInfixExpr => findStepDeclaration(expr).toSeq
+        case _ => Seq.empty
       }
     }
     stepDeclaration.foreach(consumer.consume)
@@ -37,7 +40,7 @@ class StepDeclarationSearcher extends PomDeclarationSearcher {
     } yield stepDeclaration
   }
 
-  def getStepDeclaration(element: PsiElement, stepName: String): Option[StepDeclaration] = {
+  private def getStepDeclaration(element: PsiElement, stepName: String): Option[StepDeclaration] = {
     Option(CachedValuesManager.getCachedValue(element, () => {
       CachedValueProvider.Result.create(StepDeclaration(element, stepName), element)
     }))

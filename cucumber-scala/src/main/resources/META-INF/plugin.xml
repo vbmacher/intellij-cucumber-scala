@@ -208,7 +208,7 @@
 
         <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
 
-        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDefinitionUsageSearcher"/>
+        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
         <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
 
         <codeInsight.lineMarkerProvider

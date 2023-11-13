@@ -13,6 +13,7 @@ import org.jetbrains.plugins.scala.lang.psi.api.expr.{ScArgumentExprList, ScBloc
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
 
+// This is used for finding step DEFINITIONS. So not the text in Gherkin files, but the definitions in actual Scala code.
 object StepDefinition {
 
   object implicits {
@@ -98,7 +99,7 @@ object StepDefinition {
   }
 
 
-  def isStepDefinition(candidate: PsiElement): Boolean = {
+  private def isStepDefinition(candidate: PsiElement): Boolean = {
     candidate match {
       case sc: ScMethodCall =>
         import implicits._

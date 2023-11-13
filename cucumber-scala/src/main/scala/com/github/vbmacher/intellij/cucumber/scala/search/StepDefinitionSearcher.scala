@@ -8,7 +8,7 @@ import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.util.Processor
 import org.jetbrains.plugins.cucumber.CucumberUtil
 
-class StepDefinitionUsageSearcher extends QueryExecutorBase[PsiReference, ReferencesSearch.SearchParameters] {
+class StepDefinitionSearcher extends QueryExecutorBase[PsiReference, ReferencesSearch.SearchParameters] {
 
   override def processQuery(queryParameters: ReferencesSearch.SearchParameters, consumer: Processor[_ >: PsiReference]): Unit = {
     queryParameters.getElementToSearch match {

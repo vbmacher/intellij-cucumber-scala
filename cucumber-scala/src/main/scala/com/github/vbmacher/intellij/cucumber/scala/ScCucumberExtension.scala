@@ -15,7 +15,6 @@ import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
 import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 
-import java.util
 import java.util.{Collection => JavaCollection}
 import scala.jdk.CollectionConverters._
 import scala.util.Try
@@ -44,9 +43,15 @@ class ScCucumberExtension extends AbstractCucumberExtension {
     val fileBasedIndex = FileBasedIndex.getInstance()
     val project = module.getProject
 
-    val searchScope = module
-      .getModuleWithDependenciesAndLibrariesScope(true)
-      .uniteWith(ProjectScope.getLibrariesScope(project))
+    val searchScope = {
+      if (featureFile != null) {
+        featureFile.getResolveScope
+      } else {
+        module
+          .getModuleWithDependenciesAndLibrariesScope(true)
+          .uniteWith(ProjectScope.getLibrariesScope(project))
+      }
+    }
     val scalaFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(searchScope, ScalaFileType.INSTANCE)
 
     val result = collection.mutable.Buffer.empty[AbstractStepDefinition]

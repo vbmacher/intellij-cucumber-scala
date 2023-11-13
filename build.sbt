@@ -1,5 +1,3 @@
-import org.jetbrains.sbtidea.Keys.*
-
 lazy val commonSettings = Seq(
   fork := true,
   javaOptions ++= Seq(

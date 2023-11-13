@@ -8,7 +8,7 @@ object ScCucumberUtil {
 
   final val CUCUMBER_PACKAGES = Seq(
     "cucumber.api.scala", // 4.x
-    "io.cucumber.scala"   // 5.x, 6.x
+    "io.cucumber.scala"   // 5.x and forwards
   )
 
   private lazy val allKeywords = {
