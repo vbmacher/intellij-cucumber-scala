@@ -20,6 +20,7 @@
       <ul>
       <li>2023.2.5: Release for IntelliJ 2023.2.5 (build 232.10227.8)
           <ol>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/122">Wrongly linked step definitions with cucumber expressions</a></li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/123">Move from Gradle to sbt</a></li>
             <li>Scala plugin 2023.2.27</li>
             <li>Gherkin plugin 232.8660.88</li>
