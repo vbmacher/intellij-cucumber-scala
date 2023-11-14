@@ -43,15 +43,9 @@ class ScCucumberExtension extends AbstractCucumberExtension {
     val fileBasedIndex = FileBasedIndex.getInstance()
     val project = module.getProject
 
-    val searchScope = {
-      if (featureFile != null) {
-        featureFile.getResolveScope
-      } else {
-        module
-          .getModuleWithDependenciesAndLibrariesScope(true)
-          .uniteWith(ProjectScope.getLibrariesScope(project))
-      }
-    }
+    val searchScope = module
+      .getModuleWithDependenciesAndLibrariesScope(true)
+      .uniteWith(ProjectScope.getLibrariesScope(project))
     val scalaFiles = GlobalSearchScope.getScopeRestrictedByFileTypes(searchScope, ScalaFileType.INSTANCE)
 
     val result = collection.mutable.Buffer.empty[AbstractStepDefinition]

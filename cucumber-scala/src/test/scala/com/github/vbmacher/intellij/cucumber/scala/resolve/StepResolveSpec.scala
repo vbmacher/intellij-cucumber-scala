@@ -15,7 +15,7 @@ class StepResolveSpec extends StepResolveSpecBase {
 
   @Test
   def testResolveSimple(): Unit = {
-    checkSingleOccurrenceDirect("And nothing else")
+    checkSingleOccurrenceDirect("nothing else")
   }
 
   @Test
@@ -25,12 +25,12 @@ class StepResolveSpec extends StepResolveSpecBase {
 
   @Test
   def testScalaExpressionInName(): Unit = {
-    checkSingleOccurrenceDirect("When I div 10 by 2")
+    checkSingleOccurrenceDirect("I div 10 by 2")
   }
 
   @Test
   def testResolveIndirect(): Unit = {
-    checkSingleOccurrenceIndirect("When I div 10 by 2")
+    checkSingleOccurrenceIndirect("I div 10 by 2")
   }
 
   @Test
