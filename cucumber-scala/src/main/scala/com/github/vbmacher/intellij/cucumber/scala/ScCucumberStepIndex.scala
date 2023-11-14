@@ -69,7 +69,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[Boolean, Seq[Int]] {
     inputData => {
       val text = inputData.getContentAsText
       val lighterAst = inputData.asInstanceOf[PsiDependentFileContent].getLighterAST
-      val result = this.getStepDefinitionOffsets(lighterAst, text);
+      val result = this.getStepDefinitionOffsets(lighterAst, text)
 
       Map(true -> result).asJava
     }
@@ -125,10 +125,8 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[Boolean, Seq[Int]] {
 
 
   private def isStepDefinitionCall(methodName: LighterASTNode, text: CharSequence) = {
-    STEP_KEYWORDS.contains(text.subSequence(methodName.getStartOffset, methodName.getEndOffset).toString())
+    STEP_KEYWORDS.contains(text.subSequence(methodName.getStartOffset, methodName.getEndOffset).toString)
   }
-
-
 }
 
 object ScCucumberStepIndex {

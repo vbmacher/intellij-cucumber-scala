@@ -1,19 +1,18 @@
 package com.github.vbmacher.intellij.cucumber.scala
 
 import java.io.File
-
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl.getLineMarkers
 import com.intellij.psi._
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.apache.log4j.Logger
-import org.scalatest.funspec.AnyFunSpecLike
 import org.scalatest.matchers.should.Matchers
+import org.scalatestplus.junit.JUnitSuiteLike
 
 import scala.jdk.CollectionConverters._
 
-abstract class ScCucumberSpecBase extends BasePlatformTestCase with AnyFunSpecLike with Matchers {
+abstract class ScCucumberSpecBase extends BasePlatformTestCase with Matchers with JUnitSuiteLike {
   protected lazy val LOG = Logger.getRootLogger
 
   val DESCRIPTOR = new LibraryLightProjectDescriptor(

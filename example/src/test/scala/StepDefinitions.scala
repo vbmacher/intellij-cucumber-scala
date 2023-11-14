@@ -1,5 +1,7 @@
 class StepDefinitions extends StepDefinitionsTrait with CustomTypes {
 
+  Given("basic step with string {string}") { (value: String) => ??? }
+
   When("""^I add (\d+) and (\d+)$""") { (arg1: Double, arg2: Double) =>
     calc push arg1
     calc push arg2
