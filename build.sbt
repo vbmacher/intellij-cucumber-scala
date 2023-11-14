@@ -38,6 +38,7 @@ lazy val `cucumber-scala` = project
           ),
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>
+            xml.version = version.value
             xml.sinceBuild = "232.8660"
             xml.untilBuild = "232.*"
           },
