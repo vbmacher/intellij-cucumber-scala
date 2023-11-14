@@ -7,7 +7,6 @@ import com.intellij.psi._
 import com.intellij.testFramework.UsefulTestCase
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.apache.log4j.Logger
-import org.scalatest.funspec.AnyFunSpecLike
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.junit.JUnitSuiteLike
 

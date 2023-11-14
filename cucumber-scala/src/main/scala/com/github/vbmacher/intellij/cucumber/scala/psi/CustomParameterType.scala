@@ -13,6 +13,12 @@ object CustomParameterType {
 
   private lazy val evaluator = new ScalaConstantExpressionEvaluator()
 
+  /**
+    * Finds all custom parameter types (with evaluated regexes) in the given step definition.
+    *
+    * @param stepDefinition step definition
+    * @return all custom parameter types
+    */
   def findAll(stepDefinition: ScMethodCall): Seq[CustomParameterType] = {
     val klass = PsiTreeUtil.getParentOfType(stepDefinition, classOf[PsiClass])
     CachedValuesManager.getProjectPsiDependentCache(klass, (context: PsiClass) => {
