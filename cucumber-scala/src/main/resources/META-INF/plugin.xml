@@ -18,6 +18,13 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2023.3.2: Release for IntelliJ 2023.3.2 (build 233.13135.103)
+          <ol>
+            <li>Scala plugin 2023.3.19</li>
+            <li>Gherkin plugin 233.11799.165</li>
+            <li>cucumber-scala 8.20.0</li>
+          </ol>
+      </li>
       <li>2023.2.5: Release for IntelliJ 2023.2.5 (build 232.10227.8)
           <ol>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/122">Wrongly linked step definitions with cucumber expressions</a></li>
