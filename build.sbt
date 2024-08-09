@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
   ),
   version := "2024.2",
-  scalaVersion := "2.13.10",
+  scalaVersion := "2.13.14",
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
     "io.cucumber" %% "cucumber-scala" % "8.23.0",
