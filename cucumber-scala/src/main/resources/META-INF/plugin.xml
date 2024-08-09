@@ -20,9 +20,9 @@
       <ul>
       <li>2024.1: Release for IntelliJ 2024.1 (build 241.14494.240)
           <ol>
-            <li>Scala plugin 2024.1.15</li>
-            <li>Gherkin plugin 241.14494.150</li>
-            <li>cucumber-scala 8.21.1</li>
+            <li>Scala plugin 2024.2.20</li>
+            <li>Gherkin plugin 242.20224.159</li>
+            <li>cucumber-scala 8.23.0</li>
           </ol>
       </li>
       <li>2023.3.2: Release for IntelliJ 2023.3.2 (build 233.13135.103)
