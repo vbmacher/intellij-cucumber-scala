@@ -16,11 +16,11 @@ lazy val commonSettings = Seq(
   scalaVersion := "2.13.14",
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
-    "io.cucumber" %% "cucumber-scala" % "8.23.0",
+    "io.cucumber" %% "cucumber-scala" % "8.23.1",
     "io.cucumber" % "cucumber-junit" % "7.18.1" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.17" % Test,
-    "org.scalatestplus" %% "junit-4-13" % "3.2.17.0" % Test,
-    "org.slf4j" % "slf4j-reload4j" % "2.0.9"
+    "org.scalatest" %% "scalatest" % "3.2.19" % Test,
+    "org.scalatestplus" %% "junit-4-13" % "3.2.19.0" % Test,
+    "org.slf4j" % "slf4j-reload4j" % "2.0.13"
   )
 )
 
