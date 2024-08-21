@@ -20,6 +20,7 @@ lazy val commonSettings = Seq(
     "io.cucumber" % "cucumber-junit" % "7.18.1" % Test,
     "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     "org.scalatestplus" %% "junit-4-13" % "3.2.19.0" % Test,
+    "org.opentest4j" % "opentest4j" % "1.3.0" % Test,
     "org.slf4j" % "slf4j-reload4j" % "2.0.13"
   )
 )
