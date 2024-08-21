@@ -29,7 +29,7 @@ lazy val `cucumber-scala` = project
         .settings(
           commonSettings,
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
-          ThisBuild / intellijBuild := "242.20224.300",
+          ThisBuild / intellijBuild := "242.20224.419",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           Compile / javacOptions ++= "--release" :: "17" :: Nil,
           intellijPlugins ++= Seq(
