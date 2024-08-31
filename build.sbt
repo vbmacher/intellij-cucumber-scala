@@ -12,7 +12,7 @@ lazy val commonSettings = Seq(
     "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
   ),
-  version := "2024.2",
+  version := "2024.2.1",
   scalaVersion := "2.13.14",
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
@@ -20,8 +20,7 @@ lazy val commonSettings = Seq(
     "io.cucumber" % "cucumber-junit" % "7.18.1" % Test,
     "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     "org.scalatestplus" %% "junit-4-13" % "3.2.19.0" % Test,
-    "org.opentest4j" % "opentest4j" % "1.3.0" % Test,
-    "org.slf4j" % "slf4j-reload4j" % "2.0.13"
+    "org.opentest4j" % "opentest4j" % "1.3.0" % Test
   )
 )
 
@@ -30,11 +29,11 @@ lazy val `cucumber-scala` = project
         .settings(
           commonSettings,
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
-          ThisBuild / intellijBuild := "242.20224.419",
+          ThisBuild / intellijBuild := "242.21829.142",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           Compile / javacOptions ++= "--release" :: "17" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2024.2.20".toPlugin,
+            "org.intellij.scala:2024.2.25".toPlugin,
             "gherkin:242.20224.159".toPlugin
           ),
           packageMethod := PackagingMethod.Standalone(),
@@ -46,9 +45,9 @@ lazy val `cucumber-scala` = project
           signPluginOptions := signPluginOptions.value.copy(enabled = true)
         )
 
-lazy val example = project.settings(commonSettings)
+lazy val example = project.settings(commonSettings, packageMethod := PackagingMethod.Skip())
 
-lazy val `example-stepdefs-lib` = project.settings(commonSettings)
+lazy val `example-stepdefs-lib` = project.settings(commonSettings, packageMethod := PackagingMethod.Skip())
 
 lazy val root = (project in file("."))
         .aggregate(`cucumber-scala`, example, `example-stepdefs-lib`)

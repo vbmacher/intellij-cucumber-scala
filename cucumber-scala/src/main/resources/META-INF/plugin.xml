@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<idea-plugin>
+<idea-plugin xmlns:xi="http://www.w3.org/2001/XInclude"
+             require-restart="false">
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <category>Test Tools</category>
-    <version>2024.1</version>
+    <version>2024.2.1</version>
     <idea-version since-build="241.14494" until-build="241.*"/>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
@@ -18,6 +19,13 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2024.2.1: Release for IntelliJ 2024.2.1 (build 242.21829.142)
+          <ol>
+            <li>Scala plugin 2024.2.25</li>
+            <li>Revert sbt-idea-plugin to 3.18.3</li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/136">IDE Internal Errors</a></li>
+          </ol>
+      </li>
       <li>2024.2: Release for IntelliJ 2024.2 (build 242.20224.419)
           <ol>
             <li>Scala plugin 2024.2.20</li>
@@ -218,9 +226,9 @@
     </change-notes>
 
     <depends>com.intellij.modules.java</depends>
-    <depends>org.intellij.intelliLang</depends>
-    <depends>org.intellij.scala</depends>
     <depends>gherkin</depends>
+    <depends>org.intellij.scala</depends>
+
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
