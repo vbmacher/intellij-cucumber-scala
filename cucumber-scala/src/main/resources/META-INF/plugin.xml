@@ -228,7 +228,6 @@
     <depends>com.intellij.modules.java</depends>
     <depends>gherkin</depends>
     <depends>org.intellij.scala</depends>
-    <depends>org.intellij.intelliLang</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
