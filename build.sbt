@@ -9,6 +9,7 @@ lazy val commonSettings = Seq(
     "--add-opens", "java.desktop/java.awt=ALL-UNNAMED",
     "--add-opens", "java.desktop/java.awt.event=ALL-UNNAMED",
     "--add-opens", "java.desktop/javax.swing=ALL-UNNAMED",
+    "--add-opens", "java.desktop/javax.swing.text=ALL-UNNAMED",
     "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
   ),

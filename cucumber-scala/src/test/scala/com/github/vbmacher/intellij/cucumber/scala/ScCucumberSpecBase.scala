@@ -1,6 +1,5 @@
 package com.github.vbmacher.intellij.cucumber.scala
 
-import java.io.File
 import com.intellij.codeInsight.daemon.LineMarkerInfo
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl.getLineMarkers
 import com.intellij.psi._
@@ -10,6 +9,7 @@ import org.apache.log4j.Logger
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.junit.JUnitSuiteLike
 
+import java.io.File
 import scala.jdk.CollectionConverters._
 
 abstract class ScCucumberSpecBase extends BasePlatformTestCase with Matchers with JUnitSuiteLike {
