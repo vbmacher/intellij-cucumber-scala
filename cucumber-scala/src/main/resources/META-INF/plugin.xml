@@ -19,6 +19,14 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2024.3: Release for IntelliJ 2024.3 (build 243.21565.193)
+          <ol>
+            <li>Scala plugin 2024.3.18</li>
+            <li>Gherkin plugin 243.21565.122</li>
+            <li>cucumber-scala 8.25.1</li>
+            <li>cucumber-junit 7.20.1</li>
+          </ol>
+      </li>
       <li>2024.2.1: Release for IntelliJ 2024.2.1 (build 242.21829.142)
           <ol>
             <li>Scala plugin 2024.2.25</li>
