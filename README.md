@@ -28,19 +28,16 @@ enabling navigation between step definitions and gherkin steps when using cucumb
 
 ## Development
 
+To setup the development environment, follow the following steps:
+
+1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
+2. Configure JDK 21 (see https://plugins.jetbrains.com/docs/intellij/setting-up-theme-environment.html#add-jdk-and-intellij-platform-plugin-sdk)
+3. Open the project in IDEA
+
 The plugin depends on:
 - [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
 - [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
 - project [cucumber-jvm-scala](https://github.com/cucumber/cucumber-jvm-scala)
-
-To setup the development environment, follow the following steps:
-
-1. `git clone https://github.com/vbmacher/intellij-cucumber-scala.git`
-2. Configure JDK 17
-3. Open the project in IDEA
-
-The plugin is using [sbt-idea-plugin](https://github.com/JetBrains/sbt-idea-plugin). Please refer to that plugin documentation
-to get information about available tasks.
 
 To start an IDE with the plugin installed in the example project, run `runIDE` task. Import the whole project
 as gradle project in the sandbox-ide. Wait for indexing to finish.

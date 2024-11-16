@@ -32,7 +32,7 @@ lazy val `cucumber-scala` = project
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
           ThisBuild / intellijBuild := "243.21565.193",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
-          Compile / javacOptions ++= "--release" :: "17" :: Nil,
+          Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
             "org.intellij.scala:2024.3.18".toPlugin,
             "gherkin:243.21565.122".toPlugin

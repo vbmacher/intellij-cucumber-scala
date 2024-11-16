@@ -6,7 +6,7 @@
     <name>Cucumber for Scala</name>
     <category>Test Tools</category>
     <version>2024.2.1</version>
-    <idea-version since-build="242.20224" until-build="242.*"/>
+    <idea-version since-build="243.21565" until-build="243.*"/>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
