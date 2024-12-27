@@ -24,7 +24,6 @@
             <li>Scala plugin 2024.3.23</li>
             <li>Gherkin plugin 243.22562.13</li>
             <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/137">Problem with building in GitHub actions</a></li>
-            <li>Rollback to using Java version 17 (which is default IntelliJ Idea Java version)</li>
           </ol>
       </li>
       <li>2024.3: Release for IntelliJ 2024.3 (build 243.21565.193)
@@ -33,7 +32,7 @@
             <li>Gherkin plugin 243.21565.122</li>
             <li>cucumber-scala 8.25.1</li>
             <li>cucumber-junit 7.20.1</li>
-            <li>Use Java version 21</li>
+            <li>Use Java version 21 (https://plugins.jetbrains.com/docs/intellij/setting-up-theme-environment.html#add-jdk-and-intellij-platform-plugin-sdk)</li>
           </ol>
       </li>
       <li>2024.2.1: Release for IntelliJ 2024.2.1 (build 242.21829.142)
