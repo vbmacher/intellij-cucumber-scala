@@ -12,6 +12,7 @@ lazy val commonSettings = Seq(
     "--add-opens", "java.desktop/javax.swing.text=ALL-UNNAMED",
     "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
+    "--add-opens", "java.base/java.nio=ALL-UNNAMED",
   ),
   version := "2024.3.1.1",
   scalaVersion := "2.13.15",
@@ -36,6 +37,32 @@ lazy val `cucumber-scala` = project
           intellijPlugins ++= Seq(
             "org.intellij.scala:2024.3.23".toPlugin,
             "gherkin:243.22562.13".toPlugin
+          ),
+          intellijVMOptions := intellijVMOptions.value.copy(
+            defaultOptions = Seq(
+              "--add-opens", "java.desktop/javax.swing.plaf.basic=ALL-UNNAMED",
+              "--add-opens", "java.desktop/com.apple.laf=ALL-UNNAMED",
+              "--add-opens", "java.desktop/com.sun.java.swing.platf.gtk=ALL-UNNAMED",
+              "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
+              "--add-opens", "java.desktop/sun.awt.windows=ALL-UNNAMED",
+              "--add-opens", "java.desktop/sun.awt.X11=ALL-UNNAMED",
+              "--add-opens", "java.desktop/java.awt=ALL-UNNAMED",
+              "--add-opens", "java.desktop/java.awt.event=ALL-UNNAMED",
+              "--add-opens", "java.desktop/javax.swing=ALL-UNNAMED",
+              "--add-opens", "java.desktop/javax.swing.text=ALL-UNNAMED",
+              "--add-opens", "java.desktop/javax.swing.text.html=ALL-UNNAMED",
+              "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
+              "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
+              "--add-exports", "java.desktop/sun.swing=ALL-UNNAMED",
+              "--add-exports", "java.desktop/sun.awt.image=ALL-UNNAMED",
+              "--add-exports", "java.desktop/com.apple.eawt.event=ALL-UNNAMED",
+              "--add-exports", "java.desktop/com.apple.eawt=ALL-UNNAMED",
+              "--add-exports", "java.desktop/java.awt.peer=ALL-UNNAMED",
+              "--add-exports", "java.base/sun.nio.fs=ALL-UNNAMED",
+              "--add-exports", "java.management/sun.management=ALL-UNNAMED",
+              "--add-opens", "java.base/java.lang=ALL-UNNAMED",
+              "--add-opens", "java.base/java.util=ALL-UNNAMED",
+            )
           ),
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>

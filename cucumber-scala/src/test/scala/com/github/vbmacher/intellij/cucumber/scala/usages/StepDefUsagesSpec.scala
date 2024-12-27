@@ -11,7 +11,7 @@ class StepDefUsagesSpec extends ScCucumberSpecBase {
   @Test
   def testFindUsages(): Unit = {
     loadTestCase("usages/StepDefinitions.scala", "usages/testcase1.feature", "usages/testcase2.feature")
-    val usages = myFixture.testFindUsages(getTestDataPath + "/usages/StepDefinitions.scala") //testFindUsagesUsingAction
+    val usages = myFixture.testFindUsagesUsingAction(getTestDataPath + "/usages/StepDefinitions.scala") //testFindUsages
     assert(usages.size() == 2)
   }
 }
