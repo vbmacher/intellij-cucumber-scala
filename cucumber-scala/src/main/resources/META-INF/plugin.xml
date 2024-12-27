@@ -5,8 +5,8 @@
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <category>Test Tools</category>
-    <version>2024.3</version>
-    <idea-version since-build="243.21565" until-build="243.*"/>
+    <version>2024.3.1.1</version>
+    <idea-version since-build="243.22562" until-build="243.*"/>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
@@ -19,12 +19,21 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2024.3.1.1: Release for IntelliJ 2024.3.1.1 (build 243.22562.218)
+          <ol>
+            <li>Scala plugin 2024.3.23</li>
+            <li>Gherkin plugin 243.22562.13</li>
+            <li><a href="https://github.com/vbmacher/intellij-cucumber-scala/issues/137">Problem with building in GitHub actions</a></li>
+            <li>Rollback to using Java version 17 (which is default IntelliJ Idea Java version)</li>
+          </ol>
+      </li>
       <li>2024.3: Release for IntelliJ 2024.3 (build 243.21565.193)
           <ol>
             <li>Scala plugin 2024.3.18</li>
             <li>Gherkin plugin 243.21565.122</li>
             <li>cucumber-scala 8.25.1</li>
             <li>cucumber-junit 7.20.1</li>
+            <li>Use Java version 21</li>
           </ol>
       </li>
       <li>2024.2.1: Release for IntelliJ 2024.2.1 (build 242.21829.142)
