@@ -13,7 +13,7 @@ lazy val commonSettings = Seq(
     "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
   ),
-  version := "2024.3",
+  version := "2024.3.1.1",
   scalaVersion := "2.13.15",
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
@@ -30,17 +30,17 @@ lazy val `cucumber-scala` = project
         .settings(
           commonSettings,
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
-          ThisBuild / intellijBuild := "243.21565.193",
+          ThisBuild / intellijBuild := "243.22562.218",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2024.3.18".toPlugin,
-            "gherkin:243.21565.122".toPlugin
+            "org.intellij.scala:2024.3.23".toPlugin,
+            "gherkin:243.22562.13".toPlugin
           ),
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>
             xml.version = version.value
-            xml.sinceBuild = "243.21565"
+            xml.sinceBuild = "243.22562"
             xml.untilBuild = "243.*"
           },
           signPluginOptions := signPluginOptions.value.copy(enabled = true)
