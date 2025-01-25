@@ -1,6 +1,8 @@
 # intellij-cucumber-scala
 
-![Build for intellij-cucumber-scala](https://github.com/vbmacher/intellij-cucumber-scala/workflows/Build%20for%20intellij-cucumber-scala/badge.svg)
+[![Build](https://img.shields.io/github/actions/workflow/status/vbmacher/intellij-cucumber-scala/build.yml?style=flat-square)](https://github.com/vbmacher/intellij-cucumber-scala/actions?query=branch%3Amaster)
+[![Version](https://img.shields.io/jetbrains/plugin/v/7460-cucumber-for-scala.svg?style=flat-square)](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala)
+[![JetBrains Plugin Downloads](https://img.shields.io/jetbrains/plugin/d/7460-cucumber-for-scala?style=flat-square)](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala)
 
 A [plugin to IntelliJ IDEA](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala),
 enabling navigation between step definitions and gherkin steps when using cucumber-scala DSL.
