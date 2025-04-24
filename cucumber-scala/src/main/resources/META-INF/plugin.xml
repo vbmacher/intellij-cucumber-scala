@@ -19,6 +19,16 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2025.1: Release for IntelliJ 2025.1 (build 251.23774.435)
+          <ol>
+            <li>Scala version 2.13.16</li>
+            <li>Scala plugin 2025.1.20</li>
+            <li>Gherkin plugin 251.23774.318</li>
+            <li>cucumber-scala 8.27.0</li>
+            <li>cucumber-junit 7.22.0</li>
+            <li>junit-4-13 3.2.19.1</li>
+          </ol>
+      </li>
       <li>2024.3.1.1: Release for IntelliJ 2024.3.1.1 (build 243.22562.218)
           <ol>
             <li>Scala plugin 2024.3.23</li>
