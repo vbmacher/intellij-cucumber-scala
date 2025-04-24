@@ -5,8 +5,8 @@
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <category>Test Tools</category>
-    <version>2024.3.1.1</version>
-    <idea-version since-build="243.22562" until-build="243.*"/>
+    <version>2025.1</version>
+    <idea-version since-build="251.23774" until-build="251.*"/>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
