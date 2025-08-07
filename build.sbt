@@ -2,6 +2,7 @@ lazy val commonSettings = Seq(
   fork := true,
   javaOptions ++= Seq(
     "--add-opens", "java.desktop/javax.swing.plaf.basic=ALL-UNNAMED",
+    "--add-opens", "java.desktop/javax.swing.text.html.parser=ALL-UNNAMED",
     "--add-opens", "java.desktop/com.sun.java.swing.platf.gtk=ALL-UNNAMED",
     "--add-opens", "java.desktop/sun.awt=ALL-UNNAMED",
     "--add-opens", "java.desktop/sun.awt.windows=ALL-UNNAMED",
@@ -14,12 +15,12 @@ lazy val commonSettings = Seq(
     "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
     "--add-opens", "java.base/java.nio=ALL-UNNAMED",
   ),
-  version := "2025.1",
+  version := "2025.2",
   scalaVersion := "2.13.16",
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
-    "io.cucumber" %% "cucumber-scala" % "8.27.0",
-    "io.cucumber" % "cucumber-junit" % "7.22.0" % Test,
+    "io.cucumber" %% "cucumber-scala" % "8.31.0",
+    "io.cucumber" % "cucumber-junit" % "7.27.0" % Test,
     "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     "org.scalatestplus" %% "junit-4-13" % "3.2.19.1" % Test,
     "org.opentest4j" % "opentest4j" % "1.3.0" % Test
@@ -31,12 +32,12 @@ lazy val `cucumber-scala` = project
         .settings(
           commonSettings,
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
-          ThisBuild / intellijBuild := "251.23774.435",
+          ThisBuild / intellijBuild := "252.23892.409",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2025.1.20".toPlugin,
-            "gherkin:251.23774.318".toPlugin
+            "org.intellij.scala:2025.2.26".toPlugin,
+            "gherkin:252.23892.201".toPlugin
           ),
           intellijVMOptions := intellijVMOptions.value.copy(
             defaultOptions = Seq(
@@ -51,6 +52,7 @@ lazy val `cucumber-scala` = project
               "--add-opens", "java.desktop/javax.swing=ALL-UNNAMED",
               "--add-opens", "java.desktop/javax.swing.text=ALL-UNNAMED",
               "--add-opens", "java.desktop/javax.swing.text.html=ALL-UNNAMED",
+              "--add-opens", "java.desktop/javax.swing.text.html.parser=ALL-UNNAMED",
               "--add-opens", "java.desktop/sun.font=ALL-UNNAMED",
               "--add-exports", "java.base/jdk.internal.vm=ALL-UNNAMED",
               "--add-exports", "java.desktop/sun.swing=ALL-UNNAMED",
@@ -93,8 +95,8 @@ lazy val `cucumber-scala` = project
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>
             xml.version = version.value
-            xml.sinceBuild = "251.23774"
-            xml.untilBuild = "251.*"
+            xml.sinceBuild = "252.23892"
+            xml.untilBuild = "252.*"
           },
           signPluginOptions := signPluginOptions.value.copy(enabled = true)
         )
