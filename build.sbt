@@ -37,7 +37,8 @@ lazy val `cucumber-scala` = project
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
             "org.intellij.scala:2025.3.23".toPlugin,
-            "gherkin:253.28294.218".toPlugin
+            "gherkin:253.28294.218".toPlugin,
+            "com.intellij.java".toPlugin,
           ),
           intellijVMOptions := intellijVMOptions.value.copy(
             defaultOptions = Seq(
