@@ -24,7 +24,11 @@ lazy val commonSettings = Seq(
     "org.scalatest" %% "scalatest" % "3.2.19" % Test,
     "org.scalatestplus" %% "junit-4-13" % "3.2.19.1" % Test,
     "org.opentest4j" % "opentest4j" % "1.3.0" % Test
-  )
+  ),
+  buildIntellijOptionsIndex := {
+    // for some reason the project is unable to build an index
+    streams.value.log.info("Skipping buildIntellijOptionsIndex.")
+  }
 )
 
 lazy val `cucumber-scala` = project
