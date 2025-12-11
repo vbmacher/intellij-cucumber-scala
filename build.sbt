@@ -25,8 +25,8 @@ lazy val commonSettings = Seq(
     "org.scalatestplus" %% "junit-4-13" % "3.2.19.1" % Test,
     "org.opentest4j" % "opentest4j" % "1.3.0" % Test
   ),
+  //  https://github.com/JetBrains/sbt-idea-plugin/issues/137
   buildIntellijOptionsIndex := {
-    // for some reason the project is unable to build an index
     streams.value.log.info("Skipping buildIntellijOptionsIndex.")
   }
 )
