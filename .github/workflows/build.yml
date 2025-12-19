@@ -11,6 +11,6 @@ jobs:
       - uses: actions/checkout@v2
       - uses: olafurpg/setup-scala@v14
         with:
-          java-version: 1.17-custom=tgz+https://cache-redirector.jetbrains.com/intellij-jbr/jbr_jcef-17.0.11-linux-x64-b1312.2.tar.gz
+          java-version: 21-custom=tgz+https://cache-redirector.jetbrains.com/intellij-jbr/jbr_jcef-21.0.5-linux-x64-b631.16.tar.gz
       - name: Compile & Test
         run: sbt test
