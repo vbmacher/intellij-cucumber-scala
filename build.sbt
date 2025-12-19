@@ -42,6 +42,7 @@ lazy val `cucumber-scala` = project
           ThisBuild / intellijBuild := "253.28294.334",
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           ThisBuild / autoRemoveOldCachedIntelliJSDK := true,
+          ThisBuild / autoRemoveOldCachedDownloads := true,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
             "org.intellij.scala:2025.3.23".toPlugin,
