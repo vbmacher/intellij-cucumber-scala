@@ -2,9 +2,9 @@ package com.github.vbmacher.intellij.cucumber.scala
 
 import com.intellij.openapi.module.Module
 import com.intellij.openapi.roots.{ContentEntry, ModifiableRootModel}
-import com.intellij.testFramework.fixtures.DefaultLightProjectDescriptor
+import com.intellij.testFramework.LightProjectDescriptor
 
-class LibraryLightProjectDescriptor(libraries: Dependency*) extends DefaultLightProjectDescriptor {
+class LibraryLightProjectDescriptor(libraries: Dependency*) extends LightProjectDescriptor {
 
   override def configureModule(module: Module, model: ModifiableRootModel, contentEntry: ContentEntry): Unit = {
     super.configureModule(module, model, contentEntry)

@@ -1,16 +1,23 @@
 name: Build for intellij-cucumber-scala
 
-on: [ push ]
+on:
+  push:
+
+permissions:
+  contents: read
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
+
       - uses: olafurpg/setup-scala@v14
         with:
           java-version: 21-custom=tgz+https://cache-redirector.jetbrains.com/intellij-jbr/jbr_jcef-21.0.5-linux-x64-b631.16.tar.gz
+
+      - uses: sbt/setup-sbt@v1
+
       - name: Compile & Test
-        run: sbt test
+        run: sbt --batch test

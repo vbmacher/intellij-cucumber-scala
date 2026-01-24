@@ -1,40 +1,39 @@
 package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import java.util
-
-import CucumberStep.DT
+import com.github.vbmacher.intellij.cucumber.scala.steps.CucumberStep.DT
 import io.cucumber.core.gherkin
 import io.cucumber.core.gherkin.{DataTableArgument, Step, StepType}
-import io.cucumber.gherkin.GherkinDialectProvider
+import io.cucumber.gherkin.GherkinDialects
 import io.cucumber.plugin.event.Location
 import org.jetbrains.plugins.cucumber.psi.{GherkinStep, GherkinTable}
 
+import java.util
 import scala.jdk.CollectionConverters._
 
 class CucumberStep(step: GherkinStep) extends Step {
-  private val dialect = new GherkinDialectProvider().getDefaultDialect
-  private val keywordStepType = {
-    Seq(
-      dialect.getGivenKeywords.asScala.map(_.trim -> StepType.GIVEN),
-      dialect.getWhenKeywords.asScala.map(_.trim -> StepType.WHEN),
-      dialect.getThenKeywords.asScala.map(_.trim -> StepType.THEN),
-      dialect.getAndKeywords.asScala.map(_.trim -> StepType.AND),
-      dialect.getButKeywords.asScala.map(_.trim -> StepType.BUT)
-    ).flatten.toMap
-  }
+
+  private lazy val dialect = GherkinDialects.getDialect("en")
+    .orElseThrow(() => new IllegalStateException("'en' was not a known gherkin Dialect"))
 
   override val getArgument: gherkin.Argument = {
     val table = Option(step.getTable)
     if (table.nonEmpty) new DT(table.get) else null
   }
 
-  override def getType: StepType = {
-    val keyword = getKeyword.trim
+  override val getType: StepType = {
+    val keyword = step.getKeyword.getText.trim
     if (StepType.isAstrix(keyword)) StepType.OTHER
     else {
-      keywordStepType.getOrElse(
+      val types = Seq(
+        dialect.getGivenKeywords.asScala.map(_.trim -> StepType.GIVEN),
+        dialect.getWhenKeywords.asScala.map(_.trim -> StepType.WHEN),
+        dialect.getThenKeywords.asScala.map(_.trim -> StepType.THEN),
+        dialect.getAndKeywords.asScala.map(_.trim -> StepType.AND),
+        dialect.getButKeywords.asScala.map(_.trim -> StepType.BUT)
+      ).flatten.toMap
+      types.getOrElse(
         keyword,
-        throw new IllegalStateException(s"Keyword $getKeyword was neither given, when, then, and, but nor *")
+        throw new IllegalStateException(s"Keyword '$keyword' was neither given, when, then, and, but nor *")
       )
     }
   }
@@ -51,6 +50,7 @@ class CucumberStep(step: GherkinStep) extends Step {
 
   override val getLocation: Location = null
 }
+
 object CucumberStep {
 
   def apply(step: GherkinStep): CucumberStep = new CucumberStep(step)
