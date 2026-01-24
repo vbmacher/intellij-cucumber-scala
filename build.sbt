@@ -1,3 +1,11 @@
+import Dependencies.detectIntellijArtifactVersionAndRepository
+
+val intellijVersion = "261.22158.277"
+val intelliJ = detectIntellijArtifactVersionAndRepository(intellijVersion)
+val intellijArtifactVersion = intelliJ._1
+val intellijArtifactResolver = intelliJ._2
+
+
 lazy val commonSettings = Seq(
   fork := true,
   javaOptions ++= Seq(
@@ -16,17 +24,28 @@ lazy val commonSettings = Seq(
     "--add-exports=java.base/sun.nio.ch=ALL-UNNAMED",
     "--add-opens=java.base/java.nio=ALL-UNNAMED",
     "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
-    "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED"
+    "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+
+    "--add-opens=java.base/java.lang=ALL-UNNAMED",
+    "--add-opens=java.base/java.util=ALL-UNNAMED",
+    "--add-opens=java.base/java.io=ALL-UNNAMED",
+    "--add-opens=java.base/java.net=ALL-UNNAMED",
+    "--add-opens=java.base/java.text=ALL-UNNAMED",
+    "--add-opens=java.base/java.time=ALL-UNNAMED",
   ),
-  version := "2025.3",
+  version := "2026.1",
   scalaVersion := "2.13.18",
+  resolvers += intellijArtifactResolver,
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
-    "io.cucumber" %% "cucumber-scala" % "8.38.0",
-    "io.cucumber" % "cucumber-junit" % "7.33.0" % Test,
-    "org.scalatest" %% "scalatest" % "3.2.19" % Test,
-    "org.scalatestplus" %% "junit-4-13" % "3.2.19.1" % Test,
-    "org.opentest4j" % "opentest4j" % "1.3.0" % Test
+    "io.cucumber" %% "cucumber-scala" % "8.39.1",
+    "io.cucumber" % "cucumber-junit" % "7.34.3" % Test,
+    "org.scalatest" %% "scalatest" % "3.2.20" % Test,
+    "org.scalatestplus" %% "junit-4-13" % "3.2.20.0" % Test,
+    "org.opentest4j" % "opentest4j" % "1.3.0" % Test,
+    ("com.jetbrains.intellij.platform" % "test-framework-core" % intellijArtifactVersion).notTransitive() % Test,
+    ("com.jetbrains.intellij.platform" % "test-framework-common" % intellijArtifactVersion).notTransitive() % Test,
+    ("com.jetbrains.intellij.platform" % "test-framework" % intellijArtifactVersion).notTransitive() % Test,
   ),
   //  https://github.com/JetBrains/sbt-idea-plugin/issues/137
   buildIntellijOptionsIndex := {
@@ -39,18 +58,22 @@ lazy val `cucumber-scala` = project
         .settings(
           commonSettings,
           ThisBuild / intellijPluginName := "intellij-cucumber-scala",
-          ThisBuild / intellijBuild := "253.28294.334",
+          ThisBuild / intellijBuild := intellijVersion,
           ThisBuild / intellijPlatform := IntelliJPlatform.IdeaCommunity,
           ThisBuild / autoRemoveOldCachedIntelliJSDK := true,
           ThisBuild / autoRemoveOldCachedDownloads := true,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2025.3.23".toPlugin,
-            "gherkin:253.28294.218".toPlugin,
-            "com.intellij.java".toPlugin,
+            "org.intellij.scala:2026.1.16".toPlugin,
+            "gherkin:261.22158.182".toPlugin,
+            "com.intellij.java:261.22158.277".toPlugin.withFallbackDownloadUrl("https://plugins.jetbrains.com/plugin/download?noStatistic=true&pluginId=com.intellij.java&version=261.22158.277"),
+
+            // https://plugins.jetbrains.com/plugin/download?noStatistic=true&pluginId=com.intellij.java&version=261.22158.277
+
+            // https://plugins.jetbrains.com/pluginManager?action=download&noStatistic=true&id=intellij.java.backend&build=IC-261.22158.277
           ),
-          intellijVMOptions := intellijVMOptions.value.copy(
-            defaultOptions = Seq(
+          customIntellijVMOptions := customIntellijVMOptions.value.copy(
+            extraOptions = Seq(
               "--add-opens=java.desktop/javax.swing.plaf.basic=ALL-UNNAMED",
               "--add-opens=java.desktop/com.apple.laf=ALL-UNNAMED",
               "--add-opens=java.desktop/com.sun.java.swing.platf.gtk=ALL-UNNAMED",
@@ -77,17 +100,21 @@ lazy val `cucumber-scala` = project
               "--add-opens=java.base/java.util=ALL-UNNAMED",
               "--add-opens=java.base/java.nio=ALL-UNNAMED",
               "--add-exports=java.base/jdk.internal.ref=ALL-UNNAMED",
-              "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED"
+              "--add-opens=java.base/jdk.internal.ref=ALL-UNNAMED",
+
+              "--add-opens=java.base/java.io=ALL-UNNAMED",
+              "--add-opens=java.base/java.net=ALL-UNNAMED",
+              "--add-opens=java.base/java.text=ALL-UNNAMED",
+              "--add-opens=java.base/java.time=ALL-UNNAMED",
             )
           ),
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>
             xml.version = version.value
-            xml.sinceBuild = "253.28294"
-            xml.untilBuild = "253.*"
+            xml.sinceBuild = "261.22158"
+            xml.untilBuild = "261.*"
           },
-          signPluginOptions := signPluginOptions.value.copy(enabled = true)
-        )
+          signPluginOptions := signPluginOptions.value.copy(enabled = true))
 
 lazy val example = project.settings(commonSettings, packageMethod := PackagingMethod.Skip())
 
@@ -96,5 +123,6 @@ lazy val `example-stepdefs-lib` = project.settings(commonSettings, packageMethod
 lazy val root = (project in file("."))
         .aggregate(`cucumber-scala`, example, `example-stepdefs-lib`)
         .settings(
-          name := "intellij-cucumber-scala"
+          name := "intellij-cucumber-scala",
+          packageMethod := PackagingMethod.Skip()
         )
