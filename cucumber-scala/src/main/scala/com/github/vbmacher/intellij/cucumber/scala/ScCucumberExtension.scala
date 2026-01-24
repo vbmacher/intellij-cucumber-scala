@@ -21,11 +21,11 @@ import scala.util.Try
 
 class ScCucumberExtension extends AbstractCucumberExtension {
 
-  override def isStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
+  override def isStepLikeFile(@NotNull child: PsiElement): Boolean = {
     child.isInstanceOf[ScalaFile]
   }
 
-  override def isWritableStepLikeFile(@NotNull child: PsiElement, @NotNull parent: PsiElement): Boolean = {
+  override def isWritableStepLikeFile(@NotNull child: PsiElement): Boolean = {
     child match {
       case scalaFile: ScalaFile =>
         Option(scalaFile.getContainingFile).map(_.getVirtualFile).exists(_.isWritable)
@@ -76,9 +76,8 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       step <- loadStepsFor(featureFile, module).asScala
       psiElement <- Option(step.getElement).toSeq
       psiFile <- Try(psiElement.getContainingFile).toOption.toSeq
-      psiDirectory <- Option(psiFile.getParent).toSeq
 
-      if isWritableStepLikeFile(psiFile, psiDirectory)
+      if isWritableStepLikeFile(psiFile)
     } yield psiFile
 
     stepFiles.asJava

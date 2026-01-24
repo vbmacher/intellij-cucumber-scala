@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.steps
 
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberUtil.PARAMETER_TYPE_REGISTRY
 import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition.implicits._
 import com.github.vbmacher.intellij.cucumber.scala.{inWriteAction, isUnitTestMode}
 import com.intellij.codeInsight.CodeInsightUtilCore
@@ -14,7 +15,6 @@ import com.intellij.psi._
 import com.intellij.psi.util.PsiTreeUtil
 import com.intellij.util.IncorrectOperationException
 import io.cucumber.core.snippets.{SnippetGenerator, SnippetType}
-import io.cucumber.cucumberexpressions.ParameterTypeRegistry
 import io.cucumber.scala.ScalaSnippet
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import org.jetbrains.plugins.cucumber.AbstractStepDefinitionCreator
@@ -27,7 +27,7 @@ import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.lang.refactoring.ScalaNamesValidator
 import org.jetbrains.plugins.scala.project.ProjectContext
 
-import java.util.{Locale, Properties}
+import java.util.Properties
 import scala.jdk.CollectionConverters._
 import scala.util.{Failure, Success, Try}
 
@@ -117,7 +117,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
 
   private def createMethodCall(step: GherkinStep, context: PsiElement)(implicit pc: ProjectContext): ScMethodCall = {
-    val generator = new SnippetGenerator(new ScalaSnippet, new ParameterTypeRegistry(Locale.ENGLISH))
+    val generator = new SnippetGenerator(new ScalaSnippet, PARAMETER_TYPE_REGISTRY)
     val snippet = generator.getSnippet(CucumberStep(step), SnippetType.CAMELCASE).get(0)
     ScalaPsiElementFactory.createExpressionFromText(snippet, context).asInstanceOf[ScMethodCall]
   }

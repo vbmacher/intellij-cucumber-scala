@@ -5,8 +5,8 @@
     <id>com.github.danielwegener.cucumber-scala</id>
     <name>Cucumber for Scala</name>
     <category>Test Tools</category>
-    <version>2025.3</version>
-    <idea-version since-build="253.28294" until-build="253.*"/>
+    <version>2026.1</version>
+    <idea-version since-build="261.17801" until-build="261.17801.*"/>
     <vendor email="pjakubco@gmail.com" url="https://github.com/vbmacher">Peter Jakubčo</vendor>
 
     <description><![CDATA[
@@ -19,6 +19,12 @@
 
     <change-notes><![CDATA[
       <ul>
+      <li>2026.1: Release for IntelliJ 2026.1 (build 261.17801.55)
+          <ol>
+            <li>Scala plugin 2026.1.1</li>
+            <li>Gherkin plugin 261.17801.36</li>
+          </ol>
+      </li>
       <li>2025.3: Release for IntelliJ 2025.3 (build 253.28294.334)
           <ol>
             <li>Scala plugin 2025.3.23</li>
