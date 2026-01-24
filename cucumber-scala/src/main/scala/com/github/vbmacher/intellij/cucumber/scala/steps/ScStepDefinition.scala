@@ -1,28 +1,27 @@
 package com.github.vbmacher.intellij.cucumber.scala.steps
 
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberUtil.PARAMETER_TYPE_REGISTRY
 import com.github.vbmacher.intellij.cucumber.scala.psi.CustomParameterType
 import com.github.vbmacher.intellij.cucumber.scala.psi.StepDefinition.implicits._
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.psi.PsiElement
-import io.cucumber.cucumberexpressions.{ParameterType, ParameterTypeRegistry}
+import io.cucumber.cucumberexpressions.ParameterType
 import org.jetbrains.annotations.Nullable
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
 import java.util
-import java.util.Locale
 import java.util.regex.{Matcher, Pattern}
 import scala.jdk.CollectionConverters._
 
 class ScStepDefinition(scMethod: ScMethodCall) extends AbstractStepDefinition(scMethod.getFirstChild) {
-  private val paramRegistry = new ParameterTypeRegistry(Locale.ENGLISH)
-  private val parameterTypeByName = paramRegistry.getClass.getDeclaredField("parameterTypeByName")
+  private val parameterTypeByName = PARAMETER_TYPE_REGISTRY.getClass.getDeclaredField("parameterTypeByName")
 
   parameterTypeByName.setAccessible(true)
 
   // See: io.cucumber.cucumberexpressions.ParameterTypeRegistry
   private val knownParamTypes = parameterTypeByName
-    .get(paramRegistry)
+    .get(PARAMETER_TYPE_REGISTRY)
     .asInstanceOf[util.Map[String, ParameterType[_]]]
     .asScala
     .toSeq

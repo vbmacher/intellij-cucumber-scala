@@ -26,7 +26,9 @@ abstract class ScCucumberSpecBase extends BasePlatformTestCase with Matchers wit
   }
 
   def loadTestCase(files: String*): Array[PsiFile] = {
-    myFixture.configureByFiles(files.map(getTestDataPath + File.separator + _): _*)
+    val r = myFixture.configureByFiles(files.map(getTestDataPath + File.separator + _): _*)
+    myFixture.doHighlighting()
+    r
   }
 
   def findLineMarkers() = {
