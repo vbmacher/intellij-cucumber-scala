@@ -66,11 +66,10 @@ lazy val `cucumber-scala` = project
           intellijPlugins ++= Seq(
             "org.intellij.scala:2026.1.16".toPlugin,
             "gherkin:261.22158.182".toPlugin,
-            "com.intellij.java:261.22158.277".toPlugin.withFallbackDownloadUrl("https://plugins.jetbrains.com/plugin/download?noStatistic=true&pluginId=com.intellij.java&version=261.22158.277"),
-
-            // https://plugins.jetbrains.com/plugin/download?noStatistic=true&pluginId=com.intellij.java&version=261.22158.277
-
-            // https://plugins.jetbrains.com/pluginManager?action=download&noStatistic=true&id=intellij.java.backend&build=IC-261.22158.277
+            // intellij.java.backend is an embedded module inside com.intellij.java, not a separate
+            // marketplace plugin. sbt-idea-plugin incorrectly tries to download it as a transitive
+            // dependency, resulting in a 404. Excluding it from transitive resolution fixes the issue.
+            "com.intellij.java:261.22158.277".toPlugin(excludedIds = Set("intellij.java.backend")),
           ),
           customIntellijVMOptions := customIntellijVMOptions.value.copy(
             extraOptions = Seq(
