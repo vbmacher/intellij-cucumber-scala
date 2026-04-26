@@ -11,11 +11,13 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: olafurpg/setup-scala@v14
+      - uses: actions/setup-java@v5
         with:
-          java-version: 21-custom=tgz+https://cache-redirector.jetbrains.com/intellij-jbr/jbr_jcef-21.0.5-linux-x64-b631.16.tar.gz
+          distribution: temurin
+          java-version: 21
+          cache: sbt
 
       - uses: sbt/setup-sbt@v1
 
