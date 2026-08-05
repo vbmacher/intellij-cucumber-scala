@@ -39,7 +39,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
   @NotNull
   override def getStepDefinitionCreator: StepDefinitionCreator = ScStepDefinitionCreator()
 
-  override def loadStepsFor(featureFile: PsiFile, module: Module): java.util.List[AbstractStepDefinition] = {
+  override def loadStepsFor(module: Module): java.util.List[AbstractStepDefinition] = {
     val fileBasedIndex = FileBasedIndex.getInstance()
     val project = module.getProject
 
@@ -73,7 +73,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
   override def getStepDefinitionContainers(featureFile: GherkinFile): JavaCollection[_ <: PsiFile] = {
     val stepFiles = for {
       module <- Option(ModuleUtilCore.findModuleForPsiElement(featureFile)).toSeq
-      step <- loadStepsFor(featureFile, module).asScala
+      step <- loadStepsFor(module).asScala
       psiElement <- Option(step.getElement).toSeq
       psiFile <- Try(psiElement.getContainingFile).toOption.toSeq
 

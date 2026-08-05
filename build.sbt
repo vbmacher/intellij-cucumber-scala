@@ -1,6 +1,6 @@
 import Dependencies.detectIntellijArtifactVersionAndRepository
 
-val intellijVersion = "261.22158.277"
+val intellijVersion = "262.8665.337"
 val intelliJ = detectIntellijArtifactVersionAndRepository(intellijVersion)
 val intellijArtifactVersion = intelliJ._1
 val intellijArtifactResolver = intelliJ._2
@@ -33,7 +33,7 @@ lazy val commonSettings = Seq(
     "--add-opens=java.base/java.text=ALL-UNNAMED",
     "--add-opens=java.base/java.time=ALL-UNNAMED",
   ),
-  version := "2026.1",
+  version := "2026.2",
   scalaVersion := "2.13.18",
   resolvers += intellijArtifactResolver,
   libraryDependencies ++= Seq(
@@ -64,12 +64,23 @@ lazy val `cucumber-scala` = project
           ThisBuild / autoRemoveOldCachedDownloads := true,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2026.1.16".toPlugin,
-            "gherkin:261.22158.182".toPlugin,
+            "org.intellij.scala:2026.2.15".toPlugin,
+            "gherkin:262.8665.173".toPlugin,
+            // In 2026.2 several platform modules moved out of the platform lib into bundled plugins.
+            // They are not picked up unless declared, and a missing one cascades into the plugins we
+            // depend on: lucene.common -> spellchecker -> gherkin, aetherDependencyResolver and
+            // structuralSearch -> java -> scala. The result is that gherkin never loads and its
+            // cucumberJvmExtensionPoint is not registered at all.
+            "intellij.libraries.misc.plugin".toPlugin,
+            "intellij.java.aetherDependencyResolver.plugin".toPlugin,
+            "intellij.structureView.plugin".toPlugin,
+            "intellij.structuralSearch.plugin".toPlugin,
+            "intellij.testRunner.plugin".toPlugin,
+            "intellij.todo.plugin".toPlugin,
             // intellij.java.backend is an embedded module inside com.intellij.java, not a separate
             // marketplace plugin. sbt-idea-plugin incorrectly tries to download it as a transitive
             // dependency, resulting in a 404. Excluding it from transitive resolution fixes the issue.
-            "com.intellij.java:261.22158.277".toPlugin(excludedIds = Set("intellij.java.backend")),
+            "com.intellij.java:262.8665.337".toPlugin(excludedIds = Set("intellij.java.backend")),
           ),
           customIntellijVMOptions := customIntellijVMOptions.value.copy(
             extraOptions = Seq(
@@ -110,8 +121,8 @@ lazy val `cucumber-scala` = project
           packageMethod := PackagingMethod.Standalone(),
           patchPluginXml := pluginXmlOptions { xml =>
             xml.version = version.value
-            xml.sinceBuild = "261.22158"
-            xml.untilBuild = "261.*"
+            xml.sinceBuild = "262.8665"
+            xml.untilBuild = "262.*"
           },
           signPluginOptions := signPluginOptions.value.copy(enabled = true))
 
