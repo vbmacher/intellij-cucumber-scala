@@ -19,11 +19,13 @@
 
     <change-notes><![CDATA[
       <ul>
-      <li>2026.2: Release for IntelliJ 2026.2 (build 262.8665.337)
+      <li>2026.2: Release for IntelliJ 2026.2 (build 262.9437.185)
           <ol>
-            <li>Scala plugin 2026.2.15</li>
+            <li>Scala plugin 2026.2.16</li>
             <li>Gherkin plugin 262.8665.173</li>
-            <li>Java plugin 262.8665.337</li>
+            <li>Java plugin 262.9437.185</li>
+            <li>cucumber-scala 8.39.7</li>
+            <li>cucumber-junit 7.34.7</li>
           </ol>
       </li>
       <li>2026.1: Release for IntelliJ 2026.1 (build 261.22158.277)

@@ -1,6 +1,6 @@
 import Dependencies.detectIntellijArtifactVersionAndRepository
 
-val intellijVersion = "262.8665.337"
+val intellijVersion = "262.9437.185"
 val intelliJ = detectIntellijArtifactVersionAndRepository(intellijVersion)
 val intellijArtifactVersion = intelliJ._1
 val intellijArtifactResolver = intelliJ._2
@@ -38,8 +38,8 @@ lazy val commonSettings = Seq(
   resolvers += intellijArtifactResolver,
   libraryDependencies ++= Seq(
     "junit" % "junit" % "4.13.2" % Test,
-    "io.cucumber" %% "cucumber-scala" % "8.39.1",
-    "io.cucumber" % "cucumber-junit" % "7.34.3" % Test,
+    "io.cucumber" %% "cucumber-scala" % "8.39.7",
+    "io.cucumber" % "cucumber-junit" % "7.34.7" % Test,
     "org.scalatest" %% "scalatest" % "3.2.20" % Test,
     "org.scalatestplus" %% "junit-4-13" % "3.2.20.0" % Test,
     "org.opentest4j" % "opentest4j" % "1.3.0" % Test,
@@ -64,7 +64,7 @@ lazy val `cucumber-scala` = project
           ThisBuild / autoRemoveOldCachedDownloads := true,
           Compile / javacOptions ++= "--release" :: "21" :: Nil,
           intellijPlugins ++= Seq(
-            "org.intellij.scala:2026.2.15".toPlugin,
+            "org.intellij.scala:2026.2.16".toPlugin,
             "gherkin:262.8665.173".toPlugin,
             // In 2026.2 several platform modules moved out of the platform lib into bundled plugins.
             // They are not picked up unless declared, and a missing one cascades into the plugins we
@@ -80,7 +80,7 @@ lazy val `cucumber-scala` = project
             // intellij.java.backend is an embedded module inside com.intellij.java, not a separate
             // marketplace plugin. sbt-idea-plugin incorrectly tries to download it as a transitive
             // dependency, resulting in a 404. Excluding it from transitive resolution fixes the issue.
-            "com.intellij.java:262.8665.337".toPlugin(excludedIds = Set("intellij.java.backend")),
+            "com.intellij.java:262.9437.185".toPlugin(excludedIds = Set("intellij.java.backend")),
           ),
           customIntellijVMOptions := customIntellijVMOptions.value.copy(
             extraOptions = Seq(
