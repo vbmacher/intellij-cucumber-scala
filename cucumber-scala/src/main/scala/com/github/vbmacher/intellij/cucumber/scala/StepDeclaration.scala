@@ -37,13 +37,11 @@ class StepDeclarationSearcher extends PomDeclarationSearcher {
 
   override def findDeclarationsAt(element: PsiElement, offsetInElement: Int, consumer: Consumer[_ >: PomTarget]): Unit = {
     val host = Option(InjectedLanguageManager.getInstance(element.getProject).getInjectionHost(element)).getOrElse(element)
-    inReadAction {
-      host.getParent match {
-        case pattern @ (_: ScLiteral | _: ScInfixExpr) =>
-          for (call <- stepDefinitionOfPattern(pattern); p <- call.pattern) yield StepDeclaration(call.getFirstChild, p)
-        case _ => None
-      }
-    }.foreach(consumer.consume)
+    (host.getParent match {
+      case pattern @ (_: ScLiteral | _: ScInfixExpr) =>
+        for (call <- callOfPattern(pattern); (_, p) <- call.definition) yield StepDeclaration(call.getFirstChild, p)
+      case _ => None
+    }).foreach(consumer.consume)
   }
 }
 
