@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.resolve
 
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberExtension, ScCucumberSpecBase, inReadAction}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberExtension, ScCucumberSpecBase}
 import org.jetbrains.plugins.cucumber.CucumberJvmExtensionPoint
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
 import org.jetbrains.plugins.cucumber.steps.{AbstractStepDefinition, CucumberStepHelper}
