@@ -3,14 +3,16 @@ package com.github.vbmacher.intellij.cucumber.scala
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.{GlobalSearchScope, ProjectScope}
+import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager, PsiModificationTracker}
 import com.intellij.psi.{PsiElement, PsiFile, PsiManager}
 import com.intellij.util.indexing.FileBasedIndex
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.jetbrains.plugins.cucumber.steps.{AbstractCucumberExtension, AbstractStepDefinition}
 import org.jetbrains.plugins.cucumber.{BDDFrameworkType, StepDefinitionCreator}
-import org.jetbrains.plugins.scala.ScalaFileType
+import org.jetbrains.plugins.scala.{ScalaFileType, ScalaLanguage}
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 
 import java.util
@@ -30,7 +32,17 @@ class ScCucumberExtension extends AbstractCucumberExtension {
 
   override def getStepDefinitionCreator: StepDefinitionCreator = new ScStepDefinitionCreator
 
+  // Gherkin calls this for every step reference resolve, so cache it until Scala PSI or roots change
   override def loadStepsFor(module: Module): util.List[AbstractStepDefinition] = {
+    val project = module.getProject
+    CachedValuesManager.getManager(project).getCachedValue(module, () => CachedValueProvider.Result.create(
+      util.Collections.unmodifiableList(findSteps(module)),
+      PsiModificationTracker.getInstance(project).forLanguages(_.isKindOf(ScalaLanguage.INSTANCE)),
+      ProjectRootManager.getInstance(project)
+    ))
+  }
+
+  private def findSteps(module: Module): util.List[AbstractStepDefinition] = {
     val project = module.getProject
     val psiManager = PsiManager.getInstance(project)
     val scope = GlobalSearchScope.getScopeRestrictedByFileTypes(
@@ -44,7 +56,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       for {
         psiFile <- Option(psiManager.findFile(file)).toSeq
         offset <- offsets
-        call <- stepDefinitionOfIndexed(psiFile.findElementAt(offset + 1))
+        call <- callOfIndexed(psiFile.findElementAt(offset + 1))
       } result.add(new ScStepDefinition(call))
       true
     }, scope)
