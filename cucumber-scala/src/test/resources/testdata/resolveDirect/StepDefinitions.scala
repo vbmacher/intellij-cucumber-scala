@@ -5,9 +5,9 @@ case class Time(hours: Double)
 
 class StepDefinitions extends ScalaDsl {
 
-  ParameterType("speed", "\\\\d+km/h") { speed: String => Speed(speed.split(' ').head.toDouble) }
-  ParameterType("time", "\\\\d+h") { time: String => Time(time.split(' ').head.toDouble) }
-  ParameterType("kilograms", "\\\\d+kg") { time: String => Time(time.split(' ').head.toDouble) }
+  ParameterType("speed", "\\d+km/h") { speed: String => Speed(speed.split(' ').head.toDouble) }
+  ParameterType("time", "\\d+h") { time: String => Time(time.split(' ').head.toDouble) }
+  ParameterType("kilograms", "\\d+kg") { time: String => Time(time.split(' ').head.toDouble) }
 
 
   val calc = new Calculator

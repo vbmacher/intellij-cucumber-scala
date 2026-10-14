@@ -27,6 +27,7 @@
             <li>cucumber-scala 8.39.7</li>
             <li>cucumber-junit 7.34.7</li>
             <li>Use Java version 25 (https://plugins.jetbrains.com/docs/intellij/setting-up-theme-environment.html#add-jdk-and-intellij-platform-plugin-sdk)</li>
+            <li>Fix: custom parameter type regexes are used as-is (no extra escaping needed)</li>
           </ol>
       </li>
       <li>2026.1: Release for IntelliJ 2026.1 (build 261.22158.277)
@@ -298,13 +299,13 @@
     <extensions defaultExtensionNs="com.intellij">
         <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
-        <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDeclarationSearcher"/>
+        <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.StepDeclarationSearcher"/>
 
-        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepDefinitionSearcher"/>
-        <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.search.StepFindUsagesHandlerFactory"/>
+        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.StepDefinitionSearcher"/>
+        <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.StepFindUsagesHandlerFactory"/>
 
         <codeInsight.lineMarkerProvider
-                implementationClass="com.github.vbmacher.intellij.cucumber.scala.search.ScCucumberLineMarkerProvider"
+                implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScCucumberLineMarkerProvider"
                 language="Scala"/>
     </extensions>
 </idea-plugin>
