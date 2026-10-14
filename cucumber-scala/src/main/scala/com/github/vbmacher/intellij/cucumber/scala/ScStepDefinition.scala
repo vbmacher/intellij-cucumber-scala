@@ -7,25 +7,34 @@ import org.jetbrains.plugins.cucumber.{CucumberUtil, MapParameterTypeManager}
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
 import java.util
+import java.util.regex.Pattern
 import scala.jdk.CollectionConverters._
 
+// Instances live in the loadStepsFor cache, which is dropped on any Scala PSI change
 class ScStepDefinition(call: ScMethodCall) extends AbstractStepDefinition(call.getFirstChild) {
 
-  override def getVariableNames: util.List[String] = call.parameters.map(_.getName).asJava
+  private val regex = call.pattern.map(ScStepDefinition.toRegex(_, call)).orNull
 
-  override def getCucumberRegexFromElement(element: PsiElement): String = call.pattern.map(toRegex).orNull
+  private lazy val compiled = super.getPattern
 
-  private def toRegex(pattern: String): String =
+  override def getPattern: Pattern = compiled
+
+  override def getVariableNames: util.List[String] =
+    Option(getElement).flatMap(e => asCall(e.getParent)).map(_.parameters.map(_.getName)).getOrElse(Seq.empty).asJava
+
+  override def getCucumberRegexFromElement(element: PsiElement): String = regex
+}
+
+object ScStepDefinition {
+
+  private def toRegex(pattern: String, call: ScMethodCall): String =
     if (CucumberUtil.isCucumberExpression(pattern)) {
-      val parameterTypes = ScStepDefinition.BuiltInParameterTypes ++ call.customParameterTypes
+      val parameterTypes = BuiltInParameterTypes ++ call.customParameterTypes
       CucumberUtil.buildRegexpFromCucumberExpression(pattern, new MapParameterTypeManager(parameterTypes.asJava))
     } else {
       val prefixed = if (pattern.startsWith("^")) pattern else s"^$pattern"
       if (prefixed.endsWith("$")) prefixed else s"$prefixed$$"
     }
-}
-
-object ScStepDefinition {
 
   private val BuiltInParameterTypes: Map[String, String] = {
     val standard = CucumberUtil.STANDARD_PARAMETER_TYPES.asScala.toMap

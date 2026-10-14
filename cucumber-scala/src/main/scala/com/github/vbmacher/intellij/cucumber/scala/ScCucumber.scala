@@ -42,7 +42,12 @@ object ScCucumber {
       .map(_.getText.trim)
       .filter(isStepKeyword)
 
-    def name: Option[String] = for (k <- keyword; p <- pattern) yield s"$k $p"
+    /** `(keyword, pattern)` if this is a cucumber step definition */
+    def definition: Option[(String, String)] = for {
+      k <- keyword
+      p <- pattern
+      if isFromCucumber
+    } yield (k, p)
 
     def parameters: Seq[ScParameter] = call.args.exprs
       .collectFirst { case block: ScBlockExpr => block }
@@ -50,7 +55,7 @@ object ScCucumber {
       .getOrElse(Seq.empty)
 
     // Unresolved keywords (e.g. missing library) are accepted, resolved ones must come from cucumber
-    def isStepDefinition: Boolean = name.nonEmpty && inner
+    private def isFromCucumber: Boolean = inner
       .flatMap(c => Option(c.getEffectiveInvokedExpr))
       .flatMap {
         case MethodValue(method) => packageOf(method)
@@ -79,15 +84,19 @@ object ScCucumber {
     own ++ supers.flatMap(parameterTypes(_, visited + klass ++ supers))
   }
 
-  private def stepDefinition(element: PsiElement): Option[ScMethodCall] =
-    Option(element).collect { case c: ScMethodCall if c.isStepDefinition => c }
+  def asCall(element: PsiElement): Option[ScMethodCall] = element match {
+    case c: ScMethodCall => Some(c)
+    case _ => None
+  }
 
-  def stepDefinitionOfKeyword(leaf: PsiElement): Option[ScMethodCall] =
-    Option(leaf.getParent).collect { case ref: ScReferenceExpression => ref.getParent }.flatMap(c => stepDefinition(c.getParent))
+  def callOfKeyword(leaf: PsiElement): Option[ScMethodCall] = leaf.getParent match {
+    case ref: ScReferenceExpression => asCall(ref.getParent.getParent)
+    case _ => None
+  }
 
-  def stepDefinitionOfPattern(expression: PsiElement): Option[ScMethodCall] =
-    Option(PsiTreeUtil.getParentOfType(expression, classOf[ScArgumentExprList])).flatMap(args => stepDefinition(args.getParent.getParent))
+  def callOfPattern(expression: PsiElement): Option[ScMethodCall] =
+    Option(PsiTreeUtil.getParentOfType(expression, classOf[ScArgumentExprList])).flatMap(args => asCall(args.getParent.getParent))
 
-  def stepDefinitionOfIndexed(element: PsiElement): Option[ScMethodCall] =
-    Option(PsiTreeUtil.getParentOfType(element, classOf[ScMethodCall])).map(_.getParent).collect { case c: ScMethodCall => c }
+  def callOfIndexed(element: PsiElement): Option[ScMethodCall] =
+    Option(PsiTreeUtil.getParentOfType(element, classOf[ScMethodCall])).flatMap(c => asCall(c.getParent))
 }
