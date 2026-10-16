@@ -77,7 +77,7 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
         documentManager.commitAllDocuments()
 
         if (withTemplate && !ApplicationManager.getApplication.isUnitTestMode) created.foreach(runTemplate(project, _))
-        true
+        created.nonEmpty
       }.fold(e => { Log.error(e); false }, identity)
 
     case _ => false
