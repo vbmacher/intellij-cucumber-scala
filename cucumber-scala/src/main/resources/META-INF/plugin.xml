@@ -305,6 +305,7 @@
         <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
+        <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.SuiteToolWindowFactory"/>
         <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointType"/>
         <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointHandlerFactory"/>
         <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberConfigurationType"/>
@@ -324,6 +325,9 @@
     <actions>
         <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.BatchStepCreationAction" text="Create Missing Scala Steps…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+        <action id="ScalaCucumber.Suite" class="com.github.vbmacher.intellij.cucumber.scala.ShowSuiteAction" text="Scala Cucumber Suite">
+            <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
     </actions>
 </idea-plugin>
