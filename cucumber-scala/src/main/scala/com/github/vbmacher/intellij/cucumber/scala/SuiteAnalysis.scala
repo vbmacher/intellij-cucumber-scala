@@ -34,6 +34,14 @@ object SuiteAnalysis {
           findings += Finding("Unused", label + " (external consumers unknown)", target)
       }
     }
+    definitions.groupBy(_.getExpression).filter(_._2.size > 1).toSeq.sortBy(_._1).foreach { case (pattern, same) =>
+      same.foreach(d => findings += Finding("Identical expressions", pattern + " · " + d.getElement.getContainingFile.getName, d.getElement))
+    }
+    // Compare parsed step wording and arguments in order. Titles, tags, comments and spacing outside steps are ignored.
+    scenarios.groupBy(s => s.getSteps.toSeq.map(step => (step.getName, Option(step.getTable).map(_.getText.trim), Option(step.getPystring).map(_.getText.trim))))
+      .filter { case (body, same) => body.nonEmpty && same.size > 1 }.values.foreach { same =>
+        same.foreach(s => findings += Finding("Duplicate scenarios", s.getScenarioName + " · " + s.getContainingFile.getName, s))
+      }
     val exampleRows = scenarios.collect { case outline: GherkinScenarioOutline =>
       outline.getExamplesBlocks.asScala.flatMap(b => Option(b.getTable).toSeq.flatMap(_.getDataRows.asScala)).size
     }.sum
