@@ -27,6 +27,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val results = new JCheckBox("Show run results in feature gutters and documentation")
   private val clearResults = new javax.swing.JButton("Clear Editor Results")
   clearResults.addActionListener(_ => project.getService(classOf[RunResults]).clearDecorations())
+  private val categories = new javax.swing.JTextArea(3, 60)
   private val tables = new JCheckBox("Use Tab / Shift-Tab / Enter to navigate and extend Gherkin tables")
   private val reuse = new JCheckBox("Rank step completion by matching scenario count")
   private val context = new JCheckBox("Rank step completion by module and shared scenario tags")
@@ -37,11 +38,14 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     val panel = new JPanel()
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
     Seq(reuse, context, wording, tables, results, clearResults).foreach(panel.add)
+    panel.add(new javax.swing.JLabel("Scenario categories: category name => Cucumber tag expression"))
+    panel.add(new javax.swing.JScrollPane(categories))
     panel
   }
-  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation
+  override def isModified: Boolean = categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation
   override def apply(): Unit = {
     settings.resultDecorations = results.isSelected
+    settings.tagCategories = categories.getText
     settings.tableNavigation = tables.isSelected
     settings.rankByReuse = reuse.isSelected
     settings.rankByContext = context.isSelected
@@ -49,6 +53,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)
+    categories.setText(settings.tagCategories)
     tables.setSelected(settings.tableNavigation)
     reuse.setSelected(settings.rankByReuse)
     context.setSelected(settings.rankByContext)

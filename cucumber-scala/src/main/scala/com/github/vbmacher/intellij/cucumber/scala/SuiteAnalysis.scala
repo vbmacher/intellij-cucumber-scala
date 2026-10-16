@@ -37,6 +37,9 @@ object SuiteAnalysis {
     definitions.groupBy(_.getExpression).filter(_._2.size > 1).toSeq.sortBy(_._1).foreach { case (pattern, same) =>
       same.foreach(d => findings += Finding("Identical expressions", pattern + " · " + d.getElement.getContainingFile.getName, d.getElement))
     }
+    scenarios.foreach { scenario =>
+      findings += Finding("Scenarios", scenario.getScenarioName + " · " + ScenarioSelection.tags(scenario).mkString(" ") + " · " + scenario.getContainingFile.getName, scenario)
+    }
     // Compare parsed step wording and arguments in order. Titles, tags, comments and spacing outside steps are ignored.
     scenarios.groupBy(s => s.getSteps.toSeq.map(step => (step.getName, Option(step.getTable).map(_.getText.trim), Option(step.getPystring).map(_.getText.trim))))
       .filter { case (body, same) => body.nonEmpty && same.size > 1 }.values.foreach { same =>

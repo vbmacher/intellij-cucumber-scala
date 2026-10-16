@@ -42,8 +42,10 @@ class ShowSuiteAction extends AnAction("Scala Cucumber Suite") {
 class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Disposable {
   private val modules = ModuleManager.getInstance(project).getModules.sortBy(_.getName)
   private val scope = new JComboBox[String]((Array("Project contents") ++ modules.map(_.getName)))
-  private val category = new JComboBox[String](Array("Steps", "Unused", "Identical expressions", "Duplicate scenarios"))
+  private val category = new JComboBox[String](Array("Steps", "Scenarios", "Unused", "Identical expressions", "Duplicate scenarios"))
   private val kind = new JComboBox[String](Array("Any step kind", "Given", "When", "Then"))
+  private val grouping = new JComboBox[String](Array("No grouping", "Module", "Tag", "Category"))
+  private val tagFilter = new JBTextField()
   private val filter = new JBTextField()
   private val summary = new JLabel("Choose a scope and refresh. Static matches do not measure execution or business coverage.")
   private val model = new DefaultListModel[String]()
@@ -57,8 +59,9 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   private val cancel = new JButton("Cancel")
   private val open = new JButton("Go to source")
   private val preview = new JButton("Preview")
+  private val run = new JButton("Run selection")
   private val insert = new JButton("Insert step")
-  buttons.add(scope); buttons.add(category); buttons.add(kind); buttons.add(filter); buttons.add(refresh); buttons.add(cancel); buttons.add(open); buttons.add(preview); buttons.add(insert)
+  buttons.add(scope); buttons.add(category); buttons.add(kind); buttons.add(grouping); buttons.add(filter); buttons.add(tagFilter); buttons.add(refresh); buttons.add(cancel); buttons.add(open); buttons.add(preview); buttons.add(insert); buttons.add(run)
   add(buttons, BorderLayout.NORTH)
   add(new JBScrollPane(resultsList), BorderLayout.CENTER)
   add(summary, BorderLayout.SOUTH)
@@ -67,6 +70,14 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   scope.addActionListener(_ => scan())
   category.addActionListener(_ => display())
   kind.addActionListener(_ => display())
+  grouping.addActionListener(_ => display())
+  tagFilter.setColumns(15)
+  tagFilter.setToolTipText("Cucumber tag expression for scenarios")
+  tagFilter.getDocument.addDocumentListener(new DocumentListener {
+    override def insertUpdate(e: DocumentEvent): Unit = display()
+    override def removeUpdate(e: DocumentEvent): Unit = display()
+    override def changedUpdate(e: DocumentEvent): Unit = display()
+  })
   filter.getDocument.addDocumentListener(new DocumentListener {
     override def insertUpdate(event: DocumentEvent): Unit = display()
     override def removeUpdate(event: DocumentEvent): Unit = display()
@@ -100,6 +111,20 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
       }
     }
   })
+  run.addActionListener(_ => {
+    val targets = resultsList.getSelectedIndices.toSeq.flatMap(rows.lift).map(_.target).collect { case scenario: org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder => scenario }.distinct
+    val selectedModules = targets.flatMap(s => Option(ModuleUtilCore.findModuleForPsiElement(s))).distinct
+    if (targets.nonEmpty && selectedModules.size == 1) {
+      val factory = new ScCucumberConfigurationType().getConfigurationFactories.head
+      val settings = com.intellij.execution.RunManager.getInstance(project).createConfiguration("Scala Cucumber selection", factory)
+      val configuration = settings.getConfiguration.asInstanceOf[ScCucumberRunConfiguration]
+      configuration.setModule(selectedModules.head)
+      configuration.featureUrl = targets.head.getContainingFile.getVirtualFile.getUrl
+      configuration.selectedLocations = targets.map(s => s.getContainingFile.getVirtualFile.getPath + ":" + (s.getContainingFile.getText.take(ScenarioSelection.sourceOffset(s)).count(_ == '\n') + 1))
+      configuration.tags = tagFilter.getText
+      com.intellij.execution.ProgramRunnerUtil.executeConfiguration(settings, com.intellij.execution.executors.DefaultRunExecutor.getRunExecutorInstance())
+    } else com.intellij.openapi.ui.Messages.showInfoMessage(project, "Select scenarios from one module to run together.", "Scala Cucumber Selection")
+  })
   PsiManager.getInstance(project).addPsiTreeChangeListener(new PsiTreeChangeAdapter {
     override def childrenChanged(event: PsiTreeChangeEvent): Unit = schedule()
     override def childAdded(event: PsiTreeChangeEvent): Unit = schedule()
@@ -126,9 +151,36 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   }
   private def display(): Unit = {
     val query = filter.getText.toLowerCase(java.util.Locale.ROOT)
-    rows = report.toSeq.flatMap(_.findings).filter(f => f.category == category.getSelectedItem && f.label.toLowerCase(java.util.Locale.ROOT).contains(query))
+    val parsedTags = scala.util.Try(io.cucumber.tagexpressions.TagExpressionParser.parse(tagFilter.getText)).toOption
+    val baseRows = report.toSeq.flatMap(_.findings).filter(f => f.category == category.getSelectedItem && f.label.toLowerCase(java.util.Locale.ROOT).contains(query))
       .filter(f => kind.getSelectedIndex == 0 || f.category != "Steps" || asCall(f.target.getParent).flatMap(_.keyword).exists(k =>
         Option(org.jetbrains.plugins.cucumber.psi.i18n.JsonGherkinKeywordProvider.getKeywordProvider(true).getBaseKeyword("en", k)).exists(_.equalsIgnoreCase(kind.getSelectedItem.toString))))
+      .filter(f => f.category != "Scenarios" || parsedTags.exists(expression => f.target match {
+        case scenario: org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder => ScenarioSelection.tagSets(scenario).exists(tags => expression.evaluate(tags.asJava))
+        case _ => false
+      }))
+    val categories = project.getService(classOf[ScalaCucumberSettings]).tagCategories.linesIterator.flatMap { line =>
+      val parts = line.split("=>", 2)
+      if (parts.length == 2) scala.util.Try(io.cucumber.tagexpressions.TagExpressionParser.parse(parts(1).trim)).toOption.map(parts(0).trim -> _) else None
+    }.toSeq
+    val grouped = baseRows.flatMap { finding =>
+      val tagSets = finding.target match {
+        case scenario: org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder => ScenarioSelection.tagSets(scenario)
+        case _ => Seq(StepUsage.tags(finding.target))
+      }
+      val groups = grouping.getSelectedItem match {
+        case "Module" => Seq(Option(ModuleUtilCore.findModuleForPsiElement(finding.target)).map(_.getName).getOrElse("No module"))
+        case "Tag" => Option(tagSets.flatten.distinct.sorted).filter(_.nonEmpty).getOrElse(Seq("Untagged"))
+        case "Category" => Option(categories.collect { case (name, expression) if tagSets.exists(tags => expression.evaluate(tags.asJava)) => name }).filter(_.nonEmpty).getOrElse(Seq("Uncategorized"))
+        case _ => Seq("")
+      }
+      groups.map(_ -> finding)
+    }
+    val sizes = grouped.groupBy(_._1).view.mapValues(_.map(_._2.target).distinct.size).toMap
+    rows = grouped.sortBy { case (group, finding) => (group, finding.label, finding.target.getTextOffset) }.map { case (group, finding) =>
+      if (group.isEmpty) finding else finding.copy(label = s"[$group · ${sizes(group)} distinct items] " + finding.label)
+    }
+    if (parsedTags.isEmpty) summary.setText("Invalid tag expression; scenario selection is incomplete.")
     model.clear()
     rows.foreach(f => model.addElement(f.label))
     if (rows.isEmpty) model.addElement("No findings in this category and scope.")
