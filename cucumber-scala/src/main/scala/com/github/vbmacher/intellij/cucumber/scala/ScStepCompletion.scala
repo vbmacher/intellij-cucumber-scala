@@ -38,7 +38,8 @@ class ScStepCompletion extends CompletionContributor {
           val decorated = new LookupElementDecorator[LookupElement](lookup) {
             override def renderElement(presentation: LookupElementPresentation): Unit = {
               super.renderElement(presentation)
-              presentation.setTailText(s" · ${usages.size} matching scenarios", true)
+              presentation.setTypeText(source)
+              presentation.setTailText(s" · ${usages.size} matching scenarios" + (if (usedTags.nonEmpty) " · " + usedTags.take(5).mkString(" ") else ""), true)
             }
           }
           result.addElement(PrioritizedLookupElement.withPriority(decorated, score))

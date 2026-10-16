@@ -297,6 +297,8 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <lang.documentationProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
+        <lang.documentationProvider language="Scala" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
         <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberSettings"/>
         <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
