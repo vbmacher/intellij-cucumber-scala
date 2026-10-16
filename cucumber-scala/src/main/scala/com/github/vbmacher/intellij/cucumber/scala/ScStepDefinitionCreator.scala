@@ -111,6 +111,7 @@ object ScStepDefinitionCreator {
     val expression = expressionGenerator.generateExpressions(step.getSubstitutedName).get(0)
     val parameters = expression.getParameterNames.asScala.zip(expression.getParameterTypes.asScala.map(t => scalaType(t.getType)))
     val argument = Option(step.getTable).map(_ => "dataTable" -> "io.cucumber.datatable.DataTable")
+      .orElse(Option(step.getPystring).map(_ => "docString" -> "String"))
     val keyword = step.getKeyword.getText.replaceAll("[\\s',!\u00AD’]", "")
     val arguments = (parameters ++ argument).map { case (name, tpe) => s"$name: $tpe" }.mkString(", ")
     val quotes = "\"\"\""
