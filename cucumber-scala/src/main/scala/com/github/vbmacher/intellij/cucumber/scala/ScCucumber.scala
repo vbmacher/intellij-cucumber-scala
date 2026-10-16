@@ -7,7 +7,6 @@ import com.intellij.psi.util.{CachedValuesManager, PsiTreeUtil}
 import com.intellij.psi.{PsiClass, PsiElement, PsiMember}
 import org.jetbrains.plugins.cucumber.psi.i18n.JsonGherkinKeywordProvider
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
-import org.jetbrains.plugins.scala.lang.psi.api.base.patterns.ScReferencePattern
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
 import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBody
@@ -60,7 +59,7 @@ object ScCucumber {
       .flatMap {
         case MethodValue(method) => packageOf(method)
         case ref: ScReferenceExpression => Option(ref.resolve()).map(_.getNavigationElement).collect {
-          case p: ScReferencePattern => p
+          case member: PsiMember => member
         }.flatMap(packageOf)
         case _ => None
       }

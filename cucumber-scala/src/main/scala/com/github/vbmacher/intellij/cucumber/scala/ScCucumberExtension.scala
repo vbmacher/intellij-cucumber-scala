@@ -60,6 +60,7 @@ class ScCucumberExtension extends AbstractCucumberExtension {
         psiFile <- Option(psiManager.findFile(file)).toSeq
         offset <- offsets
         call <- callOfIndexed(psiFile.findElementAt(offset + 1))
+        if call.definition.nonEmpty
       } result.add(new ScStepDefinition(call))
       true
     }, scope)
