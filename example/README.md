@@ -11,6 +11,10 @@ Scala and Gherkin enabled. Start with the feature files in
 | `custom_parameters.feature` | Navigate the two unit formats to their matching definitions; inspect the `ParameterType` declarations in `CustomTypes.scala`. |
 | `create_step_definition.feature` | On the undefined save step, use the Create step definition quick-fix and fill in the generated template. |
 
+For a wildcard (`*`) step, Create step definition uses the last `Given`, `When` or
+`Then` in that scenario or background, skipping `And`, `But` and other wildcards.
+A leading wildcard generates `Given`.
+
 The calculator and glue use the existing dependencies. To execute all implemented
 scenarios from the repository root:
 

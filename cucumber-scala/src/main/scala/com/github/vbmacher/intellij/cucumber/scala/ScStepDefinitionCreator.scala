@@ -113,7 +113,12 @@ object ScStepDefinitionCreator {
     val argument = Option(step.getTable).map(_ => "dataTable" -> "io.cucumber.datatable.DataTable")
       .orElse(Option(step.getPystring).map(_ => "docString" -> "String"))
     val keyword = step.getKeyword.getText.replaceAll("[\\s',!\u00AD’]", "") match {
-      case "*" => "Given"
+      case "*" =>
+        // Stay within this scenario/background and skip conjunctions and other wildcards.
+        step.getStepHolder.getSteps.iterator.takeWhile(_ != step)
+          .map(_.getKeyword.getText.trim)
+          .filter(Set("Given", "When", "Then"))
+          .toSeq.lastOption.getOrElse("Given")
       case name => name
     }
     val arguments = (parameters ++ argument).map { case (name, tpe) => s"$name: $tpe" }.mkString(", ")
