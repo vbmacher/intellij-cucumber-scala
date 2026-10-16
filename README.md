@@ -7,6 +7,8 @@
 A [plugin to IntelliJ IDEA](https://plugins.jetbrains.com/plugin/7460-cucumber-for-scala),
 enabling navigation between step definitions and gherkin steps when using cucumber-scala DSL.
 
+Step navigation is disabled while IntelliJ is indexing and becomes available when indexing finishes.
+
 ## Features
 
 ### Navigation from feature step to step definition (and back)
