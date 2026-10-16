@@ -68,6 +68,7 @@ lazy val `cucumber-scala` = project
     libraryDependencies ++= Seq(
       // Step snippet generation and built-in parameter regexes
       "io.cucumber" % "cucumber-expressions" % "18.1.0",
+      "io.cucumber" % "tag-expressions" % "8.1.0",
       "junit" % "junit" % "4.13.2" % Test,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
       "org.scalatestplus" %% "junit-4-13" % "3.2.20.0" % Test,
