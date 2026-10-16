@@ -47,7 +47,7 @@ object ScStepDefinition {
       if (prefixed.endsWith("$")) prefixed else s"$prefixed$$"
     }
 
-  private val BuiltInParameterTypes: Map[String, String] = {
+  private[scala] val BuiltInParameterTypes: Map[String, String] = {
     val standard = CucumberUtil.STANDARD_PARAMETER_TYPES.asScala.toMap
     val factory = new ExpressionFactory(new ParameterTypeRegistry(Locale.ENGLISH))
     val numeric = Seq("float", "double", "bigdecimal").map { name =>

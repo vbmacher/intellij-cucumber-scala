@@ -304,6 +304,7 @@
         <codeInsight.lineMarkerProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.FeatureResultLineMarker"/>
         <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
+        <completion.contributor language="Scala" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScParameterCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
         <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.SuiteToolWindowFactory"/>
         <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointType"/>

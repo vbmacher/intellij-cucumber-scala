@@ -26,6 +26,19 @@ class StepCompletionSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testCustomParameterCompletionPreservesStringAndBraces(): Unit = {
+    myFixture.addFileToProject("Types.scala", "class Types { ParameterType(\"account\", \"ACC-[0-9]+\") { (id: String) => id } }")
+    myFixture.configureByText("Steps.scala", "class Steps { When(\"I transfer to {acc<caret>}\") { () => () } }")
+    myFixture.completeBasic()
+    if (myFixture.getLookup != null) {
+      val item = myFixture.getLookupElements.find(_.getLookupString == "account").getOrElse(fail("Missing account parameter"))
+      myFixture.getLookup.setCurrentItem(item)
+      myFixture.finishLookup('\n')
+    }
+    myFixture.getFile.getText shouldBe "class Steps { When(\"I transfer to {account}\") { () => () } }"
+  }
+
+  @Test
   def testFeatureWordingCanBeDisabled(): Unit = {
     val settings = getProject.getService(classOf[ScalaCucumberSettings])
     settings.featureWording = false
