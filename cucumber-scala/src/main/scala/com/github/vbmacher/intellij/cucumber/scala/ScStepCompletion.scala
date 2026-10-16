@@ -36,6 +36,14 @@ class ScStepCompletion extends CompletionContributor {
           val score = (if (settings.rankByReuse) usages.size.toDouble else 0.0) -
             deterministic.getOrElse(c.getFirstChild, 0).toDouble / (deterministic.size + 1) / 10000
           val decorated = new LookupElementDecorator[LookupElement](lookup) {
+            override def handleInsert(context: InsertionContext): Unit = {
+              val expression = c.pattern.getOrElse("")
+              if (expression.contains("{")) {
+                val samples = entries.filter(_.definitions.exists(_.getElement == c.getFirstChild)).map(_.step.getSubstitutedName)
+                val prefix = originalText.substring(context.getStartOffset, parameters.getOffset)
+                ScStepTemplates.insert(context, c.getFirstChild, expression, samples, prefix)
+              } else super.handleInsert(context)
+            }
             override def renderElement(presentation: LookupElementPresentation): Unit = {
               super.renderElement(presentation)
               presentation.setTypeText(source)
