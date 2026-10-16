@@ -71,4 +71,36 @@ class StepCreationSpec extends StepCreationSpecBase {
         |}""".stripMargin
     )
   }
+
+  @Test
+  def testDocString(): Unit = {
+    val files = loadTestCase("creation/docstring.feature", "creation/StepDefinitions.scala")
+    checkStepCreation(files(0), files(1),
+      s"""import io.cucumber.scala.ScalaDsl
+        |
+        |class StepDefinitions extends ScalaDsl {
+        |
+        |  Given(${tripleDoubleQuotes}the following document$tripleDoubleQuotes) { (docString: String) =>
+        |    // Write code here that turns the phrase above into concrete actions
+        |    throw new io.cucumber.scala.PendingException()
+        |  }
+        |}""".stripMargin
+    )
+  }
+
+  @Test
+  def testDocStringFollowsExpressionParameters(): Unit = {
+    val files = loadTestCase("creation/docstringParams.feature", "creation/StepDefinitions.scala")
+    checkStepCreation(files(0), files(1),
+      s"""import io.cucumber.scala.ScalaDsl
+        |
+        |class StepDefinitions extends ScalaDsl {
+        |
+        |  Given(${tripleDoubleQuotes}I save {int} documents$tripleDoubleQuotes) { (int1: Int, docString: String) =>
+        |    // Write code here that turns the phrase above into concrete actions
+        |    throw new io.cucumber.scala.PendingException()
+        |  }
+        |}""".stripMargin
+    )
+  }
 }

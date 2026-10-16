@@ -31,6 +31,7 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
 ### Support of automated creation of a step definition
 
   - Supports template filling wizard
+  - Includes trailing arguments for data tables and doc strings (`String`)
 
 ## Development
 
