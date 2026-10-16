@@ -24,3 +24,6 @@ sbt --batch 'example/Test/runMain io.cucumber.core.cli.Main --glue cucumber.exam
 
 The `@undefined` scenario is an editing exercise. After implementing its missing
 step, remove that tag to include it in the run.
+
+The supported Scala DSL has no public embedded-step execution API. Use normal feature files and
+registered Scala steps; arbitrary multiline Scala strings intentionally remain ordinary strings.

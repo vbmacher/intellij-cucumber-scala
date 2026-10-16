@@ -36,6 +36,14 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
     in the same scenario or background; uses `Given` when none precedes it
   - Existing destination types need a body (`{ ... }`) for insertion
 
+### Supported runtime and editor baseline
+
+The pinned Cucumber Scala 8.39.7 public `ScalaDsl` combines step, hook, parameter, DataTable,
+DocString and default-transformer registrations. It exposes no public API for executing embedded
+Gherkin step strings. Internal backend `execute` methods are not such an API. Unrelated Scala
+strings therefore receive no embedded-step injection, references or completion.
+
+
 ## Development
 
 To setup the development environment, follow the following steps:
