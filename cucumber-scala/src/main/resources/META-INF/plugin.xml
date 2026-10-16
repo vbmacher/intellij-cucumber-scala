@@ -316,6 +316,7 @@
             <className>com.github.vbmacher.intellij.cucumber.scala.UseExistingStepIntention</className>
             <category>Scala Cucumber</category>
         </intentionAction>
+        <localInspection language="Scala" shortName="ScalaCucumberStepSignature" displayName="Cucumber step lambda signature" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.StepSignatureInspection"/>
         <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
         <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.StepDeclarationSearcher"/>
