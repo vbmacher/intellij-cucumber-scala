@@ -23,6 +23,15 @@ object SuiteAnalysis {
     val scenarios = files.flatMap(file => com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, classOf[GherkinStepsHolder]).asScala)
       .filterNot { case s: org.jetbrains.plugins.cucumber.psi.GherkinScenario => s.isBackground; case _ => false }
     val findings = Seq.newBuilder[Finding]
+    entries.foreach { entry =>
+      ProgressManager.checkCanceled()
+      val source = entry.step.getContainingFile.getName
+      if (entry.definitions.isEmpty) findings += Finding("Undefined", entry.step.getText + " · " + source, entry.step)
+      if (entry.definitions.size > 1) {
+        findings += Finding("Ambiguous", s"${entry.step.getText} · ${entry.definitions.size} exact matches · $source", entry.step)
+        entry.definitions.foreach(d => findings += Finding("Ambiguous", "  " + d.getExpression + " · " + d.getElement.getContainingFile.getName, d.getElement))
+      }
+    }
     definitions.foreach { definition =>
       ProgressManager.checkCanceled()
       val target = definition.getElement

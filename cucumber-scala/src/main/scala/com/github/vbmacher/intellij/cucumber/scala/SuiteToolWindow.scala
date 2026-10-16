@@ -42,7 +42,7 @@ class ShowSuiteAction extends AnAction("Scala Cucumber Suite") {
 class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Disposable {
   private val modules = ModuleManager.getInstance(project).getModules.sortBy(_.getName)
   private val scope = new JComboBox[String]((Array("Project contents") ++ modules.map(_.getName)))
-  private val category = new JComboBox[String](Array("Steps", "Scenarios", "Unused", "Identical expressions", "Duplicate scenarios"))
+  private val category = new JComboBox[String](Array("Steps", "Scenarios", "Undefined", "Ambiguous", "Unused", "Identical expressions", "Duplicate scenarios"))
   private val kind = new JComboBox[String](Array("Any step kind", "Given", "When", "Then"))
   private val grouping = new JComboBox[String](Array("No grouping", "Module", "Tag", "Category"))
   private val tagFilter = new JBTextField()
