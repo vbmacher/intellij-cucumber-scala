@@ -19,6 +19,7 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
     step definition names (e.g. `When("""I divide {int} by {int}""")`)  
   - Supports navigation of [custom parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#custom-parameter-types)
     (using `ParameterType(name, regex)` definitions)
+    declared in separate glue classes or traits in the step search scope
   - Supports [alternative text](https://cucumber.io/docs/cucumber/cucumber-expressions/#alternative-text)
     in step definition names (e.g. `When("""I/We divide (\d+) by (\d+)""")`)  
   - Supports [optional text](https://cucumber.io/docs/cucumber/cucumber-expressions/#optional-text)

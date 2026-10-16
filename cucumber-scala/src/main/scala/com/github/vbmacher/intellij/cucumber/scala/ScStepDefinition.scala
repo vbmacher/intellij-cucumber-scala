@@ -11,9 +11,9 @@ import java.util.regex.Pattern
 import scala.jdk.CollectionConverters._
 
 // Instances live in the loadStepsFor cache, which is dropped on any Scala PSI change
-class ScStepDefinition(call: ScMethodCall) extends AbstractStepDefinition(call.getFirstChild) {
+class ScStepDefinition(call: ScMethodCall, customParameterTypes: Map[String, String]) extends AbstractStepDefinition(call.getFirstChild) {
 
-  private val regex = call.pattern.map(ScStepDefinition.toRegex(_, call)).orNull
+  private val regex = call.pattern.map(ScStepDefinition.toRegex(_, customParameterTypes)).orNull
 
   private lazy val compiled = super.getPattern
 
@@ -27,9 +27,9 @@ class ScStepDefinition(call: ScMethodCall) extends AbstractStepDefinition(call.g
 
 object ScStepDefinition {
 
-  private def toRegex(pattern: String, call: ScMethodCall): String =
+  private def toRegex(pattern: String, customParameterTypes: Map[String, String]): String =
     if (CucumberUtil.isCucumberExpression(pattern)) {
-      val parameterTypes = BuiltInParameterTypes ++ call.customParameterTypes
+      val parameterTypes = BuiltInParameterTypes ++ customParameterTypes
       CucumberUtil.buildRegexpFromCucumberExpression(pattern, new MapParameterTypeManager(parameterTypes.asJava))
     } else {
       val prefixed = if (pattern.startsWith("^")) pattern else s"^$pattern"

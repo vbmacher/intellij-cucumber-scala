@@ -17,7 +17,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
 
   override def getName: ID[JBoolean, Seq[Int]] = ScCucumberStepIndex.Id
 
-  override def getVersion: Int = 8
+  override def getVersion: Int = 9
 
   override def dependsOnFileContent(): Boolean = true
 
@@ -35,10 +35,15 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
 
   override def getIndexer: DataIndexer[JBoolean, Seq[Int], FileContent] = content => {
     val ast = content.asInstanceOf[PsiDependentFileContent].getLighterAST
-    java.util.Map.of(JBoolean.TRUE, stepDefinitionOffsets(ast, content.getContentAsText))
+    val text = content.getContentAsText
+    // Keep both declaration kinds in the same index and search scope.
+    Map(
+      JBoolean.TRUE -> declarationOffsets(ast, text, isStepKeyword),
+      JBoolean.FALSE -> declarationOffsets(ast, text, _ == "ParameterType")
+    ).filter(_._2.nonEmpty).asJava
   }
 
-  private def stepDefinitionOffsets(ast: LighterAST, text: CharSequence): Seq[Int] = {
+  private def declarationOffsets(ast: LighterAST, text: CharSequence, acceptsKeyword: String => Boolean): Seq[Int] = {
     def children(node: LighterASTNode) = ast.getChildren(node).asScala.toSeq
 
     def ofType(node: LighterASTNode, types: IElementType*) = children(node).filter(n => types.contains(n.getTokenType))
@@ -50,7 +55,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
       calls.headOption match {
         case Some(inner) if ofType(call, ARG_EXPRS).nonEmpty =>
           children(inner).headOption
-            .filter(keyword => isStepKeyword(text.subSequence(keyword.getStartOffset, keyword.getEndOffset).toString))
+            .filter(keyword => acceptsKeyword(text.subSequence(keyword.getStartOffset, keyword.getEndOffset).toString))
             .map(_ => call.getStartOffset)
             .toSeq
         case _ => calls.flatMap(stepCalls)
