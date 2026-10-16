@@ -1,21 +1,21 @@
+package cucumber.examples.scalacalculator
+
 import scala.collection.mutable
-import scala.language.implicitConversions
 
 sealed trait Arg
 
-case class Op(value: String) extends Arg
-case class Val(value: Double) extends Arg
+final case class Op(value: String) extends Arg
+final case class Val(value: Double) extends Arg
 
-object Arg {
-  implicit def op(s: String): Op = Op(s)
-  implicit def value(v: Double): Val = Val(v)
-}
+final class Calculator {
+  private val stack = mutable.Stack.empty[Double]
 
-class Calculator {
-  private val stack = new mutable.Stack[Double]
-
-  private def op(f: (Double, Double) => Double) =
-    stack push f(stack.pop(), stack.pop())
+  private def op(f: (Double, Double) => Double): Unit = {
+    require(stack.size >= 2, "A binary operation needs two operands")
+    val right = stack.pop()
+    val left = stack.pop()
+    stack.push(f(left, right))
+  }
 
   def push(arg: Arg): Unit = {
     arg match {
@@ -23,10 +23,14 @@ class Calculator {
       case Op("-") => op(_ - _)
       case Op("*") => op(_ * _)
       case Op("/") => op(_ / _)
-      case Val(value) => stack push value
-      case _ => throw new RuntimeException("should not happen!")
+      case Val(value) => stack.push(value)
+      case _ => throw new IllegalArgumentException("Unknown calculator operation")
     }
   }
+
+  def clear(): Unit = stack.clear()
+
+  def isEmpty: Boolean = stack.isEmpty
 
   def value: Double = stack.head
 }

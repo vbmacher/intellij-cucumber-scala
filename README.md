@@ -42,8 +42,9 @@ The plugin depends on:
 - [cucumber-expressions](https://github.com/cucumber/cucumber-expressions) (for generating step definition snippets)
 
 To start an IDE with the plugin installed in the example project, run `runIDE` task. Import the whole project
-as gradle project in the sandbox-ide. Wait for indexing to finish.
-Open `example/src/test/resources/cucumber/examples/scalacalculator/basic_arithmetic.feature`.
+as an sbt project in the sandbox-ide. Wait for indexing to finish.
+See the [example guide](example/README.md) for feature files showcasing navigation, expression syntax,
+custom parameter types and step generation.
 
 In order to build the plugin (and package the plugin ZIP), run: `sbt test && sbt cucumber-scala / packageArtifactZip`
 

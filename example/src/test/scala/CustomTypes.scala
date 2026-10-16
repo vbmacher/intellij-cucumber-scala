@@ -1,12 +1,23 @@
+package cucumber.examples.scalacalculator
+
 import io.cucumber.scala.ScalaDsl
 
 trait CustomTypes extends ScalaDsl {
-  ParameterType("speed", "\\d+km/h") { speed: String => Speed(speed.split(' ').head.toDouble) }
-  ParameterType("time", "\\d+h") { time: String => Time(time.split(' ').head.toDouble) }
+  // Regexes are written as-is: no extra escaping for the plugin.
+  ParameterType("speed", """\d+km/h""") { text: String =>
+    Speed(text.stripSuffix("km/h").toDouble)
+  }
+  ParameterType("time", """\d+h""") { text: String =>
+    Time(text.stripSuffix("h").toDouble)
+  }
 
-  ParameterType("speed-m-s", "\\d+m/s") { speed: String => Speed(speed.split(' ').head.toDouble) }
-  ParameterType("time-s", "\\d+s") { time: String => Time(time.split(' ').head.toDouble) }
+  ParameterType("speed-m-s", """\d+m/s""") { text: String =>
+    Speed(text.stripSuffix("m/s").toDouble * 3.6)
+  }
+  ParameterType("time-s", """\d+s""") { text: String =>
+    Time(text.stripSuffix("s").toDouble / 3600)
+  }
 }
 
-case class Speed(kmPerHour: Double)
-case class Time(hours: Double)
+final case class Speed(kmPerHour: Double)
+final case class Time(hours: Double)
