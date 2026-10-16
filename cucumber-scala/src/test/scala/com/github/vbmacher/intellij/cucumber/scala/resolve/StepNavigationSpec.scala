@@ -107,4 +107,32 @@ class StepNavigationSpec extends ScCucumberSpecBase {
     myFixture.addFileToProject("Steps.scala", "class Steps { When(\"number {double}\") { (n: Double) => () } }")
     for (number <- Seq("1.2E", "1.2E+", "abc", "+")) assertTargets(s"number $number")
   }
+
+  @Test
+  def testScriptStyleRegexResolvesWithoutDelimiters(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"/review [0-9]+/\") { () => () } }")
+    assertTargets("review 42", "Steps.scala" -> "When(\"/review [0-9]+/\")")
+    assertTargets("review nope")
+    assertTargets("/review 42/")
+  }
+
+  @Test
+  def testScriptStyleRegexWithAnchorsResolves(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"/^review [0-9]+$/\") { () => () } }")
+    assertTargets("review 42", "Steps.scala" -> "When(\"/^review [0-9]+$/\")")
+  }
+
+  @Test
+  def testAnchoredRegexKeepsLiteralSlashes(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"^/review [0-9]+/$\") { () => () } }")
+    assertTargets("/review 42/", "Steps.scala" -> "When(\"^/review [0-9]+/$\")")
+    assertTargets("review 42")
+  }
+
+  @Test
+  def testAmbiguousScriptStyleRegexesResolveToBothTargets(): Unit = {
+    myFixture.addFileToProject("Steps.scala",
+      "class Steps { When(\"/review [0-9]+/\") { () => () }; When(\"/review .*/\") { () => () } }")
+    assertTargets("review 42", "Steps.scala" -> "When(\"/review [0-9]+/\")", "Steps.scala" -> "When(\"/review .*/\")")
+  }
 }

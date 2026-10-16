@@ -34,7 +34,10 @@ object ScStepDefinition {
       val parameterTypes = BuiltInParameterTypes ++ customParameterTypes
       CucumberUtil.buildRegexpFromCucumberExpression(pattern, new MapParameterTypeManager(parameterTypes.asJava))
     } else {
-      val prefixed = if (pattern.startsWith("^")) pattern else s"^$pattern"
+      val regexp = if (pattern.length >= 2 && pattern.startsWith("/") && pattern.endsWith("/"))
+        pattern.substring(1, pattern.length - 1)
+      else pattern
+      val prefixed = if (regexp.startsWith("^")) regexp else s"^$regexp"
       if (prefixed.endsWith("$")) prefixed else s"$prefixed$$"
     }
 
