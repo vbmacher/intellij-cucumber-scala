@@ -19,5 +19,13 @@ class InspectionFeaturesSpec extends ScCucumberSpecBase {
     warnings should include("No Examples column 'other'")
   }
 
-
+  @Test
+  def testConfiguredMissingRequirementAndNativeSuppression(): Unit = {
+    getProject.getService(classOf[ScalaCucumberSettings]).requirementMappings = "@REQ-(.*) => docs/requirements.md#$1"
+    myFixture.enableInspections(new RequirementInspection)
+    myFixture.configureByText("requirements.feature", "@REQ-42\nFeature: Requirements\n  Scenario: Requirement\n    Given value\n")
+    descriptions.toLowerCase should include("requirement")
+    getProject.getService(classOf[ScalaCucumberSettings]).requirementMappings = ""
+    descriptions should not include "Configured requirement"
+  }
 }

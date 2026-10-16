@@ -38,5 +38,21 @@ class EditorFeaturesSpec extends ScCucumberSpecBase {
     }
   }
 
-
+  @Test
+  def testRequirementReferencesResolveEveryExplicitLocalId(): Unit = {
+    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    settings.requirementMappings = "@AC-(.*) => requirements.md#AC-$1"
+    try {
+      val doc = myFixture.addFileToProject("requirements.md", "# AC-PAY-12\n\nSecond criterion {#AC-PAY-12}\n")
+      myFixture.configureByText("requirements.feature", "@AC-PAY-12\nFeature: Requirements\n  Scenario: Match\n    Given setup\n")
+      ScCucumber.inReadAction {
+        val tag = PsiTreeUtil.findChildOfType(myFixture.getFile, classOf[GherkinTag])
+        val targets = RequirementReferences.targets(tag)
+        targets.size shouldBe 2
+        targets.foreach(_.getContainingFile shouldBe doc)
+        targets.map(_.getTextOffset).distinct.size shouldBe 2
+        tag.getReferences.collect { case r: com.intellij.psi.PsiPolyVariantReference => r }.flatMap(_.multiResolve(false)).length shouldBe 2
+      }
+    } finally settings.requirementMappings = ""
+  }
 }
