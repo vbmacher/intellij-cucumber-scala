@@ -33,7 +33,8 @@ class ScStepCompletion extends CompletionContributor {
           val source = c.getContainingFile.getName + Option(sourceModule).map(m => " · " + m.getName).getOrElse("")
           val usedTags = usages.flatMap(StepUsage.tags).distinct.sorted
           val sharedTags = usedTags.toSet.intersect(tags).size
-          val score = (if (settings.rankByReuse) usages.size.toDouble else 0.0) -
+          val score = (if (settings.rankByReuse) usages.size.toDouble else 0.0) +
+            (if (settings.rankByContext) sharedTags * 100.0 + (if (sourceModule == module) 10.0 else 0.0) else 0.0) -
             deterministic.getOrElse(c.getFirstChild, 0).toDouble / (deterministic.size + 1) / 10000
           val decorated = new LookupElementDecorator[LookupElement](lookup) {
             override def handleInsert(context: InsertionContext): Unit = {

@@ -28,24 +28,27 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val clearResults = new javax.swing.JButton("Clear Editor Results")
   clearResults.addActionListener(_ => project.getService(classOf[RunResults]).clearDecorations())
   private val reuse = new JCheckBox("Rank step completion by matching scenario count")
+  private val context = new JCheckBox("Rank step completion by module and shared scenario tags")
   private val wording = new JCheckBox("Suggest wording from feature files in the current module")
   private def settings = project.getService(classOf[ScalaCucumberSettings])
   override def getDisplayName: String = "Scala Cucumber"
   override def createComponent(): JComponent = {
     val panel = new JPanel()
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
-    Seq(reuse, wording, results, clearResults).foreach(panel.add)
+    Seq(reuse, context, wording, results, clearResults).foreach(panel.add)
     panel
   }
-  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || wording.isSelected != settings.featureWording
+  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording
   override def apply(): Unit = {
     settings.resultDecorations = results.isSelected
     settings.rankByReuse = reuse.isSelected
+    settings.rankByContext = context.isSelected
     settings.featureWording = wording.isSelected
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)
     reuse.setSelected(settings.rankByReuse)
+    context.setSelected(settings.rankByContext)
     wording.setSelected(settings.featureWording)
   }
 }
