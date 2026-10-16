@@ -76,6 +76,8 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
     if (getConfigurationModule.findClass("io.cucumber.core.cli.Main") == null || getConfigurationModule.findClass("io.cucumber.scala.ScalaDsl") == null)
       throw new RuntimeConfigurationError("Add the supported cucumber-scala runtime to this module's test dependencies and reimport the project.")
     Try(TagExpressionParser.parse(tags)).failed.foreach(e => throw new RuntimeConfigurationError(e.getMessage))
+    if (ModuleRootManager.getInstance(module).getContentRoots.length > 1 && workingDirectory.isEmpty)
+      throw new RuntimeConfigurationError("This module has several content roots. Choose the working directory explicitly.")
     if (line > 0 && (lineMarker == null || !lineMarker.isValid)) throw new RuntimeConfigurationError("The selected scenario/example location no longer exists. Select it again in the feature editor.")
   }
 
@@ -94,11 +96,16 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
     params
   }
 
+  private def detectedGlue: Seq[String] = Option(getConfigurationModule.getModule).toSeq.flatMap { module =>
+    new ScCucumberExtension().loadStepsFor(module).asScala.flatMap(d => Option(d.getElement)).map(_.getContainingFile)
+      .collect { case file: org.jetbrains.plugins.scala.lang.psi.api.ScalaFile => file.getPackageName }.distinct.sorted
+  }
+
   def programArguments: Seq[String] = {
     val arguments = new ParametersList()
     arguments.addParametersString(programOptions)
     arguments.add("--plugin", "pretty")
-    val packages = if (glue.nonEmpty) glue.split("[,\n]").map(_.trim).filter(_.nonEmpty).toSeq else Seq.empty
+    val packages = if (glue.nonEmpty) glue.split("[,\n]").map(_.trim).filter(_.nonEmpty).toSeq else detectedGlue
     packages.foreach(pkg => arguments.add("--glue", pkg))
     if (tags.nonEmpty) arguments.add("--tags", tags)
     val file = Option(pointer).flatMap(p => Option(p.getFile)).getOrElse(throw new ExecutionException("Feature file is missing."))

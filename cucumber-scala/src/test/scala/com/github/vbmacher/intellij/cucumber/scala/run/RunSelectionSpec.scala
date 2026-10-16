@@ -43,5 +43,25 @@ class RunSelectionSpec extends ScCucumberSpecBase {
     }
   }
 
+  @Test
+  def testConfigurationTracksLineEditsAndPassesTagsLiterally(): Unit = {
+    val file = myFixture.configureByText("run.feature", "Feature: Run\n  Scenario: Run\n    Given setup\n")
+    val config = new ScCucumberConfigurationType().getConfigurationFactories.head.createTemplateConfiguration(getProject).asInstanceOf[ScCucumberRunConfiguration]
+    config.setModule(myFixture.getModule)
+    config.featureUrl = file.getVirtualFile.getUrl
+    config.setLine(2)
+    config.tags = "@smoke and not @$(touch /tmp/never-run)"
+    WriteCommandAction.runWriteCommandAction(getProject, new Runnable {
+      override def run(): Unit = myFixture.getEditor.getDocument.insertString(0, "# added line\n")
+    })
+    PsiDocumentManager.getInstance(getProject).commitAllDocuments()
+    config.line shouldBe 3
+    ScCucumber.inReadAction {
+      val args = config.programArguments
+      args(args.indexOf("--tags") + 1) shouldBe config.tags
+      args.last should endWith("run.feature:3")
+    }
+  }
+
 
 }
