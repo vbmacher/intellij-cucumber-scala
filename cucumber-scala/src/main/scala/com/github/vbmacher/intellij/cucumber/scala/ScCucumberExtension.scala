@@ -4,7 +4,6 @@ import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.roots.ProjectRootManager
-import com.intellij.psi.search.{GlobalSearchScope, ProjectScope}
 import com.intellij.psi.util.{CachedValueProvider, CachedValuesManager, PsiModificationTracker}
 import com.intellij.psi.{PsiElement, PsiFile}
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
@@ -18,6 +17,8 @@ import scala.jdk.CollectionConverters._
 import scala.util.Try
 
 class ScCucumberExtension extends AbstractCucumberExtension {
+
+  override def isGherkin6Supported(module: Module): Boolean = true
 
   override def isStepLikeFile(child: PsiElement): Boolean = child.isInstanceOf[ScalaFile]
 
@@ -44,13 +45,12 @@ class ScCucumberExtension extends AbstractCucumberExtension {
 
   private def findSteps(module: Module): util.List[AbstractStepDefinition] = {
     val project = module.getProject
-    val scope = GlobalSearchScope.getScopeRestrictedByFileTypes(
-      module.getModuleWithDependenciesAndLibrariesScope(true).uniteWith(ProjectScope.getLibrariesScope(project)),
-      ScalaFileType.INSTANCE
-    )
+    val scope = stepSearchScope(module)
 
-    val parameterTypes = indexedCalls(project, scope, steps = false).flatMap(_.parameterType).toMap
-    indexedCalls(project, scope, steps = true)
+    val parameterTypes = indexedCalls(project, scope, kind = ScCucumberStepIndex.Parameters).flatMap(_.parameterType).groupBy(_._1).collect {
+      case (name, registrations) if registrations.map(_._2).distinct.size == 1 => name -> registrations.head._2
+    }
+    indexedCalls(project, scope, kind = ScCucumberStepIndex.Steps)
       .filter(_.definition.nonEmpty)
       .map(call => new ScStepDefinition(call, parameterTypes): AbstractStepDefinition)
       .asJava

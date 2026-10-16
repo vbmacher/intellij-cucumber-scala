@@ -7,15 +7,18 @@ import com.intellij.ide.fileTemplates.{FileTemplate, FileTemplateManager, FileTe
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.module.ModuleUtilCore
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.ui.Messages
 import com.intellij.openapi.roots.{FileIndexFacade, ModuleRootManager}
 import com.intellij.openapi.util.TextRange
 import com.intellij.psi._
 import com.intellij.util.IncorrectOperationException
-import io.cucumber.cucumberexpressions.{CucumberExpressionGenerator, ParameterTypeRegistry}
+import io.cucumber.cucumberexpressions.CucumberExpressionGenerator
 import org.jetbrains.jps.model.java.JavaSourceRootType
 import org.jetbrains.plugins.cucumber.AbstractStepDefinitionCreator
-import org.jetbrains.plugins.cucumber.psi.GherkinStep
+import org.jetbrains.plugins.cucumber.psi.{GherkinFile, GherkinStep}
+import org.jetbrains.plugins.cucumber.psi.i18n.JsonGherkinKeywordProvider
 import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.psi.api.ScalaFile
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
@@ -60,18 +63,27 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
   }
 
   override def createStepDefinition(step: GherkinStep, file: PsiFile, withTemplate: Boolean): Boolean = file match {
-    case scalaFile: ScalaFile if step != null =>
+    case scalaFile: ScalaFile if step != null && file.isWritable =>
       Try {
         val project = file.getProject
         val documentManager = PsiDocumentManager.getInstance(project)
         closeActiveTemplateBuilders(file)
         documentManager.commitAllDocuments()
 
+        val choices = snippetsFor(step)
+        val selected = if (choices.size == 1) choices.headOption
+          else if (ApplicationManager.getApplication.isUnitTestMode) None
+          else {
+            val index = Messages.showChooseDialog(project, "Choose the parameter types for this step", "Create Scala Step",
+              null, choices.toArray, choices.headOption.orNull)
+            choices.lift(index)
+          }
         val created = for {
+          source <- selected
           typeDefinition <- scalaFile.typeDefinitions.headOption
           body <- typeDefinition.extendsBlock.templateBody
         } yield {
-          val snippet = ScalaPsiElementFactory.createExpressionFromText(snippetFor(step), body)(ProjectContext.fromProject(project))
+          val snippet = ScalaPsiElementFactory.createExpressionFromText(source, body)(ProjectContext.fromProject(project))
           CodeInsightUtilCore.forcePsiPostprocessAndRestoreElement(body.addBefore(snippet, body.getLastChild).asInstanceOf[ScMethodCall])
         }
         documentManager.commitAllDocuments()
@@ -105,29 +117,31 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 object ScStepDefinitionCreator {
   private val Log = Logger.getInstance(classOf[ScStepDefinitionCreator])
 
-  private lazy val expressionGenerator = new CucumberExpressionGenerator(new ParameterTypeRegistry(Locale.getDefault))
+  private[scala] def snippetsFor(step: GherkinStep): Seq[String] = {
+    val registry = ScParameterTypes.registry(Option(ModuleUtilCore.findModuleForPsiElement(step)), snippetsOnly = true)
+    new CucumberExpressionGenerator(registry).generateExpressions(step.getSubstitutedName).asScala.toSeq.map { expression =>
+      val parameters = expression.getParameterNames.asScala.zip(expression.getParameterTypes.asScala.map(t => scalaType(t.getType)))
+      val argument = Option(step.getTable).map(_ => "dataTable" -> "io.cucumber.datatable.DataTable")
+        .orElse(Option(step.getPystring).map(_ => "docString" -> "String"))
+      val keyword = step.getKeyword.getText.replaceAll("[\\s',!\u00AD’]", "") match {
+        case "*" =>
+          // Stay within this scenario/background and skip conjunctions and other wildcards.
+          step.getStepHolder.getSteps.iterator.takeWhile(_ != step)
+            .map(_.getKeyword.getText.trim)
+            .filter(Set("Given", "When", "Then"))
+            .toSeq.lastOption.getOrElse("Given")
+        case name => name
+      }
+      val arguments = (parameters ++ argument).map { case (name, tpe) => s"$name: $tpe" }.mkString(", ")
+      val expressionText = expression.getSource
+      val quoted = if (expressionText.contains("\"\"\"")) "\"" + com.intellij.openapi.util.text.StringUtil.escapeStringCharacters(expressionText) + "\""
+        else "\"\"\"" + expressionText + "\"\"\""
 
-  private[scala] def snippetFor(step: GherkinStep): String = {
-    val expression = expressionGenerator.generateExpressions(step.getSubstitutedName).get(0)
-    val parameters = expression.getParameterNames.asScala.zip(expression.getParameterTypes.asScala.map(t => scalaType(t.getType)))
-    val argument = Option(step.getTable).map(_ => "dataTable" -> "io.cucumber.datatable.DataTable")
-      .orElse(Option(step.getPystring).map(_ => "docString" -> "String"))
-    val keyword = step.getKeyword.getText.replaceAll("[\\s',!\u00AD’]", "") match {
-      case "*" =>
-        // Stay within this scenario/background and skip conjunctions and other wildcards.
-        step.getStepHolder.getSteps.iterator.takeWhile(_ != step)
-          .map(_.getKeyword.getText.trim)
-          .filter(Set("Given", "When", "Then"))
-          .toSeq.lastOption.getOrElse("Given")
-      case name => name
-    }
-    val arguments = (parameters ++ argument).map { case (name, tpe) => s"$name: $tpe" }.mkString(", ")
-    val quotes = "\"\"\""
-
-    s"""$keyword($quotes${expression.getSource}$quotes) { ($arguments) =>
-       |  // Write code here that turns the phrase above into concrete actions
-       |  throw new io.cucumber.scala.PendingException()
-       |}""".stripMargin
+      s"""$keyword($quoted) { ($arguments) =>
+         |  // Write code here that turns the phrase above into concrete actions
+         |  throw new io.cucumber.scala.PendingException()
+         |}""".stripMargin
+    }.distinct
   }
 
   private def scalaType(tpe: Type): String = tpe match {
