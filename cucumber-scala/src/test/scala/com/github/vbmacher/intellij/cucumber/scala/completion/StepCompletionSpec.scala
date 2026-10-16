@@ -14,12 +14,25 @@ class StepCompletionSpec extends ScCucumberSpecBase {
     myFixture.addFileToProject("Steps.scala", "class Steps { Given(\"customer exists\") { () => () } }")
     myFixture.configureByText("author.feature", "Feature: Author\n  Scenario: Author\n    Given customer<caret>\n")
     val completions = myFixture.completeBasic()
+    val wording = completions.find(_.getLookupString == "customer has consented").getOrElse(fail("Missing feature wording"))
     val presentation = new LookupElementPresentation()
+    wording.renderElement(presentation)
+    presentation.getTypeText should include("Feature wording")
+    presentation.getTailText should include("undefined")
     val implemented = completions.find(_.getLookupString == "customer exists").getOrElse(fail("Missing Scala completion"))
     implemented.renderElement(presentation)
     presentation.getTypeText should include("Steps.scala")
     presentation.getTailText should include("matching scenarios")
   }
 
-
+  @Test
+  def testFeatureWordingCanBeDisabled(): Unit = {
+    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    settings.featureWording = false
+    try {
+      myFixture.addFileToProject("consent.feature", "Feature: Consent\n  Scenario: Consent\n    Given customer has consented\n")
+      myFixture.configureByText("author.feature", "Feature: Author\n  Scenario: Author\n    Given customer<caret>\n")
+      Option(myFixture.completeBasic()).toSeq.flatten.exists(_.getLookupString == "customer has consented") shouldBe false
+    } finally settings.featureWording = true
+  }
 }

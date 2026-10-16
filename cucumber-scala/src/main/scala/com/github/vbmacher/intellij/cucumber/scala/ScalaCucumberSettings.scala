@@ -28,21 +28,24 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val clearResults = new javax.swing.JButton("Clear Editor Results")
   clearResults.addActionListener(_ => project.getService(classOf[RunResults]).clearDecorations())
   private val reuse = new JCheckBox("Rank step completion by matching scenario count")
+  private val wording = new JCheckBox("Suggest wording from feature files in the current module")
   private def settings = project.getService(classOf[ScalaCucumberSettings])
   override def getDisplayName: String = "Scala Cucumber"
   override def createComponent(): JComponent = {
     val panel = new JPanel()
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
-    Seq(reuse, results, clearResults).foreach(panel.add)
+    Seq(reuse, wording, results, clearResults).foreach(panel.add)
     panel
   }
-  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse
+  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || wording.isSelected != settings.featureWording
   override def apply(): Unit = {
     settings.resultDecorations = results.isSelected
     settings.rankByReuse = reuse.isSelected
+    settings.featureWording = wording.isSelected
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)
     reuse.setSelected(settings.rankByReuse)
+    wording.setSelected(settings.featureWording)
   }
 }

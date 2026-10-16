@@ -54,5 +54,12 @@ class ScStepCompletion extends CompletionContributor {
         case _ => result.passResult(completion)
       }
     })
+    if (settings.featureWording && step.nonEmpty) {
+      entries.filter(_.definitions.isEmpty).groupBy(_.step.getName).toSeq.sortBy(_._1).foreach { case (wording, occurrences) =>
+        result.addElement(LookupElementBuilder.create(occurrences.head.step, wording)
+          .withTypeText("Feature wording · " + occurrences.head.step.getContainingFile.getName)
+          .withTailText(" · undefined", true))
+      }
+    }
   }
 }
