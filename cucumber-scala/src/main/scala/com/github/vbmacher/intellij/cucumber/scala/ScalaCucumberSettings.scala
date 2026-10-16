@@ -24,9 +24,13 @@ class ScalaCucumberSettings extends PersistentStateComponent[ScalaCucumberSettin
 }
 
 class ScalaCucumberConfigurable(project: Project) extends Configurable {
+  private val history = new JCheckBox("Retain local scenario history (workspace only)")
+  private val retention = new javax.swing.JSpinner(new javax.swing.SpinnerNumberModel(200, 0, 10000, 50))
   private val results = new JCheckBox("Show run results in feature gutters and documentation")
   private val clearResults = new javax.swing.JButton("Clear Editor Results")
+  private val clearHistory = new javax.swing.JButton("Clear Run History")
   clearResults.addActionListener(_ => project.getService(classOf[RunResults]).clearDecorations())
+  clearHistory.addActionListener(_ => project.getService(classOf[RunResults]).clearHistory())
   private val categories = new javax.swing.JTextArea(3, 60)
   private val requirements = new javax.swing.JTextArea(5, 60)
   private val tables = new JCheckBox("Use Tab / Shift-Tab / Enter to navigate and extend Gherkin tables")
@@ -38,16 +42,18 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   override def createComponent(): JComponent = {
     val panel = new JPanel()
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
-    Seq(reuse, context, wording, tables, results, clearResults).foreach(panel.add)
+    Seq(reuse, context, wording, tables, results, history, retention, clearResults, clearHistory).foreach(panel.add)
     panel.add(new javax.swing.JLabel("Scenario categories: category name => Cucumber tag expression"))
     panel.add(new javax.swing.JScrollPane(categories))
     panel.add(new javax.swing.JLabel("Requirement mappings: tag regex => relative Markdown path#id or URL template"))
     panel.add(new javax.swing.JScrollPane(requirements))
     panel
   }
-  override def isModified: Boolean = categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
+  override def isModified: Boolean = categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
   override def apply(): Unit = {
     settings.resultDecorations = results.isSelected
+    settings.runHistory = history.isSelected
+    settings.historyRetention = retention.getValue.asInstanceOf[Integer].intValue()
     settings.tagCategories = categories.getText
     settings.requirementMappings = requirements.getText
     settings.tableNavigation = tables.isSelected
@@ -57,6 +63,8 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)
+    history.setSelected(settings.runHistory)
+    retention.setValue(Integer.valueOf(settings.historyRetention))
     categories.setText(settings.tagCategories)
     requirements.setText(settings.requirementMappings)
     tables.setSelected(settings.tableNavigation)

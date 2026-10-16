@@ -82,5 +82,14 @@ class RunSelectionSpec extends ScCucumberSpecBase {
       hooks.exists(_.kind == "BeforeStep") shouldBe true
     }
   }
+  @Test
+  def testIdenticalScenarioAndExampleRowsKeepSeparateHistoryIdentities(): Unit = {
+    myFixture.configureByText("identities.feature", "Feature: Identities\n  Scenario: Same\n    Given setup\n  Scenario: Same\n    Given setup\n  Scenario Outline: Rows\n    Given <value>\n    Examples:\n      | value |\n      | same |\n      | same |\n")
+    ScCucumber.inReadAction {
+      val locations = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get
+      locations.size shouldBe 4
+      locations.map(RunResults.identity).distinct.size shouldBe 4
+    }
+  }
 
 }

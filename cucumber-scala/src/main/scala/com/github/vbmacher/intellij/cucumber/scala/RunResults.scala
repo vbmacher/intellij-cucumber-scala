@@ -17,6 +17,24 @@ import scala.beans.BeanProperty
 import scala.collection.mutable
 import scala.jdk.CollectionConverters._
 
+class ScenarioHistoryEntry {
+  @BeanProperty var identity: String = ""
+  @BeanProperty var run: String = ""
+  @BeanProperty var uri: String = ""
+  @BeanProperty var line: Int = 0
+  @BeanProperty var name: String = ""
+  @BeanProperty var revision: String = ""
+  @BeanProperty var environment: String = ""
+  @BeanProperty var timestamp: Long = 0L
+  @BeanProperty var attempt: Int = 0
+  @BeanProperty var status: String = ""
+  @BeanProperty var error: String = ""
+  @BeanProperty var retry: Boolean = false
+}
+class ScenarioHistoryState {
+  @BeanProperty var entries: util.ArrayList[ScenarioHistoryEntry] = new util.ArrayList[ScenarioHistoryEntry]()
+}
+
 object RunResults {
   final case class Context(stamp: Long, revision: String, environment: String, identities: Map[String, String], started: Long)
   final case class Decoration(result: CucumberMessages.StepResult, stamp: Long, timestamp: Long)
@@ -59,17 +77,33 @@ object RunResults {
       }.toOption }
     }.getOrElse("unknown")
   }
-
+  def summary(entries: Seq[ScenarioHistoryEntry]): String = {
+    val firstAttempts = entries.filter(_.attempt == 0)
+    val counts = firstAttempts.groupBy(_.status).toSeq.sortBy(_._1).map { case (status, same) => s"$status: ${same.size}" }.mkString(" · ")
+    val outcomes = firstAttempts.filter(e => Set("PASSED", "FAILED").contains(e.status)).map(_.status).distinct
+    s"${firstAttempts.size} initial attempts · $counts · ${entries.count(_.attempt > 0)} retries" +
+      (if (outcomes.size > 1) "\nSignal: inconsistent observed outcomes; investigate (no root cause inferred)." else "")
+  }
 }
 
-class RunResults(project: Project) {
+@State(name = "ScalaCucumberRunHistory", storages = Array(new Storage(StoragePathMacros.WORKSPACE_FILE)))
+class RunResults(project: Project) extends PersistentStateComponent[ScenarioHistoryState] {
   import RunResults._
+  private var state = new ScenarioHistoryState
   private val pendingErrors = mutable.Map.empty[(String, String), Vector[String]]
   private val decorations = mutable.LinkedHashMap.empty[(String, String, Int, String), Decoration]
   private def settings = project.getService(classOf[ScalaCucumberSettings])
+  override def getState: ScenarioHistoryState = synchronized {
+    val snapshot = new ScenarioHistoryState
+    snapshot.entries = new util.ArrayList[ScenarioHistoryEntry](state.entries)
+    snapshot
+  }
+  override def loadState(value: ScenarioHistoryState): Unit = synchronized { state = value; trim() }
+  def history: Seq[ScenarioHistoryEntry] = synchronized { state.entries.asScala.toVector }
+  private def trim(): Unit = while (state.entries.size() > math.max(0, settings.historyRetention)) state.entries.remove(0)
   def record(result: CucumberMessages.StepResult, context: Context): Unit = {
     synchronized {
-      if (result.error.nonEmpty) {
+      if (settings.runHistory && result.error.nonEmpty) {
         val key = result.run -> result.selector
         pendingErrors(key) = (pendingErrors.getOrElse(key, Vector.empty) :+ result.error).distinct
       }
@@ -83,7 +117,19 @@ class RunResults(project: Project) {
   def record(result: CucumberMessages.ScenarioResult, context: Context): Unit = {
     val error = synchronized { pendingErrors.remove(result.run -> (result.uri + ":" + result.line)).getOrElse(Vector.empty).mkString("\n") }
     record(CucumberMessages.StepResult(result.run, result.uri, result.line, result.uri + ":" + result.line, result.status, 0L, error), context)
-    synchronized { pendingErrors.remove(result.run -> (result.uri + ":" + result.line)); () }
+    synchronized {
+      pendingErrors.remove(result.run -> (result.uri + ":" + result.line))
+      if (settings.runHistory) {
+      val entry = new ScenarioHistoryEntry
+      entry.identity = context.identities.getOrElse(key(result.uri, result.line), digest(key(result.uri, result.line) + result.name))
+      entry.run = result.run; entry.uri = result.uri; entry.line = result.line; entry.name = result.name
+      entry.status = result.status; entry.attempt = result.attempt; entry.retry = result.willRetry
+      entry.error = error
+      entry.revision = context.revision; entry.environment = context.environment; entry.timestamp = System.currentTimeMillis()
+      state.entries.add(entry)
+      trim()
+      }
+    }
   }
   def at(element: PsiElement): Seq[Decoration] = {
     if (!settings.resultDecorations) return Seq.empty
@@ -98,6 +144,7 @@ class RunResults(project: Project) {
       (if (r.error.nonEmpty) "\n" + r.error else "")
   }.mkString("\n\n")
   def clearDecorations(): Unit = { synchronized { decorations.clear() }; refresh() }
+  def clearHistory(): Unit = synchronized { state.entries.clear(); pendingErrors.clear() }
   private def refresh(): Unit = ApplicationManager.getApplication.invokeLater(() => {
     if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart()
   })
