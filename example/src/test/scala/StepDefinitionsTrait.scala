@@ -1,15 +1,19 @@
+package cucumber.examples.scalacalculator
+
 import io.cucumber.scala.EN
-import org.junit.Assert.assertEquals
+import org.junit.Assert.{assertEquals, assertTrue}
 
 trait StepDefinitionsTrait extends ScalaDslIndirection with EN {
+  protected val calculator: Calculator = new Calculator
 
-  val calc = new Calculator
+  Before { calculator.clear() }
 
-  Before("~@foo") {
-    scenario => println("Runs before scenarios *not* tagged with @foo")
+  // Use the gutter icon or Find Usages to jump back to feature steps.
+  Then("the result is {double}") { expected: Double =>
+    assertEquals(expected, calculator.value, 0.001)
   }
 
-  Then("^the result is ([+-]?\\d+)$") { expected: Double =>
-    assertEquals(expected, calc.value, 0.001)
+  Then("the calculator is empty") { () =>
+    assertTrue(calculator.isEmpty)
   }
 }
