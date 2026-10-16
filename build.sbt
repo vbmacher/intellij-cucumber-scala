@@ -66,7 +66,7 @@ lazy val `cucumber-scala` = project
     javaOptions ++= jvmOpens,
     resolvers += intellijArtifact.repository,
     libraryDependencies ++= Seq(
-      // Only used for generating step definition snippets
+      // Step snippet generation and built-in parameter regexes
       "io.cucumber" % "cucumber-expressions" % "18.1.0",
       "junit" % "junit" % "4.13.2" % Test,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
