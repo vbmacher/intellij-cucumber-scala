@@ -24,20 +24,25 @@ class ScalaCucumberSettings extends PersistentStateComponent[ScalaCucumberSettin
 }
 
 class ScalaCucumberConfigurable(project: Project) extends Configurable {
+  private val results = new JCheckBox("Show run results in feature gutters and documentation")
+  private val clearResults = new javax.swing.JButton("Clear Editor Results")
+  clearResults.addActionListener(_ => project.getService(classOf[RunResults]).clearDecorations())
   private val reuse = new JCheckBox("Rank step completion by matching scenario count")
   private def settings = project.getService(classOf[ScalaCucumberSettings])
   override def getDisplayName: String = "Scala Cucumber"
   override def createComponent(): JComponent = {
     val panel = new JPanel()
     panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS))
-    Seq(reuse).foreach(panel.add)
+    Seq(reuse, results, clearResults).foreach(panel.add)
     panel
   }
-  override def isModified: Boolean = reuse.isSelected != settings.rankByReuse
+  override def isModified: Boolean = results.isSelected != settings.resultDecorations || reuse.isSelected != settings.rankByReuse
   override def apply(): Unit = {
+    settings.resultDecorations = results.isSelected
     settings.rankByReuse = reuse.isSelected
   }
   override def reset(): Unit = {
+    results.setSelected(settings.resultDecorations)
     reuse.setSelected(settings.rankByReuse)
   }
 }

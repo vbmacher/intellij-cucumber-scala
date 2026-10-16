@@ -300,6 +300,8 @@
         <lang.documentationProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
         <lang.documentationProvider language="Scala" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
         <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberSettings"/>
+        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.RunResults"/>
+        <codeInsight.lineMarkerProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.FeatureResultLineMarker"/>
         <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>

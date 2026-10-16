@@ -125,6 +125,17 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
       result
     }
     override def execute(executor: Executor, runner: ProgramRunner[_]): ExecutionResult = {
+      val context = ScCucumber.inReadAction {
+        val module = getConfigurationModule.getModule
+        val locations = ScenarioSelection.locations(project, module.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten
+        val identities = locations.map(location => RunResults.key(location.target.getContainingFile.getVirtualFile.getUrl, location.line) -> RunResults.identity(location)).toMap
+        val scalaSources = com.intellij.psi.search.FileTypeIndex.getFiles(org.jetbrains.plugins.scala.ScalaFileType.INSTANCE, ScCucumber.stepSearchScope(module)).asScala.toSeq
+          .filter(file => !com.intellij.openapi.roots.ProjectFileIndex.getInstance(project).isInLibrarySource(file)).sortBy(_.getPath)
+          .flatMap(file => Option(com.intellij.psi.PsiManager.getInstance(project).findFile(file)).map(psi => file.getUrl + "\n" + psi.getText))
+        val environmentKey = module.getName + " · " + Option(ModuleRootManager.getInstance(module).getSdk).map(_.getVersionString).getOrElse("unknown JDK") +
+          " · config " + RunResults.digest(Seq(glue, tags, vmOptions, programOptions, workingDirectory, ScCucumberRunConfiguration.this.environment.toSeq.sorted.mkString, RunResults.digest(scalaSources.mkString("\n"))).mkString("\n")).take(12)
+        RunResults.Context(com.intellij.psi.util.PsiModificationTracker.getInstance(project).getModificationCount, RunResults.revision(project), environmentKey, identities, System.currentTimeMillis())
+      }
       val handler = try startProcess() catch {
         case error: Throwable => java.nio.file.Files.deleteIfExists(messageFile); throw error
       }
@@ -133,8 +144,8 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
       var runtimeMetadata = "unknown runtime"
       val messages = new CucumberMessages(runId,
         text => handler.notifyTextAvailable(text, com.intellij.execution.process.ProcessOutputTypes.STDOUT),
-        _ => (),
-        _ => (),
+        result => project.getService(classOf[RunResults]).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
+        result => project.getService(classOf[RunResults]).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
         metadata => runtimeMetadata = metadata)
       new CucumberMessageTail(messageFile, handler, messages)
       new DefaultExecutionResult(console, handler)
