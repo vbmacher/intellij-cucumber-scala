@@ -102,7 +102,7 @@ lazy val `cucumber-scala` = project
     packageMethod := PackagingMethod.Standalone(),
     patchPluginXml := pluginXmlOptions { xml =>
       xml.version = version.value
-      xml.sinceBuild = "262.8665"
+      xml.sinceBuild = "262.9437.185"
       xml.untilBuild = "262.*"
     },
     signPluginOptions := signPluginOptions.value.copy(enabled = true))
