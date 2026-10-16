@@ -43,7 +43,7 @@ class ScStepDocumentation extends AbstractDocumentationProvider {
       s"<li>${escape(p.getText)} = ${escape(value)}</li>"
     }.mkString
     val outline = if (step.getName != step.getSubstitutedName) "<p>Outline: representative example; other rows may differ.</p>" else ""
-    s"<pre>${escape(expression)}</pre>${sourceLink(element)}" + s"<ul>$rows</ul>$outline" + usagePreview(StepUsage.scenarios(element))
+    s"<pre>${escape(expression)}</pre>${sourceLink(element)}" + ScStepCompletion.deprecation(element).map(d => s"<p>${escape(d)}</p>").getOrElse("") + s"<ul>$rows</ul>$outline" + usagePreview(StepUsage.scenarios(element))
   }
 
   private def usagePreview(scenarios: Seq[org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder]): String =

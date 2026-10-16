@@ -33,9 +33,10 @@ class ScStepCompletion extends CompletionContributor {
           val source = c.getContainingFile.getName + Option(sourceModule).map(m => " · " + m.getName).getOrElse("")
           val usedTags = usages.flatMap(StepUsage.tags).distinct.sorted
           val sharedTags = usedTags.toSet.intersect(tags).size
+          val deprecated = ScStepCompletion.deprecation(c)
           val score = (if (settings.rankByReuse) usages.size.toDouble else 0.0) +
             (if (settings.rankByContext) sharedTags * 100.0 + (if (sourceModule == module) 10.0 else 0.0) else 0.0) -
-            deterministic.getOrElse(c.getFirstChild, 0).toDouble / (deterministic.size + 1) / 10000
+            (if (deprecated.nonEmpty) 1000000.0 else 0.0) - deterministic.getOrElse(c.getFirstChild, 0).toDouble / (deterministic.size + 1) / 10000
           val decorated = new LookupElementDecorator[LookupElement](lookup) {
             override def handleInsert(context: InsertionContext): Unit = {
               val expression = c.pattern.getOrElse("")
@@ -48,7 +49,8 @@ class ScStepCompletion extends CompletionContributor {
             override def renderElement(presentation: LookupElementPresentation): Unit = {
               super.renderElement(presentation)
               presentation.setTypeText(source)
-              presentation.setTailText(s" · ${usages.size} matching scenarios" + (if (usedTags.nonEmpty) " · " + usedTags.take(5).mkString(" ") else ""), true)
+              presentation.setTailText(s" · ${usages.size} matching scenarios" + (if (usedTags.nonEmpty) " · " + usedTags.take(5).mkString(" ") else "") + deprecated.map(d => " · " + d).getOrElse(""), true)
+              presentation.setStrikeout(deprecated.nonEmpty)
             }
           }
           result.addElement(PrioritizedLookupElement.withPriority(decorated, score))
@@ -63,4 +65,12 @@ class ScStepCompletion extends CompletionContributor {
       }
     }
   }
+}
+
+object ScStepCompletion {
+  def deprecation(element: PsiElement): Option[String] =
+    Iterator.iterate(element)(_.getParent).takeWhile(_ != null).collect { case owner: PsiModifierListOwner => owner }
+      .flatMap(owner => Option(owner.getModifierList).toSeq.flatMap(_.getAnnotations)
+        .filter(a => Set("scala.deprecated", "java.lang.Deprecated").contains(a.getQualifiedName)).map(_.getText))
+      .toSeq.headOption
 }
