@@ -70,4 +70,25 @@ class StepNavigationSpec extends ScCucumberSpecBase {
     myFixture.addFileToProject("Steps.scala", "class Steps { When(\"weight {weight}\") { (s: String) => () } }")
     assertTargets("weight 10kg")
   }
+
+  @Test
+  def testConsecutivePackageClausesResolve(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "package outer\npackage inner\nclass Steps { When(\"review\") { () => () } }")
+    assertTargets("review", "Steps.scala" -> "When(\"review\")")
+  }
+
+  @Test
+  def testNestedBracedPackagesResolve(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "package outer { package middle { package inner { class Steps { When(\"review\") { () => () } } } } }")
+    assertTargets("review", "Steps.scala" -> "When(\"review\")")
+  }
+
+  @Test
+  def testParameterTypesUnderNestedPackagesResolve(): Unit = {
+    myFixture.addFileToProject("ParameterTypes.scala",
+      "package outer\npackage inner\nclass ParameterTypes { ParameterType(\"weight\", \"[0-9]+kg\") { (s: String) => s } }")
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"weight {weight}\") { (s: String) => () } }")
+    assertTargets("weight 10kg", "Steps.scala" -> "When(\"weight {weight}\")")
+    assertTargets("weight 10")
+  }
 }
