@@ -42,7 +42,7 @@ To setup the development environment, follow the following steps:
 The plugin depends on:
 - [Gherkin plugin](https://plugins.jetbrains.com/plugin/9164-gherkin)
 - [Scala plugin](https://plugins.jetbrains.com/plugin/1347-scala)
-- [cucumber-expressions](https://github.com/cucumber/cucumber-expressions) (for generating step definition snippets)
+- [cucumber-expressions](https://github.com/cucumber/cucumber-expressions) (for step snippets and built-in parameter matching)
 
 To start an IDE with the plugin installed in the example project, run `runIDE` task. Import the whole project
 as an sbt project in the sandbox-ide. Wait for indexing to finish.
