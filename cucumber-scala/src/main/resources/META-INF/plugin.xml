@@ -297,6 +297,9 @@
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberSettings"/>
+        <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
+        <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
         <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
