@@ -311,6 +311,10 @@
         <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberConfigurationType"/>
         <runConfigurationProducer implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberRunProducer"/>
         <runLineMarkerContributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ExampleRunLineMarker"/>
+        <intentionAction>
+            <className>com.github.vbmacher.intellij.cucumber.scala.UseExistingStepIntention</className>
+            <category>Scala Cucumber</category>
+        </intentionAction>
         <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
         <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.StepDeclarationSearcher"/>
