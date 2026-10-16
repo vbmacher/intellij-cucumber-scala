@@ -289,6 +289,7 @@
 
     <depends>com.intellij.modules.java</depends>
     <depends>gherkin</depends>
+    <depends optional="true" config-file="cucumber-jcef.xml">com.intellij.modules.jcef</depends>
     <depends>org.intellij.scala</depends>
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
@@ -363,6 +364,9 @@
             <add-to-group group-id="ScalaCucumber.Table" anchor="last"/>
         </action>
         <action id="ScalaCucumber.GoToHooks" class="com.github.vbmacher.intellij.cucumber.scala.GoToHooksAction" text="Go to Scala Hooks…">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+        <action id="ScalaCucumber.ExportFeatures" class="com.github.vbmacher.intellij.cucumber.scala.ExportFeaturesAction" text="Export Features…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>

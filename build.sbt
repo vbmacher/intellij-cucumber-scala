@@ -79,6 +79,7 @@ lazy val `cucumber-scala` = project
     intellijPlugins ++= Seq(
       "org.intellij.scala:2026.2.16".toPlugin,
       "gherkin:262.8665.173".toPlugin,
+      "com.intellij.modules.jcef".toPlugin,
       // In 2026.2 several platform modules moved out of the platform lib into bundled plugins.
       // They are not picked up unless declared, and a missing one cascades into the plugins we
       // depend on: lucene.common -> spellchecker -> gherkin, aetherDependencyResolver and
