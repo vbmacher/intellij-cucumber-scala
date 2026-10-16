@@ -3,6 +3,8 @@ package com.github.vbmacher.intellij.cucumber.scala
 import com.intellij.execution.{DefaultExecutionResult, ExecutionException, ExecutionResult, Executor}
 import com.intellij.execution.configurations._
 import com.intellij.execution.runners.{ExecutionEnvironment, ProgramRunner}
+import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
+import com.intellij.execution.testframework.sm.runner.SMTRunnerConsoleProperties
 import com.intellij.openapi.module.{Module, ModuleManager}
 import com.intellij.ui.TextFieldWithAutoCompletion
 import io.cucumber.tagexpressions.TagExpressionParser
@@ -115,7 +117,28 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
   }
 
   override def getState(executor: Executor, environment: ExecutionEnvironment): RunProfileState = new JavaCommandLineState(environment) {
-    override def createJavaParameters(): JavaParameters = ScCucumber.inReadAction { parameters() }
+    private lazy val messageFile = java.nio.file.Files.createTempFile("scala-cucumber-results-", ".ndjson")
+    private val runId = java.util.UUID.randomUUID().toString
+    override def createJavaParameters(): JavaParameters = {
+      val result = ScCucumber.inReadAction { parameters() }
+      result.getProgramParametersList.add("--plugin", "message:" + messageFile)
+      result
+    }
+    override def execute(executor: Executor, runner: ProgramRunner[_]): ExecutionResult = {
+      val handler = try startProcess() catch {
+        case error: Throwable => java.nio.file.Files.deleteIfExists(messageFile); throw error
+      }
+      val properties = new ScCucumberConsoleProperties(ScCucumberRunConfiguration.this, executor)
+      val console = SMTestRunnerConnectionUtil.createAndAttachConsole("ScalaCucumber", handler, properties)
+      var runtimeMetadata = "unknown runtime"
+      val messages = new CucumberMessages(runId,
+        text => handler.notifyTextAvailable(text, com.intellij.execution.process.ProcessOutputTypes.STDOUT),
+        _ => (),
+        _ => (),
+        metadata => runtimeMetadata = metadata)
+      new CucumberMessageTail(messageFile, handler, messages)
+      new DefaultExecutionResult(console, handler)
+    }
   }
 
   override def clone(): ScCucumberRunConfiguration = {
