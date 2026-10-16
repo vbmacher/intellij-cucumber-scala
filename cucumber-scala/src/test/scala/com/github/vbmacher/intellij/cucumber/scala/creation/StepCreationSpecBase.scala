@@ -23,7 +23,7 @@ abstract class StepCreationSpecBase extends StepResolveSpecBase {
         documentManager.commitAllDocuments()
         val at = feature.findElementAt(myFixture.getEditor.getCaretModel.getOffset)
         val step = PsiTreeUtil.getParentOfType(at, classOf[GherkinStep])
-        new ScStepDefinitionCreator().createStepDefinition(step, stepDef, withTemplate = false)
+        assert(new ScStepDefinitionCreator().createStepDefinition(step, stepDef, withTemplate = false))
         documentManager.commitAllDocuments()
       }
     })
