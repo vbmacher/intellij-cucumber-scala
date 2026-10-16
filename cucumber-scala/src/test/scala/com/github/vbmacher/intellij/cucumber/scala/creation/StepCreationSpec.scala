@@ -103,4 +103,20 @@ class StepCreationSpec extends StepCreationSpecBase {
         |}""".stripMargin
     )
   }
+
+  @Test
+  def testWildcardUsesGiven(): Unit = {
+    val files = loadTestCase("creation/wildcard.feature", "creation/StepDefinitions.scala")
+    checkStepCreation(files(0), files(1),
+      s"""import io.cucumber.scala.ScalaDsl
+        |
+        |class StepDefinitions extends ScalaDsl {
+        |
+        |  Given(${tripleDoubleQuotes}I save {int} documents$tripleDoubleQuotes) { (int1: Int) =>
+        |    // Write code here that turns the phrase above into concrete actions
+        |    throw new io.cucumber.scala.PendingException()
+        |  }
+        |}""".stripMargin
+    )
+  }
 }
