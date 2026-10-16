@@ -32,7 +32,18 @@ class ScStepDocumentation extends AbstractDocumentationProvider {
     val element = definition.getElement
     val call = asCall(element.getParent)
     val expression = call.flatMap(_.pattern).getOrElse(definition.getExpression)
-    s"<pre>${escape(expression)}</pre>${sourceLink(element)}" + usagePreview(StepUsage.scenarios(element))
+    val params = call.toSeq.flatMap(_.parameters)
+    val captures = Try(new ExpressionFactory(ScParameterTypes.registry(Option(ModuleUtilCore.findModuleForPsiElement(step)), snippetsOnly = false))
+      .createExpression(expression).`match`(step.getSubstitutedName)).toOption.flatMap(Option(_))
+      .map(_.asScala.toSeq.map(_.getGroup.getValues.asScala.mkString(", ")))
+    val rows = params.zipWithIndex.map { case (p, i) =>
+      val trailing = if (i == params.size - 1 && step.getTable != null) Some("DataTable (" + step.getTable.getText + ")")
+        else if (i == params.size - 1 && step.getPystring != null) Some("DocString (" + step.getPystring.getText + ")") else None
+      val value = trailing.orElse(captures.flatMap(_.lift(i))).getOrElse("unknown (not statically resolved)")
+      s"<li>${escape(p.getText)} = ${escape(value)}</li>"
+    }.mkString
+    val outline = if (step.getName != step.getSubstitutedName) "<p>Outline: representative example; other rows may differ.</p>" else ""
+    s"<pre>${escape(expression)}</pre>${sourceLink(element)}" + s"<ul>$rows</ul>$outline" + usagePreview(StepUsage.scenarios(element))
   }
 
   private def usagePreview(scenarios: Seq[org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder]): String =
