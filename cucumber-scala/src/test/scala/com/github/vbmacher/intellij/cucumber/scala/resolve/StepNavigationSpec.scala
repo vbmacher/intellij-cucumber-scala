@@ -91,4 +91,20 @@ class StepNavigationSpec extends ScCucumberSpecBase {
     assertTargets("weight 10kg", "Steps.scala" -> "When(\"weight {weight}\")")
     assertTargets("weight 10")
   }
+
+  @Test
+  def testScientificAndSignedNumericParametersResolve(): Unit = {
+    val types = Seq("float", "double", "bigdecimal")
+    val steps = types.map(tpe => s"When(\"$tpe {$tpe}\") { (n: Double) => () }").mkString("; ")
+    myFixture.addFileToProject("Steps.scala", s"class Steps { $steps }")
+    for (tpe <- types; number <- Seq("1.2E3", "-1.2E-3", "+1.2", "1,234.5", ".5")) {
+      assertTargets(s"$tpe $number", "Steps.scala" -> s"When(\"$tpe {$tpe}\")")
+    }
+  }
+
+  @Test
+  def testInvalidNumericParametersDoNotResolve(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"number {double}\") { (n: Double) => () } }")
+    for (number <- Seq("1.2E", "1.2E+", "abc", "+")) assertTargets(s"number $number")
+  }
 }

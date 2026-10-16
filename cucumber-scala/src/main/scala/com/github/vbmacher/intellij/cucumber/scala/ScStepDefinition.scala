@@ -2,11 +2,13 @@ package com.github.vbmacher.intellij.cucumber.scala
 
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
 import com.intellij.psi.PsiElement
+import io.cucumber.cucumberexpressions.{ExpressionFactory, ParameterTypeRegistry}
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
 import org.jetbrains.plugins.cucumber.{CucumberUtil, MapParameterTypeManager}
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 
 import java.util
+import java.util.Locale
 import java.util.regex.Pattern
 import scala.jdk.CollectionConverters._
 
@@ -38,8 +40,13 @@ object ScStepDefinition {
 
   private val BuiltInParameterTypes: Map[String, String] = {
     val standard = CucumberUtil.STANDARD_PARAMETER_TYPES.asScala.toMap
+    val factory = new ExpressionFactory(new ParameterTypeRegistry(Locale.ENGLISH))
+    val numeric = Seq("float", "double", "bigdecimal").map { name =>
+      // A single parameter compiles as ^(regex)$; Gherkin adds the capture group itself.
+      name -> factory.createExpression(s"{$name}").getRegexp.pattern.stripPrefix("^(").stripSuffix(")$")
+    }
     standard ++
       Seq("biginteger", "byte", "short", "long").map(_ -> standard("int")) ++
-      Seq("bigdecimal", "double").map(_ -> standard("float"))
+      numeric
   }
 }
