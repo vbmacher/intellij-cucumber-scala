@@ -10,9 +10,12 @@ import org.jetbrains.plugins.cucumber.psi._
 class ScCucumberRunProducer extends RunConfigurationProducer[ScCucumberRunConfiguration](classOf[ScCucumberConfigurationType]) {
   private[scala] def selection(element: PsiElement): Option[(GherkinFile, Int, PsiElement)] = {
     Option(element).flatMap(e => Option(e.getContainingFile)).collect { case f: GherkinFile => f }.map { file =>
+      val row = Option(PsiTreeUtil.getParentOfType(element, classOf[GherkinTableRow], false))
+        .filter(r => PsiTreeUtil.getParentOfType(r, classOf[GherkinExamplesBlock]) != null)
+        .filter(r => !r.getParent.asInstanceOf[GherkinTable].getHeaderRow.equals(r))
       val holder = Option(PsiTreeUtil.getParentOfType(element, classOf[GherkinStepsHolder], false))
         .filterNot { case s: GherkinScenario => s.isBackground; case _ => false }
-      val target = holder.getOrElse(file)
+      val target = row.orElse(holder).getOrElse(file)
       val line = if (target == file) 0 else file.getText.take(ScenarioSelection.sourceOffset(target)).count(_ == '\n') + 1
       (file, line, target)
     }

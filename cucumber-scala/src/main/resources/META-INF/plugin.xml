@@ -305,6 +305,7 @@
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
         <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberConfigurationType"/>
         <runConfigurationProducer implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberRunProducer"/>
+        <runLineMarkerContributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ExampleRunLineMarker"/>
         <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
 
         <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.StepDeclarationSearcher"/>
