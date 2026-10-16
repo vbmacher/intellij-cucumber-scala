@@ -344,6 +344,7 @@
             <action id="ScalaCucumber.CutTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.CutTableTsvAction" text="Cut Cells as TSV"/>
             <action id="ScalaCucumber.PasteTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.PasteTableTsvAction" text="Paste TSV (Preview)…"/>
             <action id="ScalaCucumber.ClearTableCells" class="com.github.vbmacher.intellij.cucumber.scala.ClearTableCellsAction" text="Clear Cells"/>
+            <action id="ScalaCucumber.TransposeTable" class="com.github.vbmacher.intellij.cucumber.scala.TransposeTableAction" text="Transpose DataTable (Preview)…"/>
             <action id="ScalaCucumber.MoveTableRowUp" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableRowUpAction" text="Move Data Row Up"/>
             <action id="ScalaCucumber.MoveTableRowDown" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableRowDownAction" text="Move Data Row Down"/>
             <action id="ScalaCucumber.MoveTableColumnLeft" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableColumnLeftAction" text="Move Column Left"/>

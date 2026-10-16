@@ -21,6 +21,9 @@ abstract class GherkinTableAction(operation: String) extends AnAction {
             CopyPasteManager.getInstance().setContents(new StringSelection(GherkinTables.toTsv(selection.selected)))
             if (operation == "cut") Some(clear(selection)) else None
           case "clear" => Some(clear(selection))
+          case "transpose" if selection.isExamples =>
+            Messages.showErrorDialog(event.getProject, "Examples headers define outline parameters. Transpose is available only for DataTables.", "Transpose Table"); None
+          case "transpose" => Some(cells.transpose)
           case "rowUp" | "rowDown" =>
             val to = selection.row + (if (operation == "rowUp") -1 else 1)
             if (selection.row == 0 || to <= 0 || to >= cells.size) None
@@ -66,6 +69,7 @@ class CopyTableTsvAction extends GherkinTableAction("copy")
 class CutTableTsvAction extends GherkinTableAction("cut")
 class PasteTableTsvAction extends GherkinTableAction("paste")
 class ClearTableCellsAction extends GherkinTableAction("clear")
+class TransposeTableAction extends GherkinTableAction("transpose")
 class MoveTableRowUpAction extends GherkinTableAction("rowUp")
 class MoveTableRowDownAction extends GherkinTableAction("rowDown")
 class MoveTableColumnLeftAction extends GherkinTableAction("columnLeft")
