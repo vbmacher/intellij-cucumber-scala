@@ -1,15 +1,19 @@
 package com.github.vbmacher.intellij.cucumber.scala
 
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.Project
 import com.intellij.openapi.util.Computable
 import com.intellij.openapi.util.text.StringUtil
-import com.intellij.psi.util.{CachedValuesManager, PsiTreeUtil}
-import com.intellij.psi.{PsiClass, PsiElement, PsiMember}
+import com.intellij.openapi.vfs.VirtualFile
+import com.intellij.psi.search.GlobalSearchScope
+import com.intellij.psi.util.PsiTreeUtil
+import com.intellij.psi.{PsiElement, PsiManager, PsiMember}
+import com.intellij.util.indexing.FileBasedIndex
 import org.jetbrains.plugins.cucumber.psi.i18n.JsonGherkinKeywordProvider
 import org.jetbrains.plugins.scala.lang.psi.ScalaPsiUtil.MethodValue
 import org.jetbrains.plugins.scala.lang.psi.api.expr._
 import org.jetbrains.plugins.scala.lang.psi.api.statements.params.ScParameter
-import org.jetbrains.plugins.scala.lang.psi.api.toplevel.templates.ScTemplateBody
 import org.jetbrains.plugins.scala.lang.psi.util.ScalaConstantExpressionEvaluator
 
 // Step definition: outer call `When("pattern") { (args) => body }` invoking inner call `When("pattern")`
@@ -65,22 +69,28 @@ object ScCucumber {
       }
       .forall(pkg => CucumberPackages.exists(pkg.startsWith))
 
-    def customParameterTypes: Map[String, String] = Option(PsiTreeUtil.getParentOfType(call, classOf[PsiClass]))
-      .map(CachedValuesManager.getProjectPsiDependentCache(_, (c: PsiClass) => parameterTypes(c, Set.empty).distinctBy(_._1).toMap))
-      .getOrElse(Map.empty)
+    def parameterType: Option[(String, String)] = call match {
+      case ScMethodCall(ScMethodCall(ref: ScReferenceExpression, Seq(nameArg, regexArg)), _)
+        if ref.textMatches("ParameterType") && isFromCucumber =>
+        for (name <- evaluate(nameArg); regex <- evaluate(regexArg)) yield name -> regex
+      case _ => None
+    }
   }
 
-  private def parameterTypes(klass: PsiClass, visited: Set[PsiClass]): Seq[(String, String)] = {
-    val own = for {
-      body <- Option(PsiTreeUtil.findChildOfType(klass, classOf[ScTemplateBody])).toSeq
-      ScMethodCall(ScMethodCall(ref: ScReferenceExpression, Seq(nameArg, regexArg)), _) <- body.getChildren.toSeq
-      if ref.textMatches("ParameterType")
-      name <- evaluate(nameArg)
-      regex <- evaluate(regexArg)
-    } yield name -> regex
-
-    val supers = klass.getSupers.toSeq.filterNot(visited.contains)
-    own ++ supers.flatMap(parameterTypes(_, visited + klass ++ supers))
+  def indexedCalls(project: Project, scope: GlobalSearchScope, steps: Boolean): Seq[ScMethodCall] = {
+    val psiManager = PsiManager.getInstance(project)
+    val result = Seq.newBuilder[ScMethodCall]
+    FileBasedIndex.getInstance().processValues(ScCucumberStepIndex.Id, java.lang.Boolean.valueOf(steps), null, (file: VirtualFile, offsets: Seq[Int]) => {
+      ProgressManager.checkCanceled()
+      for {
+        psiFile <- Option(psiManager.findFile(file)).toSeq
+        offset <- offsets
+        element <- Option(psiFile.findElementAt(offset + 1))
+        call <- callOfIndexed(element)
+      } result += call
+      true
+    }, scope)
+    result.result()
   }
 
   def asCall(element: PsiElement): Option[ScMethodCall] = element match {

@@ -38,4 +38,36 @@ class StepNavigationSpec extends ScCucumberSpecBase {
     myFixture.addFileToProject("Steps.scala", "class Steps { When(\"review\") { () => () } }")
     assertTargets("review", "Steps.scala" -> "When(\"review\")")
   }
+
+  @Test
+  def testCustomParameterInSeparateGlueClass(): Unit = {
+    myFixture.addFileToProject("ParameterTypes.scala",
+      "class ParameterTypes { ParameterType(\"weight\", \"[0-9]+kg\") { (s: String) => s } }")
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"weight {weight}\") { (s: String) => () } }")
+    assertTargets("weight 10kg", "Steps.scala" -> "When(\"weight {weight}\")")
+    assertTargets("weight 10")
+  }
+
+  @Test
+  def testUnknownCustomParameterDoesNotResolve(): Unit = {
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"weight {missing}\") { (s: String) => () } }")
+    assertTargets("weight 10kg")
+  }
+
+  @Test
+  def testCustomParameterInInheritedTrait(): Unit = {
+    myFixture.addFileToProject("ParameterTypes.scala",
+      "trait ParameterTypes { ParameterType(\"weight\", \"[0-9]+kg\") { (s: String) => s } }")
+    myFixture.addFileToProject("Steps.scala", "class Steps extends ParameterTypes { When(\"weight {weight}\") { (s: String) => () } }")
+    assertTargets("weight 10kg", "Steps.scala" -> "When(\"weight {weight}\")")
+    assertTargets("weight 10")
+  }
+
+  @Test
+  def testUnrelatedParameterTypeDoesNotRegister(): Unit = {
+    myFixture.addFileToProject("ParameterTypes.scala",
+      "package unrelated\nclass ParameterTypes { def ParameterType(n: String, r: String)(f: String => String): Unit = (); ParameterType(\"weight\", \"[0-9]+kg\") { (s: String) => s } }")
+    myFixture.addFileToProject("Steps.scala", "class Steps { When(\"weight {weight}\") { (s: String) => () } }")
+    assertTargets("weight 10kg")
+  }
 }
