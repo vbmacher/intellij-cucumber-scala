@@ -324,6 +324,7 @@
         </intentionAction>
         <fileEditorProvider implementation="com.github.vbmacher.intellij.cucumber.scala.FeaturePreviewProvider"/>
         <localInspection language="Gherkin" shortName="ScalaCucumberOutlineConsistency" displayName="Examples header consistency" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.OutlineConsistencyInspection"/>
+        <localInspection language="Gherkin" shortName="ScalaCucumberStyle" displayName="Project Gherkin style" groupName="Scala Cucumber" enabledByDefault="false" level="WEAK WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinStyleInspection"/>
         <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.RequirementReferenceContributor"/>
         <localInspection language="Gherkin" shortName="ScalaCucumberRequirements" displayName="Missing configured requirement" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.RequirementInspection"/>
         <localInspection language="Scala" shortName="ScalaCucumberStepSignature" displayName="Cucumber step lambda signature" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.StepSignatureInspection"/>

@@ -20,6 +20,27 @@ class InspectionFeaturesSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testStyleOptionsAndSafeDuplicateTagFix(): Unit = {
+    val inspection = new GherkinStyleInspection
+    inspection.maxSteps = 1
+    inspection.checkOrder = true
+    inspection.tagPattern = "@[a-z]+"
+    myFixture.enableInspections(inspection)
+    myFixture.configureByText("style.feature", "Feature: Style\n  @smoke @smoke @BAD\n  Scenario: Style<caret>\n    Then end\n    Given start\n")
+    val warnings = descriptions
+    warnings should include("duplicate tag")
+    warnings should include("configured maximum of 1")
+    warnings should include("step kind appears after")
+    warnings should include("configured convention")
+    inspection.getOptionController.getOption("maxSteps") shouldBe Integer.valueOf(1)
+    myFixture.getEditor.getCaretModel.moveToOffset(myFixture.getFile.getText.indexOf("@smoke", myFixture.getFile.getText.indexOf("@smoke") + 1) + 2)
+    val fix = myFixture.getAvailableIntentions.asScala.find(_.getText == "Remove duplicate tag").get
+    myFixture.launchAction(fix)
+    "@smoke".r.findAllIn(myFixture.getFile.getText).size shouldBe 1
+    myFixture.getFile.getText should include("@BAD")
+  }
+
+  @Test
   def testConfiguredMissingRequirementAndNativeSuppression(): Unit = {
     getProject.getService(classOf[ScalaCucumberSettings]).requirementMappings = "@REQ-(.*) => docs/requirements.md#$1"
     myFixture.enableInspections(new RequirementInspection)
