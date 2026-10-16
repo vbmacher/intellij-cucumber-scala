@@ -123,15 +123,7 @@ object ScStepDefinitionCreator {
       val parameters = expression.getParameterNames.asScala.zip(expression.getParameterTypes.asScala.map(t => scalaType(t.getType)))
       val argument = Option(step.getTable).map(_ => "dataTable" -> "io.cucumber.datatable.DataTable")
         .orElse(Option(step.getPystring).map(_ => "docString" -> "String"))
-      val keyword = step.getKeyword.getText.replaceAll("[\\s',!\u00AD’]", "") match {
-        case "*" =>
-          // Stay within this scenario/background and skip conjunctions and other wildcards.
-          step.getStepHolder.getSteps.iterator.takeWhile(_ != step)
-            .map(_.getKeyword.getText.trim)
-            .filter(Set("Given", "When", "Then"))
-            .toSeq.lastOption.getOrElse("Given")
-        case name => name
-      }
+      val keyword = semanticKeyword(step)
       val arguments = (parameters ++ argument).map { case (name, tpe) => s"$name: $tpe" }.mkString(", ")
       val expressionText = expression.getSource
       val quoted = if (expressionText.contains("\"\"\"")) "\"" + com.intellij.openapi.util.text.StringUtil.escapeStringCharacters(expressionText) + "\""
@@ -142,6 +134,22 @@ object ScStepDefinitionCreator {
          |  throw new io.cucumber.scala.PendingException()
          |}""".stripMargin
     }.distinct
+  }
+
+  private def semanticKeyword(step: GherkinStep): String = {
+    val file = step.getContainingFile.asInstanceOf[GherkinFile]
+    val provider = JsonGherkinKeywordProvider.getKeywordProvider(step)
+    def base(candidate: GherkinStep): Option[String] =
+      Option(provider.getBaseKeyword(file.getLocaleLanguage, candidate.getKeyword.getText.trim))
+        .map(_.toLowerCase(Locale.ROOT)).collect {
+          case "given" => "Given"
+          case "when" => "When"
+          case "then" => "Then"
+        }
+
+    // Conjunctions and wildcards inherit only within their own scenario/background.
+    base(step).orElse(step.getStepHolder.getSteps.iterator.takeWhile(_ != step)
+      .flatMap(base).toSeq.lastOption).getOrElse("Given")
   }
 
   private def scalaType(tpe: Type): String = tpe match {
