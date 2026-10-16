@@ -21,6 +21,14 @@ abstract class GherkinTableAction(operation: String) extends AnAction {
             CopyPasteManager.getInstance().setContents(new StringSelection(GherkinTables.toTsv(selection.selected)))
             if (operation == "cut") Some(clear(selection)) else None
           case "clear" => Some(clear(selection))
+          case "rowUp" | "rowDown" =>
+            val to = selection.row + (if (operation == "rowUp") -1 else 1)
+            if (selection.row == 0 || to <= 0 || to >= cells.size) None
+            else Some(cells.updated(selection.row, cells(to)).updated(to, cells(selection.row)))
+          case "columnLeft" | "columnRight" =>
+            val to = selection.column + (if (operation == "columnLeft") -1 else 1)
+            if (to < 0 || to >= cells.head.size) None
+            else Some(cells.map(row => row.updated(selection.column, row(to)).updated(to, row(selection.column))))
           case "deleteRow" => if (selection.row == 0) None else Some(cells.patch(selection.row, Nil, selection.lastRow - selection.row + 1))
           case "deleteColumn" => if (cells.head.size <= selection.lastColumn - selection.column + 1) None
             else Some(cells.map(_.patch(selection.column, Nil, selection.lastColumn - selection.column + 1)))
@@ -58,5 +66,9 @@ class CopyTableTsvAction extends GherkinTableAction("copy")
 class CutTableTsvAction extends GherkinTableAction("cut")
 class PasteTableTsvAction extends GherkinTableAction("paste")
 class ClearTableCellsAction extends GherkinTableAction("clear")
+class MoveTableRowUpAction extends GherkinTableAction("rowUp")
+class MoveTableRowDownAction extends GherkinTableAction("rowDown")
+class MoveTableColumnLeftAction extends GherkinTableAction("columnLeft")
+class MoveTableColumnRightAction extends GherkinTableAction("columnRight")
 class DeleteTableRowsAction extends GherkinTableAction("deleteRow")
 class DeleteTableColumnsAction extends GherkinTableAction("deleteColumn")
