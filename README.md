@@ -14,6 +14,7 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
 ### Navigation from feature step to step definition (and back)
   - Indexing of step definitions for better performance
   - Finds step definitions also in libraries with attached sources
+  - Supports anchored and slash-delimited regular expressions (e.g. `"^I add (\\d+)$"` or `"/I add [0-9]+/"`)
   - Supports "constant expressions" in step definition names (e.g. `"When("""I do 5 + 5, it's""" + (5+5))`)
   - Supports using [parameter types](https://cucumber.io/docs/cucumber/cucumber-expressions/#parameter-types) in 
     step definition names (e.g. `When("""I divide {int} by {int}""")`)  
