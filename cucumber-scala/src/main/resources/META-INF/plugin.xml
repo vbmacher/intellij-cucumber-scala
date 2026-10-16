@@ -321,6 +321,7 @@
             <className>com.github.vbmacher.intellij.cucumber.scala.UseExistingStepIntention</className>
             <category>Scala Cucumber</category>
         </intentionAction>
+        <fileEditorProvider implementation="com.github.vbmacher.intellij.cucumber.scala.FeaturePreviewProvider"/>
         <localInspection language="Gherkin" shortName="ScalaCucumberOutlineConsistency" displayName="Examples header consistency" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.OutlineConsistencyInspection"/>
         <localInspection language="Scala" shortName="ScalaCucumberStepSignature" displayName="Cucumber step lambda signature" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.StepSignatureInspection"/>
         <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.DataTableHeaderReferences"/>
