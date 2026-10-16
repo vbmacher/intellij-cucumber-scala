@@ -32,7 +32,8 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
 
   - Supports template filling wizard
   - Includes trailing arguments for data tables and doc strings (`String`)
-  - Generates `Given` definitions for wildcard (`*`) steps
+  - Generates wildcard (`*`) definitions using the preceding `Given`, `When` or `Then`
+    in the same scenario or background; uses `Given` when none precedes it
   - Existing destination types need a body (`{ ... }`) for insertion
 
 ## Development
