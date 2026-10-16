@@ -17,7 +17,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
 
   override def getName: ID[JBoolean, Seq[Int]] = ScCucumberStepIndex.Id
 
-  override def getVersion: Int = 9
+  override def getVersion: Int = 10
 
   override def dependsOnFileContent(): Boolean = true
 
@@ -50,6 +50,9 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
 
     def typeDefinitions(node: LighterASTNode) = ofType(node, ClassDefinition, TraitDefinition, ObjectDefinition)
 
+    def packagedTypes(node: LighterASTNode): Seq[LighterASTNode] =
+      typeDefinitions(node) ++ ofType(node, PACKAGING).flatMap(packagedTypes)
+
     def stepCalls(call: LighterASTNode): Seq[Int] = {
       val calls = ofType(call, METHOD_CALL)
       calls.headOption match {
@@ -62,8 +65,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
       }
     }
 
-    val root = ast.getRoot
-    (typeDefinitions(root) ++ ofType(root, PACKAGING).flatMap(typeDefinitions))
+    packagedTypes(ast.getRoot)
       .flatMap(ofType(_, EXTENDS_BLOCK))
       .flatMap(ofType(_, TEMPLATE_BODY))
       .flatMap(ofType(_, METHOD_CALL))
