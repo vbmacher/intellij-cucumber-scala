@@ -24,6 +24,12 @@ class ScStepDefinition(call: ScMethodCall, customParameterTypes: Map[String, Str
   override def getVariableNames: util.List[String] =
     Option(getElement).flatMap(e => asCall(e.getParent)).map(_.parameters.map(_.getName)).getOrElse(Seq.empty).asJava
 
+  override def getCucumberRegex: String = regex
+
+  override def getExpression: String = call.pattern.orNull
+
+  override def setValue(value: String): Unit = ScStepRename.setDefinition(StepDeclaration(getElement, getExpression), value)
+
   override def getCucumberRegexFromElement(element: PsiElement): String = regex
 }
 
