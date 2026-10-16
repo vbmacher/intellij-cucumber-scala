@@ -17,11 +17,25 @@ abstract class GherkinTableAction(operation: String) extends AnAction {
       else {
         val cells = selection.cells
         val changed: Option[Seq[Seq[String]]] = operation match {
+          case "copy" | "cut" =>
+            CopyPasteManager.getInstance().setContents(new StringSelection(GherkinTables.toTsv(selection.selected)))
+            if (operation == "cut") Some(clear(selection)) else None
           case "clear" => Some(clear(selection))
           case "deleteRow" => if (selection.row == 0) None else Some(cells.patch(selection.row, Nil, selection.lastRow - selection.row + 1))
           case "deleteColumn" => if (cells.head.size <= selection.lastColumn - selection.column + 1) None
             else Some(cells.map(_.patch(selection.column, Nil, selection.lastColumn - selection.column + 1)))
-          case _ => None
+          case "paste" =>
+            Option(CopyPasteManager.getInstance().getContents(DataFlavor.stringFlavor)).flatMap { text =>
+              GherkinTables.fromTsv(text) match {
+                case Left(message) => Messages.showErrorDialog(event.getProject, message, "Paste TSV"); None
+                case Right(pasted) if pasted.nonEmpty =>
+                  val width = math.max(cells.head.size, selection.column + pasted.head.size)
+                  val height = math.max(cells.size, selection.row + pasted.size)
+                  Some(Vector.tabulate(height, width) { (r, c) =>
+                    pasted.lift(r - selection.row).flatMap(_.lift(c - selection.column))
+                      .getOrElse(cells.lift(r).flatMap(_.lift(c)).getOrElse(""))
+                  })
+                case _ => None
               }
             }
           case _ => None
@@ -40,6 +54,9 @@ abstract class GherkinTableAction(operation: String) extends AnAction {
     row.zipWithIndex.map { case (value, c) => if (r >= selection.row && r <= selection.lastRow && c >= selection.column && c <= selection.lastColumn) "" else value }
   }
 }
+class CopyTableTsvAction extends GherkinTableAction("copy")
+class CutTableTsvAction extends GherkinTableAction("cut")
+class PasteTableTsvAction extends GherkinTableAction("paste")
 class ClearTableCellsAction extends GherkinTableAction("clear")
 class DeleteTableRowsAction extends GherkinTableAction("deleteRow")
 class DeleteTableColumnsAction extends GherkinTableAction("deleteColumn")

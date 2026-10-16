@@ -11,6 +11,14 @@ import org.junit.runners.JUnit4
 @RunWith(classOf[JUnit4])
 class GherkinTableSpec extends ScCucumberSpecBase {
   @Test
+  def testQuotedTsvRoundTripsEmptyCellsAndEscapedContent(): Unit = {
+    val cells = Vector(Vector("A\\|B", "line\\nnext", ""), Vector("tab\tvalue", "\\\\n", "a\"b"))
+    GherkinTables.fromTsv(GherkinTables.toTsv(cells)) shouldBe Right(cells)
+    GherkinTables.fromTsv("a\tb\nx").isLeft shouldBe true
+    GherkinTables.fromTsv("\"unclosed").isLeft shouldBe true
+  }
+
+  @Test
   def testTabMovesWithinCellsAndExtendsLastRow(): Unit = {
     val settings = getProject.getService(classOf[ScalaCucumberSettings])
     settings.tableNavigation = true

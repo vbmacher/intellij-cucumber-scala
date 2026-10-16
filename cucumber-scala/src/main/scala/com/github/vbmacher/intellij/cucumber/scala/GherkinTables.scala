@@ -90,4 +90,34 @@ object GherkinTables {
   }
   def encode(value: String): String = value.replace("\\", "\\\\").replace("|", "\\|").replace("\n", "\\n")
 
+  def toTsv(cells: Seq[Seq[String]]): String = cells.map(_.map(decode).map { value =>
+    if (value.exists("\t\r\n\"".contains(_))) "\"" + value.replace("\"", "\"\"") + "\"" else value
+  }.mkString("\t")).mkString("\n")
+
+  def fromTsv(text: String): Either[String, Vector[Vector[String]]] = {
+    val rows = Vector.newBuilder[Vector[String]]
+    var row = Vector.empty[String]
+    val cell = new StringBuilder
+    var quoted = false
+    var i = 0
+    def finishCell(): Unit = { row :+= encode(cell.result()); cell.clear() }
+    def finishRow(): Unit = { finishCell(); rows += row; row = Vector.empty }
+    while (i < text.length) {
+      val c = text(i)
+      if (c == '"' && quoted && i + 1 < text.length && text(i + 1) == '"') { cell += '"'; i += 1 }
+      else if (c == '"' && (quoted || cell.isEmpty)) quoted = !quoted
+      else if (!quoted && c == '\t') finishCell()
+      else if (!quoted && (c == '\n' || c == '\r')) {
+        finishRow()
+        if (c == '\r' && i + 1 < text.length && text(i + 1) == '\n') i += 1
+      } else cell += c
+      i += 1
+    }
+    if (quoted) Left("Unclosed quoted TSV cell")
+    else {
+      if (cell.nonEmpty || row.nonEmpty || text.isEmpty || !text.endsWith("\n")) finishRow()
+      val result = rows.result()
+      if (result.map(_.size).distinct.size > 1) Left("TSV rows must have equal widths") else Right(result)
+    }
+  }
 }
