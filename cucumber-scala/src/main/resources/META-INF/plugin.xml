@@ -305,6 +305,8 @@
         <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
+        <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointType"/>
+        <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointHandlerFactory"/>
         <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberConfigurationType"/>
         <runConfigurationProducer implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberRunProducer"/>
         <runLineMarkerContributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ExampleRunLineMarker"/>
