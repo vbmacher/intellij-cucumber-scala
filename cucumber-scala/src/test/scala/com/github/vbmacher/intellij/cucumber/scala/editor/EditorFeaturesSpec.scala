@@ -11,6 +11,18 @@ import org.junit.runners.JUnit4
 @RunWith(classOf[JUnit4])
 class EditorFeaturesSpec extends ScCucumberSpecBase {
   @Test
+  def testNumberingOnlyChangesTitlesAndIsIdempotent(): Unit = {
+    val file = myFixture.configureByText("titles.feature", "@smoke\nFeature: Titles\n  Scenario: First\n    Given unchanged\n  Scenario Outline: Second\n    Given <value>\n    Examples:\n      | value |\n      | 1 |\n")
+    val edits = NumberScenarios.plan(Seq(file), None, 1, 2, "")
+    edits.map(_.after) shouldBe Seq("01 - First", "02 - Second")
+    WriteCommandAction.runWriteCommandAction(getProject, new Runnable { override def run(): Unit = NumberScenarios.apply(edits) })
+    file.getText should include("Scenario: 01 - First")
+    file.getText should include("Scenario Outline: 02 - Second")
+    file.getText should include("@smoke\nFeature: Titles")
+    NumberScenarios.plan(Seq(file), None, 1, 2, "") shouldBe empty
+  }
+
+  @Test
   def testHtmlRendersLocalEscapedTablesAndEveryExamplesBlock(): Unit = {
     val file = myFixture.configureByText("unicode.feature", "Feature: Crédits\n  Scenario Outline: Safe <value>\n    Given <script>alert(1)</script>\n    Examples: First\n      | value |\n      | A\\|B |\n    Examples: Second\n      | value |\n      | hello |\n").asInstanceOf[GherkinFile]
     val html = FeatureHtml.render(file)

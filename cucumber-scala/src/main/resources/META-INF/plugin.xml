@@ -368,6 +368,9 @@
         <action id="ScalaCucumber.GoToHooks" class="com.github.vbmacher.intellij.cucumber.scala.GoToHooksAction" text="Go to Scala Hooks…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
+        <action id="ScalaCucumber.NumberScenarios" class="com.github.vbmacher.intellij.cucumber.scala.NumberScenariosAction" text="Number Scenario Titles…">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="ScalaCucumber.ExportFeatures" class="com.github.vbmacher.intellij.cucumber.scala.ExportFeaturesAction" text="Export Features…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
