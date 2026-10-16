@@ -333,5 +333,8 @@
         <action id="ScalaCucumber.Suite" class="com.github.vbmacher.intellij.cucumber.scala.ShowSuiteAction" text="Scala Cucumber Suite">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
+        <action id="ScalaCucumber.GoToHooks" class="com.github.vbmacher.intellij.cucumber.scala.GoToHooksAction" text="Go to Scala Hooks…">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
     </actions>
 </idea-plugin>

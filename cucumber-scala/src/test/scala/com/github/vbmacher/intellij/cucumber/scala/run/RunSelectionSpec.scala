@@ -63,5 +63,24 @@ class RunSelectionSpec extends ScCucumberSpecBase {
     }
   }
 
+  @Test
+  def testHooksUseRuntimeTagSemanticsAndRetainUnknownConditions(): Unit = {
+    myFixture.addFileToProject("Hooks.scala", """class Hooks {
+      |  Before("@payments and not @slow", 5) { () => () }
+      |  After("@other") { () => () }
+      |  Before(dynamicTags) { () => () }
+      |  BeforeStep { () => () }
+      |}
+      |""".stripMargin)
+    myFixture.configureByText("hooks.feature", "@payments\nFeature: Hooks\n  @smoke\n  Scenario: Hooks\n    Given setup\n")
+    ScCucumber.inReadAction {
+      val scenario = myFixture.findElementByText("Scenario: Hooks", classOf[GherkinStepsHolder])
+      val hooks = ScHooks.applicable(scenario)
+      hooks.size shouldBe 3
+      hooks.exists(h => h.kind == "Before" && h.order.contains(5)) shouldBe true
+      hooks.exists(_.reason.contains("unknown")) shouldBe true
+      hooks.exists(_.kind == "BeforeStep") shouldBe true
+    }
+  }
 
 }
