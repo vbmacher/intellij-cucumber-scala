@@ -306,6 +306,11 @@
         <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
         <completion.contributor language="Scala" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScParameterCompletion"/>
         <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
+        <typedHandler implementation="com.github.vbmacher.intellij.cucumber.scala.GherkinTablePipe"/>
+        <editorActionHandler action="EditorDelete" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableDelete"/>
+        <editorActionHandler action="EditorTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableTab"/>
+        <editorActionHandler action="EditorBackTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableBackTab"/>
+        <editorActionHandler action="EditorEnter" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableEnter"/>
         <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.SuiteToolWindowFactory"/>
         <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointType"/>
         <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointHandlerFactory"/>
@@ -333,6 +338,12 @@
         <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.BatchStepCreationAction" text="Create Missing Scala Steps…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
+        <group id="ScalaCucumber.Table" text="Gherkin Table" popup="true">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <action id="ScalaCucumber.ClearTableCells" class="com.github.vbmacher.intellij.cucumber.scala.ClearTableCellsAction" text="Clear Cells"/>
+            <action id="ScalaCucumber.DeleteTableRows" class="com.github.vbmacher.intellij.cucumber.scala.DeleteTableRowsAction" text="Delete Rows (Preview)…"/>
+            <action id="ScalaCucumber.DeleteTableColumns" class="com.github.vbmacher.intellij.cucumber.scala.DeleteTableColumnsAction" text="Delete Columns (Preview)…"/>
+        </group>
         <action id="ScalaCucumber.Suite" class="com.github.vbmacher.intellij.cucumber.scala.ShowSuiteAction" text="Scala Cucumber Suite">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
