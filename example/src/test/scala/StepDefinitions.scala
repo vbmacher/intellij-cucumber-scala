@@ -1,42 +1,54 @@
-class StepDefinitions extends StepDefinitionsTrait with CustomTypes {
+package cucumber.examples.scalacalculator
 
-  Given("basic step with string {string}") { (value: String) => ??? }
+import org.junit.Assert.assertEquals
 
-  When("""^I add (\d+) and (\d+)$""") { (arg1: Double, arg2: Double) =>
-    calc push arg1
-    calc push arg2
-    calc push "+"
+final class StepDefinitions extends StepDefinitionsTrait with CustomTypes {
+  private var label: String = ""
+
+  Given("I enter {double}") { value: Double =>
+    calculator.push(Val(value))
   }
 
-  When("I sub (\\d+)" + " and " + "(\\d+)") { (arg1: Double, arg2: Double) =>
-    calc push arg1
-    calc push arg2
-    calc push "-"
+  // Anchored regexes support captures, including signed numbers.
+  When("""^I add (-?\d+) and (-?\d+)$""") { (left: Int, right: Int) =>
+    calculate(left, right, "+")
   }
 
-  When("I div " + (5 + 5) + " by " + (10 - 8)) {
-    calc push 10.0
-    calc push 2.0
-    calc push "/"
+  // The plugin evaluates concatenated constant expressions for navigation.
+  When("I subtract {double}" + " from {double}") { (right: Double, left: Double) =>
+    calculate(left, right, "-")
   }
 
-  When("I move at {speed} for {time}") { (arg1: Speed, arg2: Time) =>
-    calc push arg1.kmPerHour
-    calc push arg2.hours
-    calc push "*"
+  When("I divide the defaults " + (5 + 5) + " by " + (10 - 8)) { () =>
+    calculate(10, 2, "/")
   }
 
-  When("I move at {speed-m-s} for {time-s}") { (arg1: Speed, arg2: Time) =>
-    calc push arg1.kmPerHour
-    calc push arg2.hours
-    calc push "*"
+  // Both alternatives navigate to this definition.
+  When("I/We divide {double} by {double}") { (left: Double, right: Double) =>
+    calculate(left, right, "/")
   }
 
-  When("""I/We divide (\d+) by (\d+)""") { (arg1: Double, arg2: Double) =>
-    calc push arg1
-    calc push arg2
-    calc push "*"
+  // Parentheses make the plural suffix optional in a Cucumber expression.
+  When("I clear the operand(s)") { () => calculator.clear() }
+
+  When("I move at {speed} for {time}") { (speed: Speed, time: Time) =>
+    calculate(speed.kmPerHour, time.hours, "*")
   }
 
-  When("""I do {int} nop(s)""") { (arg1: Int) => (0 to arg1).foreach { _ => calc push "NOP" } }
+  When("I move at {speed-m-s} for {time-s}") { (speed: Speed, time: Time) =>
+    calculate(speed.kmPerHour, time.hours, "*")
+  }
+
+  Given("the calculator label is {string}") { text: String => label = text }
+
+  // Escaped braces and parentheses match literal characters.
+  Then("""the label reads \{result} \(preview)""") { () =>
+    assertEquals("{result} (preview)", label)
+  }
+
+  private def calculate(left: Double, right: Double, operator: String): Unit = {
+    calculator.push(Val(left))
+    calculator.push(Val(right))
+    calculator.push(Op(operator))
+  }
 }
