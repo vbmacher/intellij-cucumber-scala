@@ -10,6 +10,24 @@ import org.junit.runners.JUnit4
 @RunWith(classOf[JUnit4])
 class StepDocumentationSpec extends StepResolveSpecBase {
   @Test
+  def testAmbiguousDocumentationKeepsEveryCandidateAndCaptures(): Unit = {
+    myFixture.addFileToProject("Accounts.scala", "class Accounts { Given(\"account {int} exists\") { (id: Int) => () } }")
+    myFixture.addFileToProject("Generic.scala", "class Generic { Given(\"account {word} exists\") { (name: String) => () } }")
+    myFixture.configureByText("accounts.feature", "Feature: Accounts\n  Scenario: Existing\n    Given account 42 exists\n")
+    inReadAction {
+      val step = myFixture.findElementByText("Given account 42 exists", classOf[GherkinStep])
+      val html = new ScStepDocumentation().generateDoc(step, step)
+      html should include("Ambiguous step: 2 matching definitions")
+      html should include("Accounts.scala:1")
+      html should include("Generic.scala:1")
+      html should include("id: Int = 42")
+      html should include("name: String = 42")
+      val definition = findStepDefinitions("Given account 42 exists").head.getElement
+      StepUsage.scenarios(definition).map(_.getScenarioName) shouldBe Seq("Existing")
+    }
+  }
+
+  @Test
   def testBackgroundCountsScenariosAndOutlineOnce(): Unit = {
     myFixture.addFileToProject("Steps.scala", "class Steps { Given(\"setup\") { () => () } }")
     myFixture.configureByText("counts.feature",

@@ -17,8 +17,8 @@ class ScStepDocumentation extends AbstractDocumentationProvider {
     val step = Option(originalElement).flatMap(e => Option(PsiTreeUtil.getParentOfType(e, classOf[GherkinStep], false)))
     step.filter(s => matchingSteps(s).nonEmpty).map { s =>
       val candidates = matchingSteps(s).collect { case d: ScStepDefinition => d }
-      val title = "Scala step"
-      s"<html><body><b>$title</b>" + candidates.headOption.toSeq.map(d => details(d, s)).mkString("<hr>", "<hr>", "") + "</body></html>"
+      val title = if (candidates.size > 1) s"Ambiguous step: ${candidates.size} matching definitions" else "Scala step"
+      s"<html><body><b>$title</b>" + candidates.map(d => details(d, s)).mkString("<hr>", "<hr>", "") + "</body></html>"
     }.orElse {
       asCall(element).orElse(Option(element).flatMap(e => asCall(e.getParent))).filter(_.definition.nonEmpty)
         .map { call =>
