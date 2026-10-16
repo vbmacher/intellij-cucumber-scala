@@ -308,4 +308,9 @@
                 implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScCucumberLineMarkerProvider"
                 language="Scala"/>
     </extensions>
+    <actions>
+        <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.BatchStepCreationAction" text="Create Missing Scala Steps…">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
+    </actions>
 </idea-plugin>
