@@ -3,6 +3,7 @@ package com.github.vbmacher.intellij.cucumber.scala
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
 import com.intellij.openapi.module.{Module, ModuleUtilCore}
 import com.intellij.openapi.progress.ProgressManager
+import com.intellij.openapi.project.DumbService
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.search.{GlobalSearchScope, ProjectScope}
@@ -35,7 +36,9 @@ class ScCucumberExtension extends AbstractCucumberExtension {
   // Gherkin calls this for every step reference resolve, so cache it until Scala PSI or roots change
   override def loadStepsFor(module: Module): util.List[AbstractStepDefinition] = {
     val project = module.getProject
-    CachedValuesManager.getManager(project).getCachedValue(module, () => CachedValueProvider.Result.create(
+    // Check before the cache so previously resolved steps cannot enable navigation during indexing.
+    if (DumbService.isDumb(project)) util.Collections.emptyList()
+    else CachedValuesManager.getManager(project).getCachedValue(module, () => CachedValueProvider.Result.create(
       util.Collections.unmodifiableList(findSteps(module)),
       PsiModificationTracker.getInstance(project).forLanguages(_.isKindOf(ScalaLanguage.INSTANCE)),
       ProjectRootManager.getInstance(project)
