@@ -30,6 +30,8 @@ object SuiteAnalysis {
         val count = SuiteCatalog.usages(entries, target).size
         val label = definition.getExpression + " · " + target.getContainingFile.getName + s" · $count matching scenarios"
         findings += Finding("Steps", label, target)
+        if (count == 0 && scope.contains(target.getContainingFile.getVirtualFile))
+          findings += Finding("Unused", label + " (external consumers unknown)", target)
       }
     }
     val exampleRows = scenarios.collect { case outline: GherkinScenarioOutline =>
