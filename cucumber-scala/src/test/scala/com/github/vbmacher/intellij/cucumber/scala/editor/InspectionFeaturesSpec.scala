@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.inspections.{GherkinStyleInspection, OutlineConsistencyInspection, RequirementInspection}
+import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -42,11 +44,11 @@ class InspectionFeaturesSpec extends ScCucumberSpecBase {
 
   @Test
   def testConfiguredMissingRequirementAndNativeSuppression(): Unit = {
-    getProject.getService(classOf[ScalaCucumberSettings]).requirementMappings = "@REQ-(.*) => docs/requirements.md#$1"
+    ScalaCucumberSettings.getInstance(getProject).requirementMappings = "@REQ-(.*) => docs/requirements.md#$1"
     myFixture.enableInspections(new RequirementInspection)
     myFixture.configureByText("requirements.feature", "@REQ-42\nFeature: Requirements\n  Scenario: Requirement\n    Given value\n")
     descriptions.toLowerCase should include("requirement")
-    getProject.getService(classOf[ScalaCucumberSettings]).requirementMappings = ""
+    ScalaCucumberSettings.getInstance(getProject).requirementMappings = ""
     descriptions should not include "Configured requirement"
   }
 }

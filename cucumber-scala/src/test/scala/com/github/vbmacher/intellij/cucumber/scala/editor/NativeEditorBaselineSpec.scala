@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.psi.codeStyle.CodeStyleManager
 import com.intellij.psi.util.PsiTreeUtil

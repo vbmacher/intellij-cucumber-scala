@@ -1,7 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.refactoring
 
-import com.github.vbmacher.intellij.cucumber.scala._
 import com.github.vbmacher.intellij.cucumber.scala.resolve.StepResolveSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumber, StepDeclaration}
 import com.intellij.pom.references.PomService
 import com.intellij.refactoring.rename.RenameProcessor
 import org.junit.Test

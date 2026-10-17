@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.editor.ScHooks
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.search.GlobalSearchScope

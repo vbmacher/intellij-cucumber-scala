@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.completion
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.intellij.codeInsight.template.impl.TemplateManagerImpl
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -195,6 +195,27 @@ as an sbt project in the sandbox-ide. Wait for indexing to finish.
 See the [example guide](example/README.md) for feature files showcasing navigation, expression syntax,
 custom parameter types and step generation.
 
+Plugin sources live under `cucumber-scala/src/main/scala/com/github/vbmacher/intellij/cucumber/scala/`,
+grouped by feature:
+
+| Package | Contents |
+| --- | --- |
+| `steps` | Scala DSL model, step index, step definitions, parameter types, usages and the Cucumber extension |
+| `completion` | Step, template and custom-parameter completion |
+| `creation` | Single and batch step definition generation |
+| `refactoring` | Step rename and existing-wording suggestions |
+| `editor` | Quick Documentation, hooks, requirement links and scenario numbering |
+| `inspections` | Gherkin and Scala step inspections |
+| `tables` | Gherkin table editing, navigation, DataTable mappings and case-class generation |
+| `run` | Run configurations, producers, console, Cucumber messages and run results/history |
+| `debug` | Feature breakpoints and debugger context |
+| `suite` | Suite tool window, catalog, analysis and paired step viewer |
+| `publish` | Feature preview, HTML and PDF export |
+| `settings` | Project settings and their configurable |
+| `util` | Shared dialogs and Gherkin file action base |
+
+Tests are grouped by user-visible behavior under `cucumber-scala/src/test/scala`.
+
 In order to build the plugin (and package the plugin ZIP), run: `sbt --batch test` followed by `sbt --batch 'cucumber-scala / packageArtifactZip'`
 
 ## Contributing

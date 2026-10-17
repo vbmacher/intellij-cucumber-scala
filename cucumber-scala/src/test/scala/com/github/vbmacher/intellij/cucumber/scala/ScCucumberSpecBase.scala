@@ -1,7 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala
 
 import com.intellij.codeInsight.daemon.impl.DaemonCodeAnalyzerImpl.getLineMarkers
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
 import com.intellij.psi._
 import com.intellij.testFramework.fixtures.BasePlatformTestCase
 import org.scalatest.matchers.should.Matchers

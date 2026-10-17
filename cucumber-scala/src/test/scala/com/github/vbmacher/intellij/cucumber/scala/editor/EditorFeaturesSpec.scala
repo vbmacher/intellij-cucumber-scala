@@ -1,6 +1,10 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.publish.FeatureHtml
+import com.github.vbmacher.intellij.cucumber.scala.refactoring.ScFuzzySteps
+import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.cucumber.psi.{GherkinFile, GherkinStep, GherkinTag}
@@ -52,7 +56,7 @@ class EditorFeaturesSpec extends ScCucumberSpecBase {
 
   @Test
   def testRequirementReferencesResolveEveryExplicitLocalId(): Unit = {
-    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.requirementMappings = "@AC-(.*) => requirements.md#AC-$1"
     try {
       val doc = myFixture.addFileToProject("requirements.md", "# AC-PAY-12\n\nSecond criterion {#AC-PAY-12}\n")

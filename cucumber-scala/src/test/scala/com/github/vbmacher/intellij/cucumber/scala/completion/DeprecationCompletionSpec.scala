@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.completion
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.editor.ScStepDocumentation
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
+import com.github.vbmacher.intellij.cucumber.scala.{LibraryLightProjectDescriptor, LocalDependency, ScCucumberSpecBase}
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumber, ScCucumberSpecBase, ScalaTableClass, SuiteAnalysis}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
+import com.github.vbmacher.intellij.cucumber.scala.tables.ScalaTableClass
 import com.intellij.psi.search.GlobalSearchScope
 import org.junit.Test
 import org.junit.runner.RunWith

@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.creation
 
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberSpecBase, ScStepDefinitionCreator}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.PsiDocumentManager

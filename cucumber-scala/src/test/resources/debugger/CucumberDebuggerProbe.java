@@ -5,7 +5,7 @@ import java.util.*;
 import java.util.concurrent.*;
 import scala.Option;
 import scala.runtime.AbstractFunction2;
-import com.github.vbmacher.intellij.cucumber.scala.CucumberDebugContext$;
+import com.github.vbmacher.intellij.cucumber.scala.debug.CucumberDebugContext$;
 
 public class CucumberDebuggerProbe {
   public static void main(String[] args) throws Exception {

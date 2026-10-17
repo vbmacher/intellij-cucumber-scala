@@ -1,7 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.resolve
 
-import com.github.vbmacher.intellij.cucumber.scala._
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
+import com.github.vbmacher.intellij.cucumber.scala.inspections.StepSignatureInspection
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
+import com.github.vbmacher.intellij.cucumber.scala.{LibraryLightProjectDescriptor, LocalDependency, ScCucumberSpecBase}
 import com.intellij.psi.util.PsiTreeUtil
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScMethodCall
 import org.junit.Test

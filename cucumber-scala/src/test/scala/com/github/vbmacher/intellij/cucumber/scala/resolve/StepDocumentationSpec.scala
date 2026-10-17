@@ -1,7 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.resolve
 
-import com.github.vbmacher.intellij.cucumber.scala.{ScStepDocumentation, StepUsage}
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.editor.ScStepDocumentation
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.steps.StepUsage
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
 import org.junit.Test
 import org.junit.runner.RunWith

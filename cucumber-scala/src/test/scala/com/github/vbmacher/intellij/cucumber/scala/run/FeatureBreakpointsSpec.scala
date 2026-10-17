@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpoints
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4

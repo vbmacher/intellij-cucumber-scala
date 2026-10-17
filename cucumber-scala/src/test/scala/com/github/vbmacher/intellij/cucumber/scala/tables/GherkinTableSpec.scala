@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.tables
 
-import com.github.vbmacher.intellij.cucumber.scala.{GherkinTables, ScCucumberSpecBase, ScalaCucumberSettings}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.intellij.openapi.actionSystem.IdeActions
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.psi.PsiDocumentManager
@@ -33,7 +34,7 @@ class GherkinTableSpec extends ScCucumberSpecBase {
 
   @Test
   def testTabMovesWithinCellsAndExtendsLastRow(): Unit = {
-    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.tableNavigation = true
     try {
       myFixture.configureByText("table.feature", "Feature: Table\n  Scenario: Table\n    Given data\n      | name | value |\n      | Alice | 1<caret> |\n")

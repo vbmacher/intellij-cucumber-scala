@@ -20,6 +20,8 @@
 ## Project layout and build
 
 - `cucumber-scala/` contains the IntelliJ plugin, its resources and automated tests.
+  Plugin sources are grouped into feature packages (see `README.md#development`);
+  shared PSI helpers live in `steps.ScCucumber`, shared UI helpers in `util`.
 - `example/` and `example-stepdefs-lib/` provide projects for manual plugin testing.
 - Treat `build.sbt` as the source of truth for Scala, IntelliJ SDK, plugin dependencies
   and packaging settings. Follow `.editorconfig` for formatting.

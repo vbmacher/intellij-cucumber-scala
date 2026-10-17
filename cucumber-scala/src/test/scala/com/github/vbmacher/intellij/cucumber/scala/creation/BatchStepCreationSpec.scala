@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.creation
 
-import com.github.vbmacher.intellij.cucumber.scala.{BatchStepCreation, ScCucumber}
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.TextRange
 import org.jetbrains.plugins.cucumber.psi.GherkinFile

@@ -1,7 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.creation
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
-import com.github.vbmacher.intellij.cucumber.scala.ScStepDefinitionCreator
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
 import org.junit.Test
 import org.junit.runner.RunWith

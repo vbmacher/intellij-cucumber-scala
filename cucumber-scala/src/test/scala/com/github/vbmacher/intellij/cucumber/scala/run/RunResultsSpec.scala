@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.google.gson.JsonParser
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -54,10 +55,10 @@ class RunResultsSpec extends ScCucumberSpecBase {
   @Test
   def testResultStalenessHistoryRetentionRetriesAndClear(): Unit = {
     val file = myFixture.configureByText("results.feature", "Feature: Results\n  Scenario: Result\n    Given example\n")
-    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.runHistory = true
     settings.historyRetention = 3
-    val service = getProject.getService(classOf[RunResults])
+    val service = RunResults.getInstance(getProject)
     val context = RunResults.Context(com.intellij.psi.util.PsiModificationTracker.getInstance(getProject).getModificationCount, "revision", "environment", Map.empty, 123L)
     service.record(CucumberMessages.StepResult("one", file.getVirtualFile.getUrl, 3, "selection", "FAILED", 4, "assertion"), context)
     val step = myFixture.findElementByText("Given example", classOf[org.jetbrains.plugins.cucumber.psi.GherkinStep])
@@ -83,10 +84,10 @@ class RunResultsSpec extends ScCucumberSpecBase {
   }
   @Test
   def testHistoryKeepsErrorsWhenDecorationsAreDisabled(): Unit = {
-    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.runHistory = true
     settings.resultDecorations = false
-    val service = getProject.getService(classOf[RunResults])
+    val service = RunResults.getInstance(getProject)
     val context = RunResults.Context(0L, "revision", "environment", Map.empty, 0L)
     try {
       service.record(CucumberMessages.StepResult("run", "uri", 4, "uri:2", "FAILED", 5L, "Assertion failed"), context)

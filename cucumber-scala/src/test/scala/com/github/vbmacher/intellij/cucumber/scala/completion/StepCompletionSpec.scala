@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.completion
 
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberSpecBase, ScalaCucumberSettings}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.intellij.codeInsight.lookup.LookupElementPresentation
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -40,7 +41,7 @@ class StepCompletionSpec extends ScCucumberSpecBase {
 
   @Test
   def testFeatureWordingCanBeDisabled(): Unit = {
-    val settings = getProject.getService(classOf[ScalaCucumberSettings])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.featureWording = false
     try {
       myFixture.addFileToProject("consent.feature", "Feature: Consent\n  Scenario: Consent\n    Given customer has consented\n")

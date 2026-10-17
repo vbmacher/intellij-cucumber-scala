@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
-import com.github.vbmacher.intellij.cucumber.scala._
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.publish.JcefPdfExporter
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.ui.jcef.JBCefApp

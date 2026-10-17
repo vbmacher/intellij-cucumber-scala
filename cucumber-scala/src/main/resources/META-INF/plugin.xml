@@ -294,85 +294,85 @@
 
     <extensions defaultExtensionNs="org.jetbrains.plugins.cucumber.steps">
         <cucumberJvmExtensionPoint
-                implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberExtension"/>
+                implementation="com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumberExtension"/>
     </extensions>
 
     <extensions defaultExtensionNs="com.intellij">
-        <lang.documentationProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
-        <lang.documentationProvider language="Scala" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepDocumentation"/>
-        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberSettings"/>
-        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.RunResults"/>
-        <codeInsight.lineMarkerProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.FeatureResultLineMarker"/>
-        <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.ScalaCucumberConfigurable"/>
-        <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScStepCompletion"/>
-        <completion.contributor language="Scala" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScParameterCompletion"/>
-        <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.ScStepRenameProcessor"/>
-        <typedHandler implementation="com.github.vbmacher.intellij.cucumber.scala.GherkinTablePipe"/>
-        <editorActionHandler action="EditorDelete" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableDelete"/>
-        <editorActionHandler action="EditorTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableTab"/>
-        <editorActionHandler action="EditorBackTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableBackTab"/>
-        <editorActionHandler action="EditorEnter" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinTableEnter"/>
-        <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.SuiteToolWindowFactory"/>
-        <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointType"/>
-        <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.FeatureBreakpointHandlerFactory"/>
-        <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberConfigurationType"/>
-        <runConfigurationProducer implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberRunProducer"/>
-        <runLineMarkerContributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.ExampleRunLineMarker"/>
+        <lang.documentationProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.editor.ScStepDocumentation"/>
+        <lang.documentationProvider language="Scala" implementationClass="com.github.vbmacher.intellij.cucumber.scala.editor.ScStepDocumentation"/>
+        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings"/>
+        <projectService serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.run.RunResults"/>
+        <codeInsight.lineMarkerProvider language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.run.FeatureResultLineMarker"/>
+        <projectConfigurable id="scala.cucumber" displayName="Scala Cucumber" instance="com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberConfigurable"/>
+        <completion.contributor language="Gherkin" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.completion.ScStepCompletion"/>
+        <completion.contributor language="Scala" order="first" implementationClass="com.github.vbmacher.intellij.cucumber.scala.completion.ScParameterCompletion"/>
+        <renamePsiElementProcessor order="first" implementation="com.github.vbmacher.intellij.cucumber.scala.refactoring.ScStepRenameProcessor"/>
+        <typedHandler implementation="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTablePipe"/>
+        <editorActionHandler action="EditorDelete" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableDelete"/>
+        <editorActionHandler action="EditorTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableTab"/>
+        <editorActionHandler action="EditorBackTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableBackTab"/>
+        <editorActionHandler action="EditorEnter" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableEnter"/>
+        <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.suite.SuiteToolWindowFactory"/>
+        <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpointType"/>
+        <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpointHandlerFactory"/>
+        <configurationType implementation="com.github.vbmacher.intellij.cucumber.scala.run.ScCucumberConfigurationType"/>
+        <runConfigurationProducer implementation="com.github.vbmacher.intellij.cucumber.scala.run.ScCucumberRunProducer"/>
+        <runLineMarkerContributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.run.ExampleRunLineMarker"/>
         <intentionAction>
-            <className>com.github.vbmacher.intellij.cucumber.scala.UseExistingStepIntention</className>
+            <className>com.github.vbmacher.intellij.cucumber.scala.refactoring.UseExistingStepIntention</className>
             <category>Scala Cucumber</category>
         </intentionAction>
-        <fileEditorProvider implementation="com.github.vbmacher.intellij.cucumber.scala.FeaturePreviewProvider"/>
-        <localInspection language="Gherkin" shortName="ScalaCucumberOutlineConsistency" displayName="Examples header consistency" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.OutlineConsistencyInspection"/>
-        <localInspection language="Gherkin" shortName="ScalaCucumberStyle" displayName="Project Gherkin style" groupName="Scala Cucumber" enabledByDefault="false" level="WEAK WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.GherkinStyleInspection"/>
-        <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.RequirementReferenceContributor"/>
-        <localInspection language="Gherkin" shortName="ScalaCucumberRequirements" displayName="Missing configured requirement" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.RequirementInspection"/>
-        <localInspection language="Scala" shortName="ScalaCucumberStepSignature" displayName="Cucumber step lambda signature" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.StepSignatureInspection"/>
-        <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.DataTableHeaderReferences"/>
-        <completion.contributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.DataTableHeaderCompletion"/>
-        <localInspection language="Gherkin" shortName="ScalaCucumberTableHeaders" displayName="Explicit DataTable header mapping" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.DataTableHeaderInspection"/>
-        <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.ScCucumberStepIndex"/>
+        <fileEditorProvider implementation="com.github.vbmacher.intellij.cucumber.scala.publish.FeaturePreviewProvider"/>
+        <localInspection language="Gherkin" shortName="ScalaCucumberOutlineConsistency" displayName="Examples header consistency" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.inspections.OutlineConsistencyInspection"/>
+        <localInspection language="Gherkin" shortName="ScalaCucumberStyle" displayName="Project Gherkin style" groupName="Scala Cucumber" enabledByDefault="false" level="WEAK WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.inspections.GherkinStyleInspection"/>
+        <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.editor.RequirementReferenceContributor"/>
+        <localInspection language="Gherkin" shortName="ScalaCucumberRequirements" displayName="Missing configured requirement" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.inspections.RequirementInspection"/>
+        <localInspection language="Scala" shortName="ScalaCucumberStepSignature" displayName="Cucumber step lambda signature" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.inspections.StepSignatureInspection"/>
+        <psi.referenceContributor language="Gherkin" implementation="com.github.vbmacher.intellij.cucumber.scala.tables.DataTableHeaderReferences"/>
+        <completion.contributor language="Gherkin" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.DataTableHeaderCompletion"/>
+        <localInspection language="Gherkin" shortName="ScalaCucumberTableHeaders" displayName="Explicit DataTable header mapping" groupName="Scala Cucumber" enabledByDefault="true" level="WARNING" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.DataTableHeaderInspection"/>
+        <fileBasedIndex implementation="com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumberStepIndex"/>
 
-        <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.StepDeclarationSearcher"/>
+        <pom.declarationSearcher implementation="com.github.vbmacher.intellij.cucumber.scala.steps.StepDeclarationSearcher"/>
 
-        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.StepDefinitionSearcher"/>
-        <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.StepFindUsagesHandlerFactory"/>
+        <referencesSearch implementation="com.github.vbmacher.intellij.cucumber.scala.steps.StepDefinitionSearcher"/>
+        <findUsagesHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.steps.StepFindUsagesHandlerFactory"/>
 
         <codeInsight.lineMarkerProvider
-                implementationClass="com.github.vbmacher.intellij.cucumber.scala.ScCucumberLineMarkerProvider"
+                implementationClass="com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumberLineMarkerProvider"
                 language="Scala"/>
     </extensions>
     <actions>
-        <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.BatchStepCreationAction" text="Create Missing Scala Steps…">
+        <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.creation.BatchStepCreationAction" text="Create Missing Scala Steps…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <group id="ScalaCucumber.Table" text="Gherkin Table" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
-            <action id="ScalaCucumber.CopyTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.CopyTableTsvAction" text="Copy Cells as TSV"/>
-            <action id="ScalaCucumber.CutTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.CutTableTsvAction" text="Cut Cells as TSV"/>
-            <action id="ScalaCucumber.PasteTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.PasteTableTsvAction" text="Paste TSV (Preview)…"/>
-            <action id="ScalaCucumber.ClearTableCells" class="com.github.vbmacher.intellij.cucumber.scala.ClearTableCellsAction" text="Clear Cells"/>
-            <action id="ScalaCucumber.TransposeTable" class="com.github.vbmacher.intellij.cucumber.scala.TransposeTableAction" text="Transpose DataTable (Preview)…"/>
-            <action id="ScalaCucumber.MoveTableRowUp" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableRowUpAction" text="Move Data Row Up"/>
-            <action id="ScalaCucumber.MoveTableRowDown" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableRowDownAction" text="Move Data Row Down"/>
-            <action id="ScalaCucumber.MoveTableColumnLeft" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableColumnLeftAction" text="Move Column Left"/>
-            <action id="ScalaCucumber.MoveTableColumnRight" class="com.github.vbmacher.intellij.cucumber.scala.MoveTableColumnRightAction" text="Move Column Right"/>
-            <action id="ScalaCucumber.DeleteTableRows" class="com.github.vbmacher.intellij.cucumber.scala.DeleteTableRowsAction" text="Delete Rows (Preview)…"/>
-            <action id="ScalaCucumber.DeleteTableColumns" class="com.github.vbmacher.intellij.cucumber.scala.DeleteTableColumnsAction" text="Delete Columns (Preview)…"/>
+            <action id="ScalaCucumber.CopyTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.tables.CopyTableTsvAction" text="Copy Cells as TSV"/>
+            <action id="ScalaCucumber.CutTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.tables.CutTableTsvAction" text="Cut Cells as TSV"/>
+            <action id="ScalaCucumber.PasteTableTsv" class="com.github.vbmacher.intellij.cucumber.scala.tables.PasteTableTsvAction" text="Paste TSV (Preview)…"/>
+            <action id="ScalaCucumber.ClearTableCells" class="com.github.vbmacher.intellij.cucumber.scala.tables.ClearTableCellsAction" text="Clear Cells"/>
+            <action id="ScalaCucumber.TransposeTable" class="com.github.vbmacher.intellij.cucumber.scala.tables.TransposeTableAction" text="Transpose DataTable (Preview)…"/>
+            <action id="ScalaCucumber.MoveTableRowUp" class="com.github.vbmacher.intellij.cucumber.scala.tables.MoveTableRowUpAction" text="Move Data Row Up"/>
+            <action id="ScalaCucumber.MoveTableRowDown" class="com.github.vbmacher.intellij.cucumber.scala.tables.MoveTableRowDownAction" text="Move Data Row Down"/>
+            <action id="ScalaCucumber.MoveTableColumnLeft" class="com.github.vbmacher.intellij.cucumber.scala.tables.MoveTableColumnLeftAction" text="Move Column Left"/>
+            <action id="ScalaCucumber.MoveTableColumnRight" class="com.github.vbmacher.intellij.cucumber.scala.tables.MoveTableColumnRightAction" text="Move Column Right"/>
+            <action id="ScalaCucumber.DeleteTableRows" class="com.github.vbmacher.intellij.cucumber.scala.tables.DeleteTableRowsAction" text="Delete Rows (Preview)…"/>
+            <action id="ScalaCucumber.DeleteTableColumns" class="com.github.vbmacher.intellij.cucumber.scala.tables.DeleteTableColumnsAction" text="Delete Columns (Preview)…"/>
         </group>
-        <action id="ScalaCucumber.Suite" class="com.github.vbmacher.intellij.cucumber.scala.ShowSuiteAction" text="Scala Cucumber Suite">
+        <action id="ScalaCucumber.Suite" class="com.github.vbmacher.intellij.cucumber.scala.suite.ShowSuiteAction" text="Scala Cucumber Suite">
             <add-to-group group-id="ToolsMenu" anchor="last"/>
         </action>
-        <action id="ScalaCucumber.GenerateTableClass" class="com.github.vbmacher.intellij.cucumber.scala.GenerateTableClassAction" text="Generate Scala Case Class…">
+        <action id="ScalaCucumber.GenerateTableClass" class="com.github.vbmacher.intellij.cucumber.scala.tables.GenerateTableClassAction" text="Generate Scala Case Class…">
             <add-to-group group-id="ScalaCucumber.Table" anchor="last"/>
         </action>
-        <action id="ScalaCucumber.GoToHooks" class="com.github.vbmacher.intellij.cucumber.scala.GoToHooksAction" text="Go to Scala Hooks…">
+        <action id="ScalaCucumber.GoToHooks" class="com.github.vbmacher.intellij.cucumber.scala.editor.GoToHooksAction" text="Go to Scala Hooks…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
-        <action id="ScalaCucumber.NumberScenarios" class="com.github.vbmacher.intellij.cucumber.scala.NumberScenariosAction" text="Number Scenario Titles…">
+        <action id="ScalaCucumber.NumberScenarios" class="com.github.vbmacher.intellij.cucumber.scala.editor.NumberScenariosAction" text="Number Scenario Titles…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
-        <action id="ScalaCucumber.ExportFeatures" class="com.github.vbmacher.intellij.cucumber.scala.ExportFeaturesAction" text="Export Features…">
+        <action id="ScalaCucumber.ExportFeatures" class="com.github.vbmacher.intellij.cucumber.scala.publish.ExportFeaturesAction" text="Export Features…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
     </actions>
