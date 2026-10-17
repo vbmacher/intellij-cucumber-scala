@@ -1,7 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.resolve
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
-import com.github.vbmacher.intellij.cucumber.scala.{ScCucumberExtension, ScCucumberSpecBase, StepDeclaration, StepDeclarationSearcher}
+import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
+import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumberExtension, StepDeclaration, StepDeclarationSearcher}
 import com.intellij.openapi.project.DumbService
 import com.intellij.pom.PomTarget
 import com.intellij.testFramework.DumbModeTestUtils

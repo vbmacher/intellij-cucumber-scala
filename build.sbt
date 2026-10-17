@@ -68,6 +68,7 @@ lazy val `cucumber-scala` = project
     libraryDependencies ++= Seq(
       // Step snippet generation and built-in parameter regexes
       "io.cucumber" % "cucumber-expressions" % "18.1.0",
+      "io.cucumber" % "tag-expressions" % "8.1.0",
       "junit" % "junit" % "4.13.2" % Test,
       "org.scalatest" %% "scalatest" % "3.2.20" % Test,
       "org.scalatestplus" %% "junit-4-13" % "3.2.20.0" % Test,
@@ -78,6 +79,7 @@ lazy val `cucumber-scala` = project
     intellijPlugins ++= Seq(
       "org.intellij.scala:2026.2.16".toPlugin,
       "gherkin:262.8665.173".toPlugin,
+      "com.intellij.modules.jcef".toPlugin,
       // In 2026.2 several platform modules moved out of the platform lib into bundled plugins.
       // They are not picked up unless declared, and a missing one cascades into the plugins we
       // depend on: lucene.common -> spellchecker -> gherkin, aetherDependencyResolver and
@@ -100,7 +102,7 @@ lazy val `cucumber-scala` = project
     packageMethod := PackagingMethod.Standalone(),
     patchPluginXml := pluginXmlOptions { xml =>
       xml.version = version.value
-      xml.sinceBuild = "262.8665"
+      xml.sinceBuild = "262.9437.185"
       xml.untilBuild = "262.*"
     },
     signPluginOptions := signPluginOptions.value.copy(enabled = true))

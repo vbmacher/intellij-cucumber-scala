@@ -1,29 +1,28 @@
-package com.github.vbmacher.intellij.cucumber.scala
+package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.intellij.lang.{LighterAST, LighterASTNode}
 import com.intellij.openapi.util.io.DataInputOutputUtilRt
 import com.intellij.psi.tree.IElementType
 import com.intellij.util.indexing._
-import com.intellij.util.io.{BooleanDataDescriptor, DataExternalizer, KeyDescriptor}
+import com.intellij.util.io.{DataExternalizer, EnumeratorStringDescriptor, KeyDescriptor}
 import org.jetbrains.plugins.scala.ScalaFileType
 import org.jetbrains.plugins.scala.lang.parser.ScalaElementType._
 
 import java.io.{DataInput, DataOutput}
-import java.lang.{Boolean => JBoolean}
 import scala.jdk.CollectionConverters._
 
-class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
+class ScCucumberStepIndex extends FileBasedIndexExtension[String, Seq[Int]] {
 
-  override def getName: ID[JBoolean, Seq[Int]] = ScCucumberStepIndex.Id
+  override def getName: ID[String, Seq[Int]] = ScCucumberStepIndex.Id
 
-  override def getVersion: Int = 10
+  override def getVersion: Int = 11
 
   override def dependsOnFileContent(): Boolean = true
 
   override def getInputFilter: FileBasedIndex.InputFilter = new DefaultFileTypeSpecificInputFilter(ScalaFileType.INSTANCE)
 
-  override def getKeyDescriptor: KeyDescriptor[JBoolean] = BooleanDataDescriptor.INSTANCE
+  override def getKeyDescriptor: KeyDescriptor[String] = EnumeratorStringDescriptor.INSTANCE
 
   override def getValueExternalizer: DataExternalizer[Seq[Int]] = new DataExternalizer[Seq[Int]] {
     override def save(out: DataOutput, value: Seq[Int]): Unit =
@@ -33,13 +32,15 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
       DataInputOutputUtilRt.readSeq(in, () => DataInputOutputUtilRt.readINT(in)).asScala.toSeq
   }
 
-  override def getIndexer: DataIndexer[JBoolean, Seq[Int], FileContent] = content => {
+  override def getIndexer: DataIndexer[String, Seq[Int], FileContent] = content => {
     val ast = content.asInstanceOf[PsiDependentFileContent].getLighterAST
     val text = content.getContentAsText
     // Keep both declaration kinds in the same index and search scope.
     Map(
-      JBoolean.TRUE -> declarationOffsets(ast, text, isStepKeyword),
-      JBoolean.FALSE -> declarationOffsets(ast, text, _ == "ParameterType")
+      ScCucumberStepIndex.Steps -> declarationOffsets(ast, text, isStepKeyword),
+      ScCucumberStepIndex.Parameters -> declarationOffsets(ast, text, _ == "ParameterType"),
+      ScCucumberStepIndex.Hooks -> declarationOffsets(ast, text, ScCucumberStepIndex.HookKeywords),
+      ScCucumberStepIndex.Tables -> declarationOffsets(ast, text, _ == "DataTableType")
     ).filter(_._2.nonEmpty).asJava
   }
 
@@ -54,15 +55,11 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
       typeDefinitions(node) ++ ofType(node, PACKAGING).flatMap(packagedTypes)
 
     def stepCalls(call: LighterASTNode): Seq[Int] = {
-      val calls = ofType(call, METHOD_CALL)
-      calls.headOption match {
-        case Some(inner) if ofType(call, ARG_EXPRS).nonEmpty =>
-          children(inner).headOption
-            .filter(keyword => acceptsKeyword(text.subSequence(keyword.getStartOffset, keyword.getEndOffset).toString))
-            .map(_ => call.getStartOffset)
-            .toSeq
-        case _ => calls.flatMap(stepCalls)
+      def invoked(node: LighterASTNode): Option[LighterASTNode] = children(node).headOption.flatMap { first =>
+        if (first.getTokenType == METHOD_CALL) invoked(first) else Some(first)
       }
+      invoked(call).filter(keyword => acceptsKeyword(text.subSequence(keyword.getStartOffset, keyword.getEndOffset).toString))
+        .map(_ => call.getStartOffset).toSeq
     }
 
     packagedTypes(ast.getRoot)
@@ -74,5 +71,10 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[JBoolean, Seq[Int]] {
 }
 
 object ScCucumberStepIndex {
-  val Id: ID[JBoolean, Seq[Int]] = ID.create("scala.cucumber.step")
+  val Steps = "step"
+  val Parameters = "parameter"
+  val Hooks = "hook"
+  val Tables = "table"
+  val HookKeywords: Set[String] = Set("Before", "After", "BeforeStep", "AfterStep", "BeforeAll", "AfterAll")
+  val Id: ID[String, Seq[Int]] = ID.create("scala.cucumber.step")
 }

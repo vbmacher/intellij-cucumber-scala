@@ -1,0 +1,5 @@
+<idea-plugin>
+    <extensions defaultExtensionNs="com.intellij">
+        <projectService serviceInterface="com.github.vbmacher.intellij.cucumber.scala.publish.FeaturePdfExporter" serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.publish.JcefPdfExporter"/>
+    </extensions>
+</idea-plugin>
