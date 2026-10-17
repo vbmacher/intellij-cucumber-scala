@@ -22,4 +22,7 @@ jobs:
       - uses: sbt/setup-sbt@v1
 
       - name: Compile & Test
-        run: sbt --batch test
+        env:
+          # Hosted Ubuntu restricts the user namespaces required by Chromium's sandbox.
+          JAVA_TOOL_OPTIONS: -Dide.browser.jcef.sandbox.enable=false
+        run: xvfb-run -a sbt --batch test

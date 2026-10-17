@@ -1,12 +1,13 @@
-package com.github.vbmacher.intellij.cucumber.scala
+package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
+import com.github.vbmacher.intellij.cucumber.scala.refactoring.ScStepRename
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.intellij.find.findUsages.{FindUsagesHandler, FindUsagesHandlerFactory}
 import com.intellij.ide.util.EditSourceUtil
 import com.intellij.lang.injection.InjectedLanguageManager
 import com.intellij.openapi.application.QueryExecutorBase
 import com.intellij.openapi.project.DumbService
-import com.intellij.pom.{PomDeclarationSearcher, PomNamedTarget, PomTarget, PomTargetPsiElement}
+import com.intellij.pom.{PomDeclarationSearcher, PomRenameableTarget, PomTarget, PomTargetPsiElement}
 import com.intellij.psi.search.searches.ReferencesSearch
 import com.intellij.psi.{PsiElement, PsiReference}
 import com.intellij.util.{Consumer, Processor}
@@ -14,8 +15,15 @@ import org.jetbrains.plugins.cucumber.CucumberUtil
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScInfixExpr
 
-case class StepDeclaration(element: PsiElement, pattern: String) extends PomNamedTarget {
-  override def getName: String = pattern
+case class StepDeclaration(element: PsiElement, pattern: String) extends PomRenameableTarget[StepDeclaration] {
+  override def getName: String = asCall(element.getParent).flatMap(_.pattern).getOrElse(pattern)
+
+  override def isWritable: Boolean = element.isWritable
+
+  override def setName(name: String): StepDeclaration = {
+    ScStepRename.setDefinition(this, name)
+    copy(pattern = name)
+  }
 
   override def isValid: Boolean = element.isValid
 

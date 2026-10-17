@@ -1,6 +1,7 @@
-package com.github.vbmacher.intellij.cucumber.scala
+package com.github.vbmacher.intellij.cucumber.scala.steps
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber._
+import com.github.vbmacher.intellij.cucumber.scala.refactoring.ScStepRename
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.intellij.psi.PsiElement
 import io.cucumber.cucumberexpressions.{ExpressionFactory, ParameterTypeRegistry}
 import org.jetbrains.plugins.cucumber.steps.AbstractStepDefinition
@@ -24,6 +25,12 @@ class ScStepDefinition(call: ScMethodCall, customParameterTypes: Map[String, Str
   override def getVariableNames: util.List[String] =
     Option(getElement).flatMap(e => asCall(e.getParent)).map(_.parameters.map(_.getName)).getOrElse(Seq.empty).asJava
 
+  override def getCucumberRegex: String = regex
+
+  override def getExpression: String = call.pattern.orNull
+
+  override def setValue(value: String): Unit = ScStepRename.setDefinition(StepDeclaration(getElement, getExpression), value)
+
   override def getCucumberRegexFromElement(element: PsiElement): String = regex
 }
 
@@ -41,7 +48,7 @@ object ScStepDefinition {
       if (prefixed.endsWith("$")) prefixed else s"$prefixed$$"
     }
 
-  private val BuiltInParameterTypes: Map[String, String] = {
+  private[scala] val BuiltInParameterTypes: Map[String, String] = {
     val standard = CucumberUtil.STANDARD_PARAMETER_TYPES.asScala.toMap
     val factory = new ExpressionFactory(new ParameterTypeRegistry(Locale.ENGLISH))
     val numeric = Seq("float", "double", "bigdecimal").map { name =>

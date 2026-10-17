@@ -1,0 +1,3 @@
+Feature: Example
+  Scenario: Example
+    Given account "Alice" exist<caret>

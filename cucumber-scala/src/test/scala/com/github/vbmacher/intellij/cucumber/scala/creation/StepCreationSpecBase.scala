@@ -1,8 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.creation
 
-import com.github.vbmacher.intellij.cucumber.scala.ScCucumber.inReadAction
-import com.github.vbmacher.intellij.cucumber.scala.ScStepDefinitionCreator
 import com.github.vbmacher.intellij.cucumber.scala.resolve.StepResolveSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Computable
 import com.intellij.psi.util.PsiTreeUtil
