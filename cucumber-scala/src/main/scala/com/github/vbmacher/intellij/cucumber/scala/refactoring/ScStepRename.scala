@@ -16,6 +16,7 @@ import com.intellij.util.containers.MultiMap
 import io.cucumber.cucumberexpressions.ExpressionFactory
 import org.jetbrains.plugins.cucumber.CucumberUtil
 import org.jetbrains.plugins.cucumber.psi.GherkinStep
+import org.jetbrains.plugins.cucumber.steps.CucumberStepHelper
 import org.jetbrains.plugins.scala.lang.psi.api.base.ScLiteral
 import org.jetbrains.plugins.scala.lang.psi.impl.ScalaPsiElementFactory
 import org.jetbrains.plugins.scala.project.ProjectContext
@@ -47,24 +48,37 @@ object ScStepRename {
       unique <- if (steps.forall(s => matchingSteps(s).size == 1)) Right(()) else Left("A matching usage has ambiguous definitions. Resolve ambiguity before renaming.")
       result <- {
         val factory = new ExpressionFactory(ScParameterTypes.registry(moduleOf(element), snippetsOnly = false))
-        val expression = Try(factory.createExpression(declaration.getName)).toEither.left.map(_.getMessage)
+        val expression = Try {
+          factory.createExpression(newName)
+          factory.createExpression(declaration.getName)
+        }.toEither.left.map(_.getMessage)
         expression.flatMap { parsed =>
+          def captures(text: String): Option[Seq[String]] =
+            Try(Option(parsed.`match`(text)).map(_.asScala.toSeq.map(a => text.substring(a.getGroup.getStart, a.getGroup.getEnd)))).toOption.flatten
+          def wording(args: Seq[String]): String =
+            fresh._1.head + args.zip(fresh._1.drop(1)).map { case (arg, text) => arg + text }.mkString
           val replacements = steps.map { step =>
             val original = step.getName
-            val captures = if (original == step.getSubstitutedName)
-              Try(Option(parsed.`match`(original)).map(_.asScala.toSeq.map(a => original.substring(a.getGroup.getStart, a.getGroup.getEnd)))).toOption.flatten
+            val arguments = if (original == step.getSubstitutedName) captures(original)
             else {
               // Outline placeholders must remain placeholders, including in quotes.
               val regex = old._1.map(java.util.regex.Pattern.quote).mkString("^", "(.+?)", "$").r
               regex.findFirstMatchIn(original).map(m => (1 to m.groupCount).map(m.group))
             }
-            captures.filter(_.size == fresh._2.size).map { args =>
-              val name = fresh._1.head + args.zip(fresh._1.drop(1)).map { case (arg, text) => arg + text }.mkString
-              step -> name
-            }
+            arguments.filter(_.size == fresh._2.size).map(args => step -> wording(args))
           }
-          if (replacements.forall(_.nonEmpty)) Right(replacements.flatten)
-          else Left("At least one usage cannot preserve its arguments safely.")
+          if (replacements.exists(_.isEmpty)) Left("At least one usage cannot preserve its arguments safely.")
+          else {
+            val modules = (moduleOf(element).toSeq ++ steps.flatMap(moduleOf)).distinct
+            val otherDefinitions = modules.map(m => m -> CucumberStepHelper.loadStepsFor(m).asScala.toSeq
+              .filter(d => d.getElement != null && d.getElement != element)).toMap
+            val collision = otherDefinitions.values.flatten.exists(_.getExpression == newName) || steps.exists { step =>
+              captures(step.getSubstitutedName).exists(args => moduleOf(step).toSeq.flatMap(otherDefinitions)
+                .exists(d => d.supportsStep(step) && d.matches(wording(args))))
+            }
+            if (collision) Left("The renamed expression conflicts with another step definition.")
+            else Right(replacements.flatten)
+          }
         }
       }
     } yield result

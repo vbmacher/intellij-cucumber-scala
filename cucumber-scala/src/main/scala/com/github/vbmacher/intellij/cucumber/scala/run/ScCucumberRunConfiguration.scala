@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
-import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumber, ScCucumberExtension}
+import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumber, ScCucumberExtension, ScCucumberStepIndex}
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.github.vbmacher.intellij.cucumber.scala.util.Dialogs
 import com.intellij.execution.{DefaultExecutionResult, ExecutionException, ExecutionResult, Executor}
 import com.intellij.execution.configurations._
@@ -100,7 +101,10 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
   }
 
   private def detectedGlue: Seq[String] = Option(getConfigurationModule.getModule).toSeq.flatMap { module =>
-    new ScCucumberExtension().loadStepsFor(module).asScala.flatMap(d => Option(d.getElement)).map(_.getContainingFile)
+    val steps = new ScCucumberExtension().loadStepsFor(module).asScala.flatMap(d => Option(d.getElement)).map(_.getContainingFile)
+    val registrations = Seq(ScCucumberStepIndex.Parameters, ScCucumberStepIndex.Hooks, ScCucumberStepIndex.Tables, ScCucumberStepIndex.Transformers)
+      .flatMap(kind => indexedCalls(project, stepSearchScope(module), kind)).filter(_.isFromCucumber).map(_.getContainingFile)
+    (steps ++ registrations)
       .collect { case file: org.jetbrains.plugins.scala.lang.psi.api.ScalaFile => file.getPackageName }.distinct.sorted
   }
 
@@ -167,6 +171,8 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
     Seq("feature" -> featureUrl, "line" -> line.toString, "glue" -> glue, "tags" -> tags, "vmOptions" -> vmOptions,
       "programOptions" -> programOptions, "workingDirectory" -> workingDirectory).foreach { case (key, value) => element.setAttribute(key, value) }
     environment.toSeq.sorted.foreach { case (key, value) => element.addContent(new Element("env").setAttribute("name", key).setAttribute("value", value)) }
+    element.removeChildren("location")
+    selectedLocations.foreach(selector => element.addContent(new Element("location").setAttribute("selector", selector)))
   }
   override def readExternal(element: Element): Unit = {
     super.readExternal(element)
@@ -175,6 +181,7 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
     featureUrl = value("feature")
     glue = value("glue"); tags = value("tags"); vmOptions = value("vmOptions"); programOptions = value("programOptions"); workingDirectory = value("workingDirectory")
     environment = element.getChildren("env").asScala.map(e => e.getAttributeValue("name") -> e.getAttributeValue("value")).toMap
+    selectedLocations = element.getChildren("location").asScala.flatMap(e => Option(e.getAttributeValue("selector"))).toVector
   }
 }
 

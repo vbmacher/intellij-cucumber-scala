@@ -57,8 +57,13 @@ object RunResults {
           .filter(_.getText == location.target.getText).indexOf(location.target)
       case _ => 0
     }
+    val rowSignature = if (location.target == scenario) "" else {
+      val header = Option(PsiTreeUtil.getParentOfType(location.target, classOf[org.jetbrains.plugins.cucumber.psi.GherkinTable]))
+        .flatMap(table => Option(table.getHeaderRow)).map(_.getText).getOrElse("")
+      header + "\n" + location.target.getText
+    }
     digest(file.getVirtualFile.getUrl + "\n" + signature(scenario) + "\n" + sameScenarios.indexOf(scenario) + "\n" +
-      (if (location.target == scenario) "" else location.target.getText) + "\n" + rowOccurrence + "\n" + location.tags.sorted.mkString(" "))
+      rowSignature + "\n" + rowOccurrence + "\n" + location.tags.sorted.mkString(" "))
   }
   def uri(value: String): String = if (value.startsWith("file:")) java.nio.file.Path.of(java.net.URI.create(value)).toUri.toString else value
   def key(uri: String, line: Int): String = RunResults.uri(uri) + ":" + line

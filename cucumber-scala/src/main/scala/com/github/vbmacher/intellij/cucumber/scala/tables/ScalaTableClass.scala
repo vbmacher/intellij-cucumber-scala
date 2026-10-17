@@ -44,7 +44,7 @@ class GenerateTableClassAction extends AnAction("Generate Scala Case Class…") 
     for {
       project <- Option(event.getProject)
       editor <- Option(event.getData(CommonDataKeys.EDITOR))
-      selection <- GherkinTables.selection(editor)
+      selection <- GherkinTables.committedSelection(editor)
       name <- Option(Messages.showInputDialog(project, "Class name", "Generate Scala Case Class", null, "DataRow", null))
     } {
       ScalaTableClass.source(name, selection.cells) match {

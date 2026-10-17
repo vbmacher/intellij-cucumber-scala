@@ -53,4 +53,45 @@ class GherkinTableSpec extends ScCucumberSpecBase {
     myFixture.configureByText("outline.feature", "Feature: Table\n  Scenario Outline: Table\n    Given <name>\n    Examples:\n      | name |\n      | Ali<caret>ce |\n")
     GherkinTables.selection(myFixture.getEditor).exists(_.isExamples) shouldBe true
   }
+
+  @Test
+  def testTypingBeforeTabPreservesLastCellAndExtendsTable(): Unit =
+    checkTypingBeforeNavigation(IdeActions.ACTION_EDITOR_TAB)
+
+  @Test
+  def testTypingBeforeEnterPreservesLastCellAndExtendsTable(): Unit =
+    checkTypingBeforeNavigation(IdeActions.ACTION_EDITOR_ENTER)
+
+  @Test
+  def testEnterPreservesSelectedCellAndMovesInSameColumn(): Unit = {
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    settings.tableNavigation = true
+    try {
+      myFixture.configureByText("selected.feature", "Feature: Table\n  Scenario: Table\n    Given data\n      | name | value |\n      | Alice | <selection>7</selection> |\n      | Bob | 8 |\n")
+      val original = myFixture.getEditor.getDocument.getText
+      myFixture.performEditorAction(IdeActions.ACTION_EDITOR_ENTER)
+      myFixture.getEditor.getDocument.getText shouldBe original
+      val selection = GherkinTables.selection(myFixture.getEditor).get
+      selection.row shouldBe 2
+      selection.column shouldBe 1
+      selection.selected shouldBe Vector(Vector("8"))
+    } finally settings.tableNavigation = false
+  }
+
+  private def checkTypingBeforeNavigation(action: String): Unit = {
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    settings.tableNavigation = true
+    try {
+      myFixture.configureByText("typing.feature", "Feature: Table\n  Scenario: Table\n    Given data\n      | name | value |\n      | Alice | <caret> |\n")
+      myFixture.`type`("7")
+      myFixture.performEditorAction(action)
+      PsiDocumentManager.getInstance(getProject).commitAllDocuments()
+      val selection = GherkinTables.selection(myFixture.getEditor).getOrElse(fail(action + ": " + myFixture.getEditor.getDocument.getText))
+      selection.cells(1)(1) shouldBe "7"
+      selection.cells.size shouldBe 3
+      myFixture.getEditor.getDocument.getText shouldBe
+        "Feature: Table\n  Scenario: Table\n    Given data\n      | name  | value |\n      | Alice | 7     |\n      |       |       |\n"
+    } finally settings.tableNavigation = false
+  }
+
 }

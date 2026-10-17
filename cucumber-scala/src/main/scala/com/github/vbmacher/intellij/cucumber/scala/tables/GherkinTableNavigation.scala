@@ -19,7 +19,7 @@ object GherkinTableNavigation {
   def navigate(editor: Editor, direction: String): Boolean = {
     val project = editor.getProject
     val selected = if (project != null && ScalaCucumberSettings.getInstance(project).tableNavigation && editor.getCaretModel.getCaretCount == 1)
-      GherkinTables.selection(editor).filter(_.rectangular) else None
+      GherkinTables.committedSelection(editor).filter(_.rectangular) else None
     selected match {
       case None => false
       case Some(selection) =>
@@ -64,7 +64,7 @@ class GherkinTableDelete(original: EditorActionHandler) extends EditorActionHand
   override def doExecute(editor: Editor, caret: Caret, context: DataContext): Unit = {
     val project = editor.getProject
     val selection = if (project != null && ScalaCucumberSettings.getInstance(project).tableNavigation && editor.getSelectionModel.hasSelection)
-      GherkinTables.selection(editor).filter(_.rectangular) else None
+      GherkinTables.committedSelection(editor).filter(_.rectangular) else None
     selection match {
       case None => original.execute(editor, caret, context)
       case Some(value) =>

@@ -15,6 +15,13 @@ object GherkinTables {
     def selected: Vector[Vector[String]] = cells.slice(row, lastRow + 1).map(_.slice(column, lastColumn + 1))
   }
 
+  // Editor actions need current PSI before taking cell values and document ranges.
+  // Action updates use selection directly and do not commit documents.
+  def committedSelection(editor: Editor): Option[Selection] = {
+    PsiDocumentManager.getInstance(editor.getProject).commitDocument(editor.getDocument)
+    selection(editor)
+  }
+
   def selection(editor: Editor): Option[Selection] = {
     val file = PsiDocumentManager.getInstance(editor.getProject).getPsiFile(editor.getDocument)
     def cellAt(offset: Int): Option[GherkinTableCell] = Option(file).flatMap(f => Option(f.findElementAt(offset)))

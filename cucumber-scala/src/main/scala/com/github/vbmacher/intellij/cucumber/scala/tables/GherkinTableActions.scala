@@ -13,7 +13,7 @@ abstract class GherkinTableAction(operation: String) extends AnAction {
     event.getPresentation.setEnabledAndVisible(Option(event.getData(CommonDataKeys.EDITOR)).flatMap(GherkinTables.selection).nonEmpty)
 
   override def actionPerformed(event: AnActionEvent): Unit = {
-    for (editor <- Option(event.getData(CommonDataKeys.EDITOR)); selection <- GherkinTables.selection(editor)) {
+    for (editor <- Option(event.getData(CommonDataKeys.EDITOR)); selection <- GherkinTables.committedSelection(editor)) {
       if (!selection.rectangular) Messages.showErrorDialog(event.getProject, "Correct the ragged table before editing its structure.", "Gherkin Table")
       else {
         val cells = selection.cells

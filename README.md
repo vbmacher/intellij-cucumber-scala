@@ -46,8 +46,8 @@ Step navigation is disabled while IntelliJ is indexing and becomes available whe
 - Quick Documentation shows exact candidates, captures, trailing arguments, deprecation metadata,
   usage counts and a navigable scenario preview. Ambiguous matches remain ambiguous.
 - Native Rename previews changes to simple literal Cucumber Expressions and their feature usages,
-  preserving arguments and keywords. Dynamic, regex, optional/alternative and ambiguous cases
-  require manual review.
+  preserving arguments and keywords. It rejects invalid expressions and conflicting wording.
+  Dynamic, regex, optional/alternative and ambiguous cases require manual review.
 - **Create Missing Scala Steps…** previews and deduplicates unresolved steps from the current feature
   or selection before inserting into an existing writable Scala type. Localized feature keywords
   generate the corresponding Scala `Given`, `When` or `Then`; custom parameter return types are
@@ -79,7 +79,9 @@ candidates and pin the view. Following is off initially and does not move the fe
 
 Use native Run/Debug actions on a feature, scenario, outline or individual Examples data row.
 The **Scala Cucumber** run configuration uses the owning module's test classpath and JDK, discovers
-visible glue packages, and exposes glue, working directory, VM, environment and reporter overrides.
+visible packages containing steps, hooks and type/transformer registrations, and exposes glue,
+working directory, VM, environment and reporter overrides. Saved configurations retain scenario
+selections.
 Missing runtime/JDK and ambiguous content roots are reported before launch. Tags are completed
 from the module, validated with Cucumber `tag-expressions`, persisted and passed as literal arguments.
 The preview lists executable scenarios/example rows, including inherited Examples tags.

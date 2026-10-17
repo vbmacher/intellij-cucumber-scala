@@ -311,7 +311,8 @@
         <editorActionHandler action="EditorDelete" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableDelete"/>
         <editorActionHandler action="EditorTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableTab"/>
         <editorActionHandler action="EditorBackTab" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableBackTab"/>
-        <editorActionHandler action="EditorEnter" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableEnter"/>
+        <!-- Navigate before native Enter deletes the selection or adjusts indentation. -->
+        <editorActionHandler action="EditorEnter" implementationClass="com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTableEnter" order="first"/>
         <toolWindow id="Scala Cucumber" anchor="right" factoryClass="com.github.vbmacher.intellij.cucumber.scala.suite.SuiteToolWindowFactory"/>
         <xdebugger.breakpointType implementation="com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpointType"/>
         <debugger.javaBreakpointHandlerFactory implementation="com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpointHandlerFactory"/>

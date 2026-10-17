@@ -16,7 +16,7 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[String, Seq[Int]] {
 
   override def getName: ID[String, Seq[Int]] = ScCucumberStepIndex.Id
 
-  override def getVersion: Int = 11
+  override def getVersion: Int = 12
 
   override def dependsOnFileContent(): Boolean = true
 
@@ -35,12 +35,13 @@ class ScCucumberStepIndex extends FileBasedIndexExtension[String, Seq[Int]] {
   override def getIndexer: DataIndexer[String, Seq[Int], FileContent] = content => {
     val ast = content.asInstanceOf[PsiDependentFileContent].getLighterAST
     val text = content.getContentAsText
-    // Keep both declaration kinds in the same index and search scope.
+    // Keep DSL registrations in the same index and search scope.
     Map(
       ScCucumberStepIndex.Steps -> declarationOffsets(ast, text, isStepKeyword),
       ScCucumberStepIndex.Parameters -> declarationOffsets(ast, text, _ == "ParameterType"),
       ScCucumberStepIndex.Hooks -> declarationOffsets(ast, text, ScCucumberStepIndex.HookKeywords),
-      ScCucumberStepIndex.Tables -> declarationOffsets(ast, text, _ == "DataTableType")
+      ScCucumberStepIndex.Tables -> declarationOffsets(ast, text, _ == "DataTableType"),
+      ScCucumberStepIndex.Transformers -> declarationOffsets(ast, text, ScCucumberStepIndex.TransformerKeywords)
     ).filter(_._2.nonEmpty).asJava
   }
 
@@ -75,6 +76,8 @@ object ScCucumberStepIndex {
   val Parameters = "parameter"
   val Hooks = "hook"
   val Tables = "table"
+  val Transformers = "transformer"
   val HookKeywords: Set[String] = Set("Before", "After", "BeforeStep", "AfterStep", "BeforeAll", "AfterAll")
+  val TransformerKeywords: Set[String] = Set("DocStringType", "DefaultParameterTransformer", "DefaultDataTableCellTransformer", "DefaultDataTableEntryTransformer")
   val Id: ID[String, Seq[Int]] = ID.create("scala.cucumber.step")
 }

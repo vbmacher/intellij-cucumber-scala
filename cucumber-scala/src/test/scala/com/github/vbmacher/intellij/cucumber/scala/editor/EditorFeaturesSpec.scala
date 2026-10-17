@@ -71,4 +71,27 @@ class EditorFeaturesSpec extends ScCucumberSpecBase {
       }
     } finally settings.requirementMappings = ""
   }
+
+  @Test
+  def testRequirementHeadingMustMatchWholeTitle(): Unit = {
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    settings.requirementMappings = "@REQ => docs/requirements.md#Payment"
+    try {
+      myFixture.addFileToProject("docs/requirements.md", "# Payment declined\n\n#\nPayment\n")
+      myFixture.configureByText("requirement.feature", "@REQ\nFeature: Requirement\n  Scenario: Check\n    Given setup\n")
+      ScCucumber.inReadAction {
+        val tag = myFixture.findElementByText("@REQ", classOf[GherkinTag])
+        RequirementReferences.targets(tag) shouldBe empty
+      }
+      settings.requirementMappings = "@REQ => docs/exact.md#Payment"
+      val exact = myFixture.addFileToProject("docs/exact.md", "# Payment\n\n## Payment ###\n\n# Payment declined\n\n### Payment")
+      ScCucumber.inReadAction {
+        val tag = myFixture.findElementByText("@REQ", classOf[GherkinTag])
+        val targets = RequirementReferences.targets(tag)
+        targets.size shouldBe 3
+        targets.foreach(_.getContainingFile shouldBe exact)
+      }
+    } finally settings.requirementMappings = ""
+  }
+
 }

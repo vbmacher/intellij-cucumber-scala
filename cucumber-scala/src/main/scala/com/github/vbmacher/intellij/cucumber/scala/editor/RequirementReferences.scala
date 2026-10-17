@@ -39,7 +39,7 @@ object RequirementReferences {
           Option(PsiManager.getInstance(tag.getProject).findFile(file)).toSeq.flatMap { psi =>
             val quoted = java.util.regex.Pattern.quote(id)
             // Explicit Markdown IDs and HTML anchors; ordinary prose is not an acceptance-criterion declaration.
-            val pattern = ("(?m)(?:\\{#(" + quoted + ")\\}|\\bid=[\"'](" + quoted + ")[\"']|^#{1,6}\\s+(" + quoted + ")(?:\\s|$))").r
+            val pattern = ("(?m)(?:\\{#(" + quoted + ")\\}|\\bid=[\"'](" + quoted + ")[\"']|^#{1,6}[\\t ]+(" + quoted + ")(?:[\\t ]+#+)?[\\t ]*$)").r
             pattern.findAllMatchIn(psi.getText).map { m =>
               val group = (1 to m.groupCount).find(i => m.group(i) != null).get
               new RequirementTarget(tag, id, Some(psi), m.start(group)): PsiElement
