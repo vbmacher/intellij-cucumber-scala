@@ -1,5 +1,6 @@
 import org.jetbrains.sbtidea.download.BuildInfo
 import org.jetbrains.sbtidea.download.idea.IntellijVersionUtils
+import org.jetbrains.sbtidea.download.jbr.JbrInstaller
 
 val intellijVersion = "262.9437.185"
 val intellijArtifact = IntellijVersionUtils.detectArtifactLocation(BuildInfo(intellijVersion, IntelliJPlatform.IdeaCommunity), ".zip")
@@ -63,6 +64,8 @@ lazy val `cucumber-scala` = project
     ThisBuild / autoRemoveOldCachedDownloads := true,
     Compile / javacOptions ++= "--release" :: "21" :: Nil,
     fork := true,
+    // The PDF integration fixture needs the native JCEF renderer bundled with the SDK's JBR.
+    Test / javaHome := Some(JbrInstaller.getJbrHome(intellijBaseDirectory.value.toPath).toFile),
     javaOptions ++= jvmOpens,
     resolvers += intellijArtifact.repository,
     libraryDependencies ++= Seq(

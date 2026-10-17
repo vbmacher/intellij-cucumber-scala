@@ -220,6 +220,9 @@ Tests are grouped by user-visible behavior under `cucumber-scala/src/test/scala`
 
 In order to build the plugin (and package the plugin ZIP), run: `sbt --batch test` followed by `sbt --batch 'cucumber-scala / packageArtifactZip'`
 
+Tests use the IntelliJ SDK's bundled JetBrains Runtime, including its native JCEF PDF renderer,
+even when sbt is launched with a standard JDK 25.
+
 ## Contributing
 
 Anyone can contribute. The best is to pick up some issue tagged with `help_wanted`, or bringing new ideas by creating new issues.

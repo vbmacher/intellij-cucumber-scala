@@ -45,10 +45,11 @@ maps implementation and automated evidence. GitHub issue state has not been chan
 Run all fixtures using JDK 25: `sbt --batch test`. Build the ZIP using
 `sbt --batch 'cucumber-scala / packageArtifactZip'`.
 
-The PDF fixture needs a JCEF-capable JetBrains Runtime. Run sbt with that JBR as
-`JAVA_HOME`, then `sbt --batch 'cucumber-scala / testOnly *PdfExportSpec'`.
-It is skipped under a runtime without JCEF. It renders a real PDF and verifies that
-cancelling a replacement preserves the original bytes.
+The test JVM uses the JCEF-capable JetBrains Runtime downloaded with the IntelliJ SDK.
+Run the PDF fixture with `sbt --batch 'cucumber-scala / testOnly *PdfExportSpec'`.
+It renders a real PDF and verifies that cancelling a replacement preserves the
+original bytes. Linux CI provides an Xvfb display and disables Chromium sandboxing
+for the test step because the hosted runner restricts user namespaces.
 
 Run `JAVA_HOME=<JDK-25> python3 scripts/check-debugger-runtime.py` to exercise the actual
 JDI context reader on the compiled example runtime with one and two concurrent threads.
