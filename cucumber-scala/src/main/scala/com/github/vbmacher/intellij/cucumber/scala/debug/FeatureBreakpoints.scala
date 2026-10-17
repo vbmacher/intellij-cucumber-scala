@@ -52,6 +52,7 @@ object FeatureBreakpoints {
 }
 
 class FeatureBreakpointType extends XLineBreakpointType[JavaLineBreakpointProperties]("scala-cucumber-step", "Scala Cucumber Step / Example") {
+  override def createProperties(): JavaLineBreakpointProperties = new JavaLineBreakpointProperties
   override def createBreakpointProperties(file: VirtualFile, line: Int): JavaLineBreakpointProperties = new JavaLineBreakpointProperties
   override def canPutAt(file: VirtualFile, line: Int, project: Project): Boolean = file.getExtension == "feature" && inReadAction {
     Option(PsiManager.getInstance(project).findFile(file)).collect { case feature: GherkinFile => FeatureBreakpoints.targets(feature, line).isRight }.getOrElse(false)
@@ -78,11 +79,13 @@ class FeatureJavaBreakpoint(project: Project, breakpoint: XLineBreakpoint[JavaLi
     problem = result.left.toOption.getOrElse("")
   }
   reload()
-  override def getPsiClass: PsiClass = resolved.headOption.flatMap(t => Option(PsiTreeUtil.getParentOfType(t.implementation.getElementAt, classOf[PsiClass]))).orNull
-  override def getEvaluationElement: PsiElement = resolved.headOption.map(_.implementation.getElementAt).orNull
+  override def getPsiClass: PsiClass = inReadAction {
+    resolved.headOption.flatMap(t => Option(PsiTreeUtil.getParentOfType(t.implementation.getElementAt, classOf[PsiClass]))).orNull
+  }
+  override def getEvaluationElement: PsiElement = inReadAction { resolved.headOption.map(_.implementation.getElementAt).orNull }
   override def getDisplayName: String = "Scala Cucumber " + breakpoint.getFileUrl + ":" + (breakpoint.getLine + 1)
   override def getIcon: javax.swing.Icon = AllIcons.Debugger.Db_set_breakpoint
-  override def isValid: Boolean = resolved.nonEmpty && resolved.forall(_.source.isValid)
+  override def isValid: Boolean = inReadAction { resolved.nonEmpty && resolved.forall(_.source.isValid) }
   override def getCategory: Key[FeatureJavaBreakpoint] = FeatureBreakpoints.Category
   override def getEventMessage(event: LocatableEvent): String = getDisplayName
   override def createRequest(process: DebugProcessImpl): Unit = {
@@ -92,7 +95,8 @@ class FeatureJavaBreakpoint(project: Project, breakpoint: XLineBreakpoint[JavaLi
   }
   override def processClassPrepare(process: DebugProcess, referenceType: ReferenceType): Unit = {
     val debug = process.asInstanceOf[DebugProcessImpl]
-    if (shouldCreateRequest(debug)) resolved.flatMap(target => debug.getPositionManager.locationsOfLine(referenceType, target.implementation).asScala).distinct.foreach { location =>
+    // Class-prepare requests already exist here; they must not suppress executable line requests.
+    if (shouldCreateRequest(debug, true)) resolved.flatMap(target => debug.getPositionManager.locationsOfLine(referenceType, target.implementation).asScala).distinct.foreach { location =>
       val request = debug.getRequestsManager.createBreakpointRequest(this, location)
       debug.getRequestsManager.enableRequest(request)
     }

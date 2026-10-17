@@ -17,7 +17,7 @@ maps implementation and automated evidence. GitHub issue state has not been chan
 | #191 | Identity-based native message tree, hooks/results/source navigation and location-based failed reruns | `RunResultsSpec`, recorded supported-runtime envelopes |
 | #192 | Run-specific result gutters/docs, stale state, clear/disable controls | `RunResultsSpec` |
 | #193, #194 | Runtime tag semantics, module-scoped previews, owning module/JDK/test runtime, glue and explicit overrides | `RunSelectionSpec`; CLI example execution |
-| #195 | Dedicated feature/row debugger requests, thread-specific runtime context, session-owned highlights | `FeatureBreakpointsSpec`, real JDI runtime probe with one/two threads; interactive checks below |
+| #195 | Dedicated feature/row debugger requests, thread-specific runtime context, session-owned highlights | `FeatureBreakpointsSpec`, real JDI runtime probe with one/two threads; live sandbox checks below |
 | #196 | Searchable scoped catalog with semantic kind filter, preview/navigation and template insertion | suite, completion and template fixtures |
 | #197 | Bounded existing-wording suggestions with verified capture-preserving preview | `EditorFeaturesSpec` |
 | #198 | Indexed hook navigation and explicit unknown tag conditions | `RunSelectionSpec` |
@@ -77,5 +77,34 @@ using IntelliJ IC 262.9437.185, Scala 2026.2.16 and the example module's Corrett
 - `RunResultsSpec` verifies that a fast process delivers all six recorded scenario/step
   nodes to the native console before termination and removes its temporary result stream.
 
-This check uses an ordinary Scala breakpoint. Scenario-aware feature breakpoints and the
-concurrent-session checks for #195 remain separate.
+This check uses an ordinary Scala breakpoint. Scenario-aware feature breakpoints are
+verified separately below.
+
+### Scenario-aware breakpoint sandbox check for #195
+
+Verified on 2026-10-18 in `sbt 'cucumber-scala / runIDE'`, using IntelliJ IC 262.9437.185,
+Scala 2026.2.16, bundled JBR 25.0.3 and the example module's Corretto 25 JDK:
+
+- A saved breakpoint on `basic_arithmetic.feature:12` survived an IDE restart. Debugging
+  the whole feature paused at `StepDefinitions.scala:14` with `left = -5`, `right = 6`,
+  then at `StepDefinitionsTrait.scala:13` with `expected = 1`. Other Examples rows did
+  not pause. The feature editor highlighted the current step and selected row.
+- Disabling the row breakpoint let the whole feature finish without pausing. Removing
+  it removed its stops. A breakpoint on feature line 17 stopped in the shared assertion
+  body for that occurrence, after the earlier outline rows had run without stopping.
+- With `--threads 2`, the row breakpoint retained the same selected values on a Cucumber
+  worker thread. Two simultaneous native Debug sessions each paused at the selected row.
+  Stopping one session preserved the other session's feature highlights. Resuming the
+  remaining session reached its selected assertion; completing it cleared all highlights.
+- An enabled ordinary Scala breakpoint on the shared assertion retained its
+  `expected == 999.0` condition while the feature breakpoint stopped on the selected row.
+  Removing the feature breakpoint while paused left the Scala condition unchanged;
+  Resume completed all seven scenarios and fourteen steps without another pause.
+- `FeatureBreakpointsSpec` covers restored Java debugger properties, PSI access from a
+  background debugger thread, unresolved/ambiguous definitions, untouched ordinary Scala
+  conditions, session-owned highlights and cancellation of queued highlights at termination.
+
+The live check found and fixed suppressed executable requests after class preparation,
+missing properties on restored breakpoints and PSI access outside read actions.
+The final sandbox run logged no IDE errors. All 116 tests in 28 suites passed, the plugin
+ZIP built successfully, and the standalone JDI probe passed with one and two threads.
