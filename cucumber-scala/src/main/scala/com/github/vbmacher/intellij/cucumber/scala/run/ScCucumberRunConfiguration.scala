@@ -53,11 +53,13 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
     pointer = if (url.isEmpty) null else VirtualFilePointerManager.getInstance().create(url, project, null)
     setLine(savedLine)
   }
-  def line: Int = Option(lineMarker).filter(_.isValid).flatMap { marker =>
-    Option(pointer).flatMap(p => Option(p.getFile)).flatMap(f => Option(FileDocumentManager.getInstance().getDocument(f)))
-      .map(_.getLineNumber(marker.getStartOffset) + 1)
-  }.getOrElse(savedLine)
-  def setLine(value: Int): Unit = {
+  def line: Int = ScCucumber.inReadAction {
+    Option(lineMarker).filter(_.isValid).flatMap { marker =>
+      Option(pointer).flatMap(p => Option(p.getFile)).flatMap(f => Option(FileDocumentManager.getInstance().getDocument(f)))
+        .map(_.getLineNumber(marker.getStartOffset) + 1)
+    }.getOrElse(savedLine)
+  }
+  def setLine(value: Int): Unit = ScCucumber.inReadAction {
     savedLine = value
     Option(lineMarker).foreach(_.dispose())
     lineMarker = null
@@ -145,14 +147,15 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
         case error: Throwable => java.nio.file.Files.deleteIfExists(messageFile); throw error
       }
       val properties = new ScCucumberConsoleProperties(ScCucumberRunConfiguration.this, executor)
-      val console = SMTestRunnerConnectionUtil.createAndAttachConsole("ScalaCucumber", handler, properties)
       var runtimeMetadata = "unknown runtime"
       val messages = new CucumberMessages(runId,
         text => handler.notifyTextAvailable(text, com.intellij.execution.process.ProcessOutputTypes.STDOUT),
         result => RunResults.getInstance(project).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
         result => RunResults.getInstance(project).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
         metadata => runtimeMetadata = metadata)
+      // Drain final messages before the native console handles process termination and closes its test tree.
       new CucumberMessageTail(messageFile, handler, messages)
+      val console = SMTestRunnerConnectionUtil.createAndAttachConsole("ScalaCucumber", handler, properties)
       new DefaultExecutionResult(console, handler)
     }
   }

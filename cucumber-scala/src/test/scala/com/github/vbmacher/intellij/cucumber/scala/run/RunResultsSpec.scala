@@ -13,6 +13,34 @@ class RunResultsSpec extends ScCucumberSpecBase {
   private def envelopes = java.nio.file.Files.readAllLines(java.nio.file.Path.of(getTestDataPath, "results", "outline-messages.ndjson"))
 
   @Test
+  def testFastProcessCompletesEveryNodeInTheNativeConsole(): Unit = {
+    val path = java.nio.file.Files.createTempFile("cucumber-native-results-", ".ndjson")
+    java.nio.file.Files.write(path, envelopes)
+    val handler = new com.intellij.execution.process.ProcessHandler {
+      override def destroyProcessImpl(): Unit = notifyProcessTerminated(0)
+      override def detachProcessImpl(): Unit = notifyProcessDetached()
+      override def detachIsDefault: Boolean = false
+      override def getProcessInput: java.io.OutputStream = null
+    }
+    val messages = new CucumberMessages("fast-run", text => handler.notifyTextAvailable(text, com.intellij.execution.process.ProcessOutputTypes.STDOUT), _ => (), _ => ())
+    new CucumberMessageTail(path, handler, messages)
+    val configuration = new ScCucumberConfigurationType().getConfigurationFactories.head.createTemplateConfiguration(getProject).asInstanceOf[ScCucumberRunConfiguration]
+    val properties = new ScCucumberConsoleProperties(configuration, com.intellij.execution.executors.DefaultRunExecutor.getRunExecutorInstance)
+    val console = com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil.createAndAttachConsole("ScalaCucumber", handler, properties)
+    com.intellij.openapi.util.Disposer.register(getTestRootDisposable, console)
+    handler.startNotify()
+    handler.destroyProcess()
+    com.intellij.testFramework.PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
+    val root = console.asInstanceOf[com.intellij.execution.testframework.sm.runner.ui.SMTRunnerConsoleView].getResultsViewer.getTestsRootNode
+    import scala.jdk.CollectionConverters._
+    val tests = root.getAllTests.asScala.filterNot(_.isSuite)
+    tests.size shouldBe 6
+    tests.foreach(_.isPassed shouldBe true)
+    root.isInProgress shouldBe false
+    java.nio.file.Files.exists(path) shouldBe false
+  }
+
+  @Test
   def testRealRuntimeMessagesKeepRowsAndRerunSelectorsDistinct(): Unit = {
     val emitted = ArrayBuffer.empty[String]
     val steps = ArrayBuffer.empty[CucumberMessages.StepResult]

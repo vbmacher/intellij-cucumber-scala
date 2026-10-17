@@ -13,7 +13,7 @@ maps implementation and automated evidence. GitHub issue state has not been chan
 | #185 | Runtime-valid sample arguments in editable native templates | `StepTemplateSpec` |
 | #186 | Quick Documentation captures, parameter types and trailing arguments | `StepDocumentationSpec` |
 | #187, #188 | Distinct scenario usages, exact ambiguous candidates and source navigation | usage, reference-range and documentation fixtures |
-| #189, #190 | Native Scala Cucumber configurations, feature/scenario/outline/row context producers | `RunSelectionSpec` |
+| #189, #190 | Native Scala Cucumber configurations, feature/scenario/outline/row context producers | `RunSelectionSpec`; live Run/Debug check below |
 | #191 | Identity-based native message tree, hooks/results/source navigation and location-based failed reruns | `RunResultsSpec`, recorded supported-runtime envelopes |
 | #192 | Run-specific result gutters/docs, stale state, clear/disable controls | `RunResultsSpec` |
 | #193, #194 | Runtime tag semantics, module-scoped previews, owning module/JDK/test runtime, glue and explicit overrides | `RunSelectionSpec`; CLI example execution |
@@ -59,3 +59,23 @@ Interactive sandbox checks remain separate from automated fixture evidence. The
 configuration UI, breakpoint lifecycle and concurrent sessions, paired-view focus,
 export layout/pagination and editor actions. A passing fixture suite alone does not
 claim those interactions have been manually verified.
+
+### Run/Debug sandbox check for #189
+
+Verified on 2026-10-17 in the sandbox launched by `sbt 'cucumber-scala / runIDE'`,
+using IntelliJ IC 262.9437.185, Scala 2026.2.16 and the example module's Corretto 25 JDK:
+
+- Native gutter Run executed all seven cases in `basic_arithmetic.feature`: seven scenario
+  nodes and fourteen step nodes passed, with process exit code 0.
+- A scenario gutter action selected only the scenario at line 15. An Examples-row Debug
+  action selected only line 11, using the example test module, test classpath and detected glue.
+- A Scala breakpoint paused at `StepDefinitions.scala:14` with `left = 5`, `right = 6`.
+  Step Into reached `calculate` at line 50; Step Over reached line 51. Resume completed
+  the selected row successfully. Stop terminated another paused execution and closed its nodes.
+- Background configuration save/restore and preservation of module, selection, glue, VM,
+  reporter and environment overrides are covered by `RunSelectionSpec`.
+- `RunResultsSpec` verifies that a fast process delivers all six recorded scenario/step
+  nodes to the native console before termination and removes its temporary result stream.
+
+This check uses an ordinary Scala breakpoint. Scenario-aware feature breakpoints and the
+concurrent-session checks for #195 remain separate.

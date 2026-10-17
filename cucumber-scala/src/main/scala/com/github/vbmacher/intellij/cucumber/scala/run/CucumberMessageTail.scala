@@ -6,7 +6,7 @@ import com.intellij.util.concurrency.AppExecutorUtil
 import java.io.{ByteArrayOutputStream, RandomAccessFile}
 import java.nio.charset.StandardCharsets
 import java.nio.file.{Files, Path}
-import java.util.concurrent.TimeUnit
+import java.util.concurrent.{ScheduledFuture, TimeUnit}
 import scala.util.Try
 
 class CucumberMessageTail(path: Path, handler: ProcessHandler, messages: CucumberMessages) {
@@ -35,12 +35,16 @@ class CucumberMessageTail(path: Path, handler: ProcessHandler, messages: Cucumbe
       }
     }
   }
-  private val scheduled = AppExecutorUtil.getAppScheduledExecutorService.scheduleWithFixedDelay(new Runnable {
-    override def run(): Unit = Try(drain()).failed.foreach(_ => complete = false)
-  }, 100, 100, TimeUnit.MILLISECONDS)
+  private var scheduled: Option[ScheduledFuture[_]] = None
   handler.addProcessListener(new ProcessAdapter {
+    override def startNotified(event: ProcessEvent): Unit = CucumberMessageTail.this.synchronized {
+      // The runner starts notifications after attaching the console, so initial results cannot be lost.
+      scheduled = Some(AppExecutorUtil.getAppScheduledExecutorService.scheduleWithFixedDelay(new Runnable {
+        override def run(): Unit = Try(drain()).failed.foreach(_ => complete = false)
+      }, 100, 100, TimeUnit.MILLISECONDS))
+    }
     override def processTerminated(event: ProcessEvent): Unit = CucumberMessageTail.this.synchronized {
-      scheduled.cancel(false)
+      scheduled.foreach(_.cancel(false))
       try {
         drain()
         messages.close(interrupted = !complete || pending.size() > 0)

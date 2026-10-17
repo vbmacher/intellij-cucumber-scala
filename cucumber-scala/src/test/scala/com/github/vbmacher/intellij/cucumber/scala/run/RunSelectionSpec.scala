@@ -99,6 +99,41 @@ class RunSelectionSpec extends ScCucumberSpecBase {
     new ScCucumberConfigurationType().getConfigurationFactories.head.createTemplateConfiguration(getProject).asInstanceOf[ScCucumberRunConfiguration]
 
   @Test
+  def testBackgroundSaveAndRestorePreservesRunSettings(): Unit = {
+    val file = myFixture.configureByText("history.feature", "Feature: History\n  Scenario: Saved\n    Given setup\n")
+    val original = config()
+    original.setModule(myFixture.getModule)
+    original.featureUrl = file.getVirtualFile.getUrl
+    original.setLine(2)
+    original.glue = "explicit.glue"
+    original.vmOptions = "-Dexample=value"
+    original.programOptions = "--plugin json:results.json"
+    original.environment = Map("EXAMPLE" -> "value")
+    val save = com.intellij.openapi.application.ApplicationManager.getApplication.executeOnPooledThread(new java.util.concurrent.Callable[Element] {
+      override def call(): Element = {
+        val element = new Element("configuration")
+        original.writeExternal(element)
+        element
+      }
+    })
+    com.intellij.testFramework.PlatformTestUtil.waitWithEventsDispatching("Save Cucumber result history", () => save.isDone, 10000)
+    val saved = save.get()
+    val restored = config()
+    val load = com.intellij.openapi.application.ApplicationManager.getApplication.executeOnPooledThread(new Runnable {
+      override def run(): Unit = restored.readExternal(saved)
+    })
+    com.intellij.testFramework.PlatformTestUtil.waitWithEventsDispatching("Restore Cucumber run configuration", () => load.isDone, 10000)
+    load.get()
+    restored.line shouldBe 2
+    restored.featureUrl shouldBe original.featureUrl
+    restored.getConfigurationModule.getModule shouldBe myFixture.getModule
+    restored.glue shouldBe original.glue
+    restored.vmOptions shouldBe original.vmOptions
+    restored.programOptions shouldBe original.programOptions
+    restored.environment shouldBe original.environment
+  }
+
+  @Test
   def testSavedSelectionMustPreserveAllSelectors(): Unit = {
     val file = myFixture.configureByText("selected.feature", "Feature: Selected\n  Scenario: A\n    Given setup\n  Scenario: B\n    Given setup\n  Scenario: C\n    Given setup\n")
     val original = config()
