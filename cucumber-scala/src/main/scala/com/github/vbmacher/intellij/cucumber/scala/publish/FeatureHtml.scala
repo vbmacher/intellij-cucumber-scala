@@ -54,7 +54,8 @@ object FeatureHtml {
     }
     val background = if (dark) "#252526" else "#ffffff"
     val foreground = if (dark) "#dddddd" else "#222222"
+    // Swing's HTML renderer needs an explicit link color; CSS color:inherit renders links black.
     s"""<!doctype html><html><head><meta charset="UTF-8"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; style-src 'unsafe-inline'; img-src 'none'"><title>${escape(file.getName)}</title>
-       |<style>body{font-family:sans-serif;max-width:1000px;margin:2em;color:$foreground;background:$background}section{border:1px solid #888;padding:1em;margin:1em 0}a{color:inherit}table{border-collapse:collapse}td{border:1px solid #888;padding:.4em}pre{white-space:pre-wrap}.tags{color:#888}.error{color:#c44}</style></head><body>${node(file)}</body></html>""".stripMargin
+       |<style>body{font-family:sans-serif;max-width:1000px;margin:2em;color:$foreground;background:$background}section{border:1px solid #888;padding:1em;margin:1em 0}a{color:$foreground}table{border-collapse:collapse}td{border:1px solid #888;padding:.4em}pre{white-space:pre-wrap}.tags{color:#888}.error{color:#c44}</style></head><body>${node(file)}</body></html>""".stripMargin
   }
 }

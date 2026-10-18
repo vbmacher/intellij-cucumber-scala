@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.publish
 
-import com.intellij.openapi.application.{ModalityState, ReadAction}
+import com.intellij.ide.ui.{LafManager, LafManagerListener}
+import com.intellij.openapi.application.{ApplicationManager, ModalityState, ReadAction}
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.fileEditor._
 import com.intellij.openapi.fileEditor.impl.text.TextEditorProvider
@@ -41,6 +42,7 @@ class FeaturePreviewEditor(project: Project, file: VirtualFile) extends UserData
   Option(FileDocumentManager.getInstance().getDocument(file)).foreach(_.addDocumentListener(new DocumentListener {
     override def documentChanged(event: DocumentEvent): Unit = refresh()
   }, this))
+  ApplicationManager.getApplication.getMessageBus.connect(this).subscribe[LafManagerListener](LafManagerListener.TOPIC, (_: LafManager) => refresh())
   refresh()
   private def refresh(): Unit = queue.queue(new Update("render") {
     override def run(): Unit = {
