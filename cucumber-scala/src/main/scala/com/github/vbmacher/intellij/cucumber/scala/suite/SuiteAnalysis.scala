@@ -22,8 +22,7 @@ object SuiteAnalysis {
     val definitions = modules.flatMap(m => new ScCucumberExtension().loadStepsFor(m).asScala).distinctBy(_.getElement)
     val files = com.intellij.psi.search.FileTypeIndex.getFiles(org.jetbrains.plugins.cucumber.psi.GherkinFileType.INSTANCE, scope).asScala.toSeq
       .flatMap(file => Option(com.intellij.psi.PsiManager.getInstance(project).findFile(file)))
-    val scenarios = files.flatMap(file => com.intellij.psi.util.PsiTreeUtil.findChildrenOfType(file, classOf[GherkinStepsHolder]).asScala)
-      .filterNot { case s: org.jetbrains.plugins.cucumber.psi.GherkinScenario => s.isBackground; case _ => false }
+    val scenarios = SuiteCatalog.scenarios(project, scope)
     val findings = Seq.newBuilder[Finding]
     entries.foreach { entry =>
       ProgressManager.checkCanceled()

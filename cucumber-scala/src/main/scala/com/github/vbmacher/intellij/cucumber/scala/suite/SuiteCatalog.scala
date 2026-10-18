@@ -16,6 +16,15 @@ import scala.jdk.CollectionConverters._
 object SuiteCatalog {
   final case class Entry(step: GherkinStep, scenarios: Seq[GherkinStepsHolder], definitions: Seq[AbstractStepDefinition])
 
+  def scenarios(project: Project, scope: GlobalSearchScope): Seq[GherkinStepsHolder] =
+    FileTypeIndex.getFiles(GherkinFileType.INSTANCE, scope).asScala.toSeq.sortBy(_.getPath).flatMap { file =>
+      ProgressManager.checkCanceled()
+      Option(PsiManager.getInstance(project).findFile(file)).toSeq.flatMap { psi =>
+        PsiTreeUtil.findChildrenOfType(psi, classOf[GherkinStepsHolder]).asScala.toSeq
+          .filterNot { case s: GherkinScenario => s.isBackground; case _ => false }
+      }
+    }
+
   def entries(project: Project, scope: GlobalSearchScope): Seq[Entry] = {
     val manager = PsiManager.getInstance(project)
     FileTypeIndex.getFiles(GherkinFileType.INSTANCE, scope).asScala.toSeq.sortBy(_.getPath).flatMap { file =>

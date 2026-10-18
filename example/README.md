@@ -33,6 +33,13 @@ step, remove that tag to include it in the run.
   inspect the generated source before applying. Cancel and verify the Scala file is unchanged.
 - Open **Tools → Scala Cucumber Suite**. Search expressions, filter semantic kind, navigate back to
   Scala, inspect undefined/ambiguous/unused findings, then switch to scenarios and group by tags.
+- In **Scenario Search**, use Exact text to find wording in scenario titles/bodies without Ollama.
+  For semantic search, install an embedding model in local Ollama, set its URL/model in
+  **Settings → Scala Cucumber**, choose a scope and click **Rebuild semantic index**. Switch to
+  Semantic, enter a differently worded query, and click Search. Inspect the snippet and Go to source.
+  Edit/delete a feature, switch scope/model, cancel a rebuild, stop Ollama and delete the index;
+  confirm stale results disappear, a rebuild is requested where needed, and Exact text still works.
+  These live model and UI checks are manual; fixture similarity tests use controlled vectors.
 - Enable **Implementation → Follow feature caret**, select a step with multiple candidates, then pin
   the selected implementation. The feature editor's caret should stay in place.
 - Enable table navigation in **Settings → Scala Cucumber**. Try Tab, Shift-Tab, Enter, escaped pipes,

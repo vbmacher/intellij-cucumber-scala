@@ -39,6 +39,10 @@ class SuiteToolWindowFactory extends ToolWindowFactory {
     val pairedContent = ContentFactory.getInstance().createContent(paired, "Implementation", false)
     pairedContent.setDisposer(paired)
     window.getContentManager.addContent(pairedContent)
+    val search = new ScenarioSearchPanel(project)
+    val searchContent = ContentFactory.getInstance().createContent(search, "Scenario Search", false)
+    searchContent.setDisposer(search)
+    window.getContentManager.addContent(searchContent)
   }
 }
 

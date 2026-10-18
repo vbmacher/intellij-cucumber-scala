@@ -1,7 +1,6 @@
 # Open-ticket implementation map
 
-Scope: #179–218 and #224–229. #219–223 are deferred: AI/semantic search and cloud
-integrations were excluded by request; #221 remains excluded explicitly. This file
+Scope: #179–218 and #223–229. #219–222 remain deferred; #221 remains excluded explicitly. This file
 maps implementation and automated evidence. GitHub issue state has not been changed.
 
 | Tickets | Implementation / user surface | Focused evidence |
@@ -33,6 +32,7 @@ maps implementation and automated evidence. GitHub issue state has not been chan
 | #214, #215 | Module/tag/category scenario grouping, tag filter, native run selection and scoped health denominators | `SuiteAnalysisSpec`, `RunSelectionSpec` |
 | #216, #217 | Native Source/Preview/Split, escaped local HTML, filtered HTML/PDF export with cancellation | `EditorFeaturesSpec`, optional `PdfExportSpec` |
 | #218 | Explicit requirement mappings, precise local ID references and previewed URL navigation | `EditorFeaturesSpec`, `InspectionFeaturesSpec` |
+| #223 | Exact/optional Ollama scenario search, settings for URL/model, scoped in-memory index rebuild/delete, snippets/navigation and cancellable background requests | `ScenarioSearchSpec`, `ScenarioSearchPanelSpec`, `OllamaEmbeddingsSpec`; interactive checks in example guide |
 | #224 | Optional workspace history, comparable contexts, attempts/interruptions, retention and clear/disable | `RunResultsSpec` |
 | #225 | Explicit previewed numbering with stable title replacement | `EditorFeaturesSpec` |
 | #226 | Native diagnostics/actions, outlines, localization, formatting/folding and typed DocString baseline | `NativeEditorBaselineSpec` and existing navigation/generation fixtures |
