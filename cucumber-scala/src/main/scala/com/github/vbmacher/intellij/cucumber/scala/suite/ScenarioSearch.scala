@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
 import com.github.vbmacher.intellij.cucumber.scala.run.ScenarioSelection
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.progress.ProgressManager
 import com.intellij.openapi.project.Project
@@ -13,9 +14,11 @@ import java.util.Locale
 object ScenarioSearch {
   final case class Document(title: String, text: String, path: String, line: Int,
                             pointer: SmartPsiElementPointer[GherkinStepsHolder]) {
-    def navigation(project: Project): Option[OpenFileDescriptor] = Option(pointer.getElement)
-      .filter(s => s.isValid && s.getText == text)
-      .map(s => new OpenFileDescriptor(project, s.getContainingFile.getVirtualFile, ScenarioSelection.sourceOffset(s)))
+    def navigation(project: Project): Option[OpenFileDescriptor] = inReadAction {
+      Option(pointer.getElement)
+        .filter(s => s.isValid && s.getText == text)
+        .map(s => new OpenFileDescriptor(project, s.getContainingFile.getVirtualFile, ScenarioSelection.sourceOffset(s)))
+    }
   }
   final case class Hit(document: Document, similarity: Option[Double]) {
     override def toString: String = s"${document.title} · ${document.path}:${document.line}" +

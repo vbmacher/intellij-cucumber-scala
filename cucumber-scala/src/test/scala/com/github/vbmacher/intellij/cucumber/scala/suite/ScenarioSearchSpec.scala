@@ -3,8 +3,9 @@ package com.github.vbmacher.intellij.cucumber.scala.suite
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.github.vbmacher.intellij.cucumber.scala.settings.{ScalaCucumberConfigurable, ScalaCucumberSettings}
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.command.WriteCommandAction
-import com.intellij.openapi.fileEditor.FileEditorManager
+import com.intellij.openapi.fileEditor.{FileEditorManager, OpenFileDescriptor}
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.intellij.psi.PsiDocumentManager
 import com.intellij.psi.search.GlobalSearchScope
@@ -41,6 +42,23 @@ class ScenarioSearchSpec extends ScCucumberSpecBase {
       navigation.navigate(true)
       FileEditorManager.getInstance(getProject).getSelectedTextEditor.getCaretModel.getOffset shouldBe navigation.getOffset
     }
+  }
+
+  @Test
+  def testNavigationAcquiresReadAccessForTheResultSnapshot(): Unit = {
+    val source = "Feature: Cash\n  Scenario: Withdrawal\n    Then insufficient funds\n"
+    myFixture.addFileToProject("cash.feature", source)
+    val result = documents.head
+    val application = ApplicationManager.getApplication
+    val navigation = application.executeOnPooledThread(new java.util.concurrent.Callable[Option[OpenFileDescriptor]] {
+      override def call(): Option[OpenFileDescriptor] = {
+        application.isReadAccessAllowed shouldBe false
+        result.navigation(getProject)
+      }
+    })
+    val target = com.intellij.testFramework.PlatformTestUtil.waitForFuture(navigation).get
+    target.getFile.getName shouldBe "cash.feature"
+    target.getOffset shouldBe source.indexOf("Scenario: Withdrawal")
   }
 
   @Test
