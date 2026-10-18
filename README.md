@@ -16,11 +16,9 @@ Start with the [feature guide](docs/getting_started.md) or explore the
 | [Installation](docs/installation.md) | IDE requirements, plugin installation, project prerequisites and development setup |
 | [Getting started](docs/getting_started.md) | All features and links to their guides |
 | [Navigation](docs/navigation.md) | Definitions, usages, hooks, table headers and requirements |
-| [Writing steps](docs/writing_steps.md) | Completion, generation, documentation, rename, inspections and numbering |
-| [Tables](docs/tables.md) | Spreadsheet editing, keyboard navigation and case-class generation |
+| [Editing](docs/editing.md) | Completion, documentation, generation, rename, numbering, tables, inspections, preview and export |
 | [Workspace](docs/workspace.md) | Suite, Run History, Implementation and Scenario Search tabs |
 | [Run and debug](docs/running.md) | Feature, scenario and Examples-row runs, breakpoints and results |
-| [Preview and export](docs/preview_and_export.md) | Feature documents, HTML and PDF |
 | [Configuration](docs/configuration.md) | Settings, project configuration file, mappings, inspections and run configurations |
 | [Icons](docs/icons.md) | Gutter, result, breakpoint and tool-window icon rules |
 

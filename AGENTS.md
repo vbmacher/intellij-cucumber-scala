@@ -47,18 +47,31 @@
 
 ## Documentation
 
-# Documentation
+- Write plain, concise, direct user documentation: what users can do, how to do it and what
+  to expect. Use exact UI labels, concrete actions and named files; briefly explain
+  unfamiliar terms. Use small examples when helpful.
+- State prerequisites and limitations precisely, with their practical consequences. Keep
+  separate capabilities separate (for example, argument-count versus parameter-type checks).
+- Document only user-visible, user-controllable behavior, verified before describing it.
+  Flag missing information instead of inventing details. Never add history, test statistics
+  or coverage inventories. Do not document standard IntelliJ IDEA behavior or implementation
+  details.
+- Describe each feature in exactly one place; elsewhere, link to it. Keep `README.md`, the
+  example guide and these guides aligned with behavior changes.
 
-Write documentation in plain, consolidate, direct language focused on what users can do, how to do it, and what to expect. Use concrete actions, exact UI labels, and named files instead of vague abstractions or implementation jargon; briefly explain unfamiliar technical terms. State prerequisites and limitations precisely, including their practical consequences, and distinguish separate capabilities such as checking argument counts and checking parameter types. Keep headings aligned with the content, use small examples when helpful, and omit filler and irrelevant caveats. Verify behavior before describing it; flag missing information rather than inventing details.
+User guides live in `docs/`, with images in `docs/images/`:
 
-Never use historical narrative and never document statistics like how many tests passed or what is tested or not.
+| File | Contents |
+| --- | --- |
+| `getting_started.md` | Brief overview: every feature with a link to its detailed section; may include screenshots. |
+| `installation.md` | The only place for installation and setup: IDE builds, required plugins, project prerequisites, optional semantic search and the development environment. |
+| `navigation.md` | Plugin navigation features with examples and screenshots. |
+| `editing.md` | Feature and step editing: completion, Quick Documentation, generation, rename, numbering, tables, inspections, preview and export. |
+| `workspace.md` | The **Scala Cucumber** tool window and its tabs. |
+| `running.md` | Run/Debug, feature breakpoints and editor results. |
+| `configuration.md` | The only place describing settings UI, `.idea/scala-cucumber.xml`, inspection options and run-configuration fields. Other guides link here. |
+| `icons.md` | Table of all icons (Icon, Meaning, Rule) with exact places and conditions. Icons must be idiomatic. |
 
-The user documentation should have a structure/organization:
-
-- installation.md: Documentation of how the user can install the plugin, or prepare the development environment with all the caveats. Also should include information which other plugins should be enabled in order to make sure some functionality works (e.g. TextMate). No other document should mention any installation procedure but this one.
-- getting_started.md: Describes what this plugin does briefly, only list of all features along with links to other documents and paragraphs with detailed documentation. This document can include example screenshots of using the features.
-- navigation.md: Describes all features in navigation. It should never explain implementation details and should not explain/document what is already considered as "standard" navigation features in IntelliJ IDEA as such. It should contain examples + screenshots.
-- icons.md: description (table) of all icons in the project - Icon,Meaning,Rule - with descriptive and exact listing of places and rules when the icon appears and its meaning. The icons must be idiomatic.
-- workspace.md: Describes the "Scala Cucumber" tool window. 
-- configuration.md: Describes plugin configuration file and settings UI. No other document should describe them, but if applicable, other documents should only reference configuration.md file.
-- others - if there are more "categories" to be documented which do not fall into previous ones above. Need to be consolidated. Every documented feature is from user perspective - and should be documented ONLY if it's visible and controllable by the user.
+Add a new guide only for a user-facing category that fits none of these; otherwise extend
+the closest existing guide. Example-project instructions, such as running the examples
+from a terminal, belong in `example/README.md`.

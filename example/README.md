@@ -18,12 +18,21 @@ Definitions supplied as a separate library live in [example-stepdefs-lib](../exa
 Use the topic guides for the corresponding workflows:
 
 - [Navigation, custom parameters and mapped headers](../docs/navigation.md)
-- [Completion, documentation and generation](../docs/writing_steps.md)
-- [Table editing](../docs/tables.md)
+- [Completion, generation, tables, preview and HTML/PDF export](../docs/editing.md)
 - [Suite browsing, implementation viewing and scenario search](../docs/workspace.md)
-- [Run/Debug and the example CLI command](../docs/running.md)
-- [Preview and HTML/PDF export](../docs/preview_and_export.md)
+- [Run/Debug](../docs/running.md)
 - [Project settings and run configuration fields](../docs/configuration.md)
 
 Write executable scenarios in `.feature` files and register their Scala definitions.
 Gherkin text inside a Scala multiline string does not receive feature-file support.
+
+## Run the examples from a terminal
+
+From the repository root, run the implemented calculator scenarios:
+
+```sh
+sbt --batch 'example/Test/runMain io.cucumber.core.cli.Main --glue cucumber.examples.scalacalculator --tags "not @undefined" classpath:cucumber/examples/scalacalculator'
+```
+
+The `@undefined` scenario is an editing exercise. After implementing its missing
+step, remove that tag to include it in the run.

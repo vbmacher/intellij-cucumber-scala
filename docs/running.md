@@ -19,18 +19,6 @@ The Run/Debug tool window shows features, rules, scenarios, Examples rows, steps
 their outcomes. Open a result to navigate to its feature location. Use its failed-test
 rerun action to rerun failed scenarios or rows by their locations.
 
-### Run the repository example from a terminal
-
-From the repository root, run the implemented calculator scenarios:
-
-```sh
-sbt --batch 'example/Test/runMain io.cucumber.core.cli.Main --glue cucumber.examples.scalacalculator --tags "not @undefined" classpath:cucumber/examples/scalacalculator'
-```
-
-The `@undefined` scenario is an editing exercise. After implementing its missing
-step, remove that tag to include it in the run. The
-[example guide](../example/README.md) lists the available feature files.
-
 ## Debug a feature step or Examples row
 
 Add a breakpoint on a feature step or an Examples data row, using breakpoint type

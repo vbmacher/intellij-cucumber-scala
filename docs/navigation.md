@@ -31,8 +31,6 @@ it does not establish that no other project uses a library step.
 For a view that follows the feature caret without moving editor focus, use the
 [Implementation tab](workspace.md#implementation).
 
-![The Implementation tab following a feature step](images/implementation.png)
-
 ## Supported step patterns
 
 | Pattern | Example Scala step text | Matching feature text |
@@ -86,9 +84,10 @@ Given("transfers") { (rows: Seq[TransferRow]) => () }
 ```
 
 In the corresponding step's table, `owner` opens `TransferRow.account`. Header
-completion offers the mapped names. Matching a header to a case-class field by name
-alone does not create this link. See [tables](tables.md#mapped-headers) for editing
-and diagnostic behavior.
+completion offers the mapped names, and the **Explicit DataTable header mapping**
+[inspection](editing.md#inspections) reports headers the mapping does not read.
+Matching a header to a case-class field by name alone does not create this link.
+For other table edits, see [tables](editing.md#tables).
 
 ## Requirements
 

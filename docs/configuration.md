@@ -12,7 +12,7 @@ click **Apply** or **OK**; the two clear buttons act immediately.
 | **Prefer steps used by more scenarios** | On | Ranks completion candidates using their matching-scenario counts. Outlines count once; ambiguous matches are included. |
 | **Prefer steps from the same module and with shared tags** | On | Ranks candidates using the current module and scenario tags. |
 | **Suggest wording from feature files in the current module** | On | Adds marked wording suggestions even when they have no Scala definition. |
-| **Navigate and extend Gherkin tables with Tab, Shift-Tab and Enter** | Off | Enables [cell navigation and keyboard clearing](tables.md#keyboard-navigation). |
+| **Navigate and extend Gherkin tables with Tab, Shift-Tab and Enter** | Off | Enables [cell navigation and keyboard clearing](editing.md#keyboard-navigation). |
 
 Ranking changes suggestion order. It does not decide which definition binds to a
 step at runtime.
@@ -136,7 +136,7 @@ Open **Settings → Editor → Inspections** to enable or disable the plugin's i
 | **Tag convention (regular expression; blank disables)** | Blank |
 
 These options belong to the selected IDEA inspection profile, not to
-`scala-cucumber.xml`. See [inspection behavior](writing_steps.md#inspections) for the
+`scala-cucumber.xml`. See [inspection behavior](editing.md#inspections) for the
 distinction between argument-count and parameter-type checks.
 
 ## Run configurations
