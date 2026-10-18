@@ -49,6 +49,55 @@ class FeaturePreviewSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testScenariosHaveCompactSpacingAndConsistentPagePadding(): Unit = {
+    val file = myFixture.configureByText("travel.feature",
+      "Feature: Travel\n  Distances are returned in kilometres.\n\n" +
+        "  Scenario: Hours\n    When I move at 10km/h for 2h\n    Then the result is 20\n\n" +
+        "  Scenario: Seconds\n    When I move at 10m/s for 10s\n    Then the result is 0.1\n").asInstanceOf[GherkinFile]
+    Seq(false, true).foreach { dark =>
+      val pane = new JEditorPane("text/html", FeatureHtml.render(file, dark = dark))
+      pane.setSize(620, 800)
+      pane.getPreferredSize
+      val text = pane.getDocument.getText(0, pane.getDocument.getLength)
+      def bounds(value: String): java.awt.geom.Rectangle2D = {
+        val offset = text.indexOf(value)
+        withClue(value) { offset should be >= 0 }
+        pane.modelToView2D(offset)
+      }
+      val title = bounds("Travel")
+      title.getX should (be >= 14.0 and be <= 24.0)
+      title.getY should (be >= 12.0 and be <= 24.0)
+      val hours = bounds("Scenario: Hours")
+      val firstStep = bounds("When I move at 10km/h")
+      firstStep.getY - hours.getY should (be > 0.0 and be <= 40.0)
+      bounds("Then the result is 20").getY - firstStep.getY should (be > 0.0 and be <= 28.0)
+      val seconds = bounds("Scenario: Seconds")
+      bounds("When I move at 10m/s").getY - seconds.getY should (be > 0.0 and be <= 40.0)
+      bounds("Then the result is 0.1").getMaxY - title.getY should be <= 270.0
+    }
+  }
+
+  @Test
+  def testTaggedOutlinesRenderHeadersAndExamplesOnlyOnce(): Unit = {
+    val file = myFixture.configureByText("outline.feature",
+      "@payments\nFeature: Payments\n  A feature description\n\n" +
+        "  @smoke\n  Scenario Outline: Pay <amount>\n    An outline description\n" +
+        "    When I pay <amount>\n    Then payment succeeds\n\n" +
+        "    @small\n    Examples: Small payments\n      A set of small payments\n" +
+        "      | amount |\n      | 10     |\n").asInstanceOf[GherkinFile]
+    val pane = new JEditorPane("text/html", FeatureHtml.render(file))
+    val text = pane.getDocument.getText(0, pane.getDocument.getLength)
+    Seq("Scenario Outline: Pay <amount>", "Examples: Small payments", "A feature description", "An outline description", "A set of small payments").foreach { value =>
+      withClue(value) { text.sliding(value.length).count(_ == value) shouldBe 1 }
+    }
+    text should not include "@smoke:"
+    text should not include "|"
+    text should include("@payments @smoke")
+    text should include("amount")
+    text should include("10")
+  }
+
+  @Test
   def testOpenPreviewRefreshesWhenThemeChangesWithoutSourceEdits(): Unit = {
     val defaults = UIManager.getLookAndFeelDefaults
     val previous = defaults.get("ui.theme.is.dark")

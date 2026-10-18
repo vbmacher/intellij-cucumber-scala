@@ -1,9 +1,11 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.application.{ApplicationManager, ReadAction}
 import com.intellij.openapi.editor.EditorFactory
+import com.intellij.openapi.editor.colors.{EditorColorsManager, EditorFontType}
 import com.intellij.openapi.editor.event.{DocumentEvent, DocumentListener}
 import com.intellij.openapi.module.ModuleManager
 import com.intellij.openapi.options.ShowSettingsUtil
@@ -11,10 +13,13 @@ import com.intellij.openapi.progress.{ProcessCanceledException, ProgressIndicato
 import com.intellij.openapi.project.Project
 import com.intellij.psi.{PsiDocumentManager, PsiManager, PsiTreeChangeAdapter, PsiTreeChangeEvent}
 import com.intellij.psi.search.GlobalSearchScope
-import com.intellij.ui.components.{JBList, JBScrollPane, JBTextField}
+import com.intellij.ui.OnePixelSplitter
+import com.intellij.ui.components.{JBLabel, JBList, JBScrollPane, JBTextArea, JBTextField}
+import com.intellij.util.ui.{FormBuilder, JBUI, UIUtil}
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 
-import java.awt.{BorderLayout, GridLayout}
+import java.awt.{BorderLayout, Component, Dimension, FlowLayout, GridLayout}
+import java.awt.event.{ActionEvent, MouseAdapter, MouseEvent}
 import java.util.concurrent.atomic.AtomicLong
 import javax.swing._
 
@@ -26,47 +31,139 @@ class ScenarioSearchPanel(project: Project,
   private val mode = new JComboBox[String](Array("Exact text", "Semantic"))
   private val query = new JBTextField(24)
   private val search = new JButton("Search")
-  private val rebuild = new JButton("Rebuild semantic index")
-  private val delete = new JButton("Delete semantic index")
+  private val rebuild = new JButton("Rebuild index")
+  private val delete = new JButton("Delete index")
   private val cancel = new JButton("Cancel")
   private val settings = new JButton("Settings…")
-  private val providerLabel = new JLabel()
-  private val status = new JLabel("Exact text needs no model. Build an index to enable semantic search.")
+  private val providerLabel = new JBLabel(UIUtil.ComponentStyle.SMALL)
+  private val status = new JBLabel("Enter text, or leave empty to list all scenarios.").setCopyable(true).setAllowAutoWrapping(true)
+  private val modeHint = new JBLabel(UIUtil.ComponentStyle.SMALL).setAllowAutoWrapping(true)
+  private val indexToggle = new JToggleButton("Semantic index")
+  private val indexState = new JBLabel(UIUtil.ComponentStyle.SMALL)
   private val model = new DefaultListModel[ScenarioSearch.Hit]()
-  private val results = new JBList[ScenarioSearch.Hit](model)
-  private val snippet = new JTextArea()
+  private val results = new JBList[ScenarioSearch.Hit](model) {
+    override def getScrollableTracksViewportWidth: Boolean = true
+  }
+  private val snippet = new JBTextArea()
+  private val resultsTitle = new JLabel("Results")
   private val open = new JButton("Go to source")
   private var index: Option[ScenarioSearch.Index] = None
   private val generation = new AtomicLong()
+  private var busy = false
   @volatile private var disposed = false
-  private val controls = new JPanel(new GridLayout(0, 2, 4, 4))
-  Seq(scope, mode, query, search, rebuild, delete, cancel, open).foreach(controls.add)
-  private val header = new JPanel(new BorderLayout())
-  header.add(controls, BorderLayout.NORTH)
-  private val providerControls = new JPanel(new BorderLayout())
-  providerControls.add(providerLabel, BorderLayout.CENTER)
-  providerControls.add(settings, BorderLayout.EAST)
-  header.add(providerControls, BorderLayout.SOUTH)
+  setBorder(JBUI.Borders.empty(8))
+
+  private def row(components: JComponent*): JPanel = {
+    val panel = new JPanel(new FlowLayout(FlowLayout.LEFT, JBUI.scale(6), 0))
+    components.foreach(panel.add)
+    panel
+  }
+  private def labeled(text: String, component: JComponent): JPanel = {
+    val panel = new JPanel(new BorderLayout(JBUI.scale(6), 0))
+    val label = new JBLabel(text)
+    label.setLabelFor(component)
+    panel.add(label, BorderLayout.WEST)
+    panel.add(component, BorderLayout.CENTER)
+    panel
+  }
+  private val queryRow = new JPanel(new BorderLayout(JBUI.scale(6), 0))
+  queryRow.add(query, BorderLayout.CENTER)
+  queryRow.add(row(search, cancel), BorderLayout.EAST)
+  private val filters = new JPanel(new GridLayout(1, 2, JBUI.scale(8), 0))
+  Seq(scope, mode).foreach(combo => combo.setMinimumSize(new Dimension(0, combo.getPreferredSize.height)))
+  filters.add(labeled("Scope:", scope))
+  filters.add(labeled("Match:", mode))
+  private val indexOptions = new JPanel(new BorderLayout(0, JBUI.scale(6)))
+  indexOptions.setBorder(JBUI.Borders.empty(0, 6, 4, 0))
+  indexOptions.add(providerLabel, BorderLayout.NORTH)
+  indexOptions.add(row(rebuild, delete, settings), BorderLayout.CENTER)
+  private val header = FormBuilder.createFormBuilder().setVerticalGap(8)
+    .addComponent(queryRow, 0)
+    .addComponent(filters)
+    .addComponent(modeHint)
+    .addComponent(row(indexToggle, indexState))
+    .addComponent(indexOptions)
+    .getPanel
+  header.setBorder(JBUI.Borders.emptyBottom(8))
   add(header, BorderLayout.NORTH)
   snippet.setEditable(false)
   snippet.setLineWrap(true)
   snippet.setWrapStyleWord(true)
-  add(new JSplitPane(JSplitPane.VERTICAL_SPLIT, new JBScrollPane(results), new JBScrollPane(snippet)), BorderLayout.CENTER)
-  private val footer = new JPanel(new BorderLayout())
-  footer.add(status, BorderLayout.NORTH)
-  footer.add(new JLabel("Similarity suggests related wording; it proves neither step binding nor coverage."), BorderLayout.SOUTH)
-  add(footer, BorderLayout.SOUTH)
-  query.setToolTipText("Search scenario titles and bodies. Semantic mode returns up to 50 related scenarios.")
+  snippet.setFont(EditorColorsManager.getInstance().getGlobalScheme.getFont(EditorFontType.PLAIN))
+  snippet.getAccessibleContext.setAccessibleName("Scenario preview")
+  snippet.setBorder(JBUI.Borders.empty(8))
+  snippet.getEmptyText.setText("Select a result to preview its scenario")
+  results.getEmptyText.setText("Search to find scenarios")
+  results.setSelectionMode(ListSelectionModel.SINGLE_SELECTION)
+  resultsTitle.setLabelFor(results)
+  results.setCellRenderer(new ListCellRenderer[ScenarioSearch.Hit] {
+    private val title = new JLabel()
+    private val location = new JBLabel(UIUtil.ComponentStyle.SMALL)
+    private val cell = new JPanel(new BorderLayout(0, JBUI.scale(3))) {
+      // CellRendererPane needs an explicit layout pass for the two labels.
+      override def validate(): Unit = doLayout()
+    }
+    cell.setBorder(JBUI.Borders.empty(6, 8))
+    title.setFont(title.getFont.deriveFont(java.awt.Font.BOLD))
+    cell.add(title, BorderLayout.NORTH)
+    cell.add(location, BorderLayout.SOUTH)
+    override def getListCellRendererComponent(list: JList[_ <: ScenarioSearch.Hit], hit: ScenarioSearch.Hit,
+                                             position: Int, selected: Boolean, focused: Boolean): Component = {
+      title.setText(hit.document.title)
+      val path = Option(project.getBasePath).fold(hit.document.path)(base => hit.document.path.stripPrefix(base + "/"))
+      location.setText(s"$path:${hit.document.line}" + hit.similarity.map(s => f" · similarity ${s * 100}%.0f%%").getOrElse(""))
+      cell.setBackground(if (selected) list.getSelectionBackground else list.getBackground)
+      title.setForeground(if (selected) list.getSelectionForeground else list.getForeground)
+      location.setForeground(if (selected) list.getSelectionForeground else UIUtil.getContextHelpForeground)
+      cell
+    }
+  })
+  private val resultPanel = new JPanel(new BorderLayout(0, JBUI.scale(6)))
+  resultPanel.add(resultsTitle, BorderLayout.NORTH)
+  resultPanel.add(new JBScrollPane(results), BorderLayout.CENTER)
+  private val previewHeader = new JPanel(new BorderLayout())
+  previewHeader.add(new JLabel("Scenario preview"), BorderLayout.CENTER)
+  previewHeader.add(open, BorderLayout.EAST)
+  private val previewPanel = new JPanel(new BorderLayout(0, JBUI.scale(6)))
+  previewPanel.setBorder(JBUI.Borders.emptyTop(8))
+  previewPanel.add(previewHeader, BorderLayout.NORTH)
+  previewPanel.add(new JBScrollPane(snippet), BorderLayout.CENTER)
+  previewPanel.setVisible(false)
+  private val split = new OnePixelSplitter(true, 0.55f)
+  split.setFirstComponent(resultPanel)
+  split.setSecondComponent(previewPanel)
+  add(split, BorderLayout.CENTER)
+  status.setBorder(JBUI.Borders.emptyTop(6))
+  add(status, BorderLayout.SOUTH)
+  query.getEmptyText.setText("Search scenario titles and steps")
+  query.getAccessibleContext.setAccessibleName("Scenario query")
+  query.setToolTipText("Search scenario titles and bodies. Leave empty to list all scenarios. Semantic mode returns up to 50 related scenarios.")
   rebuild.setToolTipText("Send scenarios in the selected scope to the configured Ollama model. Vectors are kept in memory only.")
+  delete.setToolTipText("Delete the in-memory index for the selected scope.")
+  modeHint.setToolTipText("Semantic similarity suggests related wording; it proves neither step binding nor coverage.")
+  indexToggle.setToolTipText("Show index actions and the configured Ollama provider.")
+  indexToggle.setIcon(AllIcons.General.ArrowRight)
+  indexToggle.setSelectedIcon(AllIcons.General.ArrowDown)
+  indexToggle.addActionListener(_ => updateIndexOptions())
   search.addActionListener(_ => start(build = false))
   query.addActionListener(_ => start(build = false))
   rebuild.addActionListener(_ => start(build = true))
   delete.addActionListener(_ => invalidate("Semantic index deleted from memory."))
-  cancel.addActionListener(_ => { stop(); clearResults(); status.setText("Cancelled. Search or rebuild to try again.") })
+  cancel.addActionListener(_ => {
+    stop()
+    clearResults()
+    results.getEmptyText.setText("Search cancelled")
+    status.setText("Cancelled. Search or rebuild to try again.")
+  })
   scope.addActionListener(_ => invalidate("Scope changed. Rebuild the semantic index for this scope."))
-  mode.addActionListener(_ => { stop(); clearResults(); status.setText("Choose a query and click Search.") })
+  mode.addActionListener(_ => {
+    stop()
+    clearResults()
+    updateMode()
+    status.setText(if (mode.getSelectedIndex == 1 && index.isEmpty) "Build an index, then enter a query to find related scenarios." else "Enter a query and press Enter, or click Search.")
+  })
   query.getDocument.addDocumentListener(new javax.swing.event.DocumentListener {
-    private def changed(): Unit = { stop(); clearResults(); status.setText("Query changed. Click Search.") }
+    private def changed(): Unit = { stop(); clearResults(); status.setText("Press Enter or click Search.") }
     override def insertUpdate(e: javax.swing.event.DocumentEvent): Unit = changed()
     override def removeUpdate(e: javax.swing.event.DocumentEvent): Unit = changed()
     override def changedUpdate(e: javax.swing.event.DocumentEvent): Unit = changed()
@@ -80,6 +177,20 @@ class ScenarioSearchPanel(project: Project,
   results.addListSelectionListener(_ => {
     snippet.setText(Option(results.getSelectedValue).map(_.document.text).getOrElse(""))
     snippet.setCaretPosition(0)
+    open.setEnabled(results.getSelectedValue != null)
+    previewPanel.setVisible(results.getSelectedValue != null)
+    split.revalidate()
+  })
+  results.getInputMap.put(KeyStroke.getKeyStroke("ENTER"), "openSource")
+  results.getActionMap.put("openSource", new AbstractAction {
+    override def actionPerformed(event: ActionEvent): Unit = open.doClick()
+  })
+  results.addMouseListener(new MouseAdapter {
+    override def mouseClicked(event: MouseEvent): Unit = {
+      val selected = results.getSelectedIndex
+      if (event.getButton == MouseEvent.BUTTON1 && event.getClickCount == 2 && selected >= 0 &&
+        results.getCellBounds(selected, selected).contains(event.getPoint)) open.doClick()
+    }
   })
   open.addActionListener(_ => Option(results.getSelectedValue).foreach { hit =>
     hit.document.navigation(project) match {
@@ -108,13 +219,41 @@ class ScenarioSearchPanel(project: Project,
     override def propertyChanged(e: PsiTreeChangeEvent): Unit = changed(e)
   }, this)
   updateProvider()
+  updateMode()
+  updateControls()
 
   private def provider: ScenarioSearch.Embeddings = {
     val config = ScalaCucumberSettings.getInstance(project)
     providerFactory(config.ollamaUrl, config.embeddingModel)
   }
-  private def updateProvider(): Unit = providerLabel.setText(provider.id + " · index: selected scope, memory only")
-  private def clearResults(): Unit = { model.clear(); snippet.setText("") }
+  private def updateProvider(): Unit = {
+    providerLabel.setText("Ollama · " + ScalaCucumberSettings.getInstance(project).embeddingModel)
+    providerLabel.setToolTipText(provider.id)
+  }
+  private def updateIndexOptions(): Unit = { indexOptions.setVisible(indexToggle.isSelected); revalidate(); repaint() }
+  private def updateMode(): Unit = {
+    val semantic = mode.getSelectedIndex == 1
+    modeHint.setText(if (semantic) "Related wording · results do not verify step bindings." else "Exact text · no model or index required.")
+    indexToggle.setSelected(semantic)
+    updateIndexOptions()
+  }
+  private def updateControls(): Unit = {
+    search.setEnabled(!busy)
+    rebuild.setEnabled(!busy)
+    cancel.setVisible(busy)
+    delete.setEnabled(busy || index.nonEmpty)
+    open.setEnabled(results.getSelectedValue != null)
+    indexState.setText(if (index.nonEmpty) "Ready · memory only" else "Not built")
+    revalidate()
+  }
+  private def clearResults(): Unit = {
+    model.clear()
+    snippet.setText("")
+    resultsTitle.setText("Results")
+    results.getEmptyText.setText("Search to find scenarios")
+    busy = false
+    updateControls()
+  }
   private def stop(): Unit = { generation.incrementAndGet() }
   private def invalidate(message: String): Unit = {
     stop()
@@ -141,6 +280,9 @@ class ScenarioSearchPanel(project: Project,
     if (!build && semantic && previousIndex.isEmpty) status.setText("Build the semantic index first, or choose Exact text.")
     else {
       if (build) index = None
+      busy = true
+      updateControls()
+      results.getEmptyText.setText(if (build) "Building semantic index…" else "Searching scenarios…")
       status.setText(if (build) "Building semantic index…" else "Searching…")
       new Task.Backgroundable(project, "Scala Cucumber scenario search", true) {
         private var hits = Seq.empty[ScenarioSearch.Hit]
@@ -164,13 +306,23 @@ class ScenarioSearchPanel(project: Project,
           built.foreach(value => index = Some(value))
           hits.foreach(model.addElement)
           if (!model.isEmpty) results.setSelectedIndex(0)
-          status.setText(built.map(i => s"Semantic index ready · ${i.vectors.size} distinct scenario texts · ${scope.getSelectedItem}")
-            .getOrElse(s"${hits.size} scenarios · ${mode.getSelectedItem} · ${scope.getSelectedItem}"))
+          busy = false
+          updateControls()
+          resultsTitle.setText(if (build) "Results" else s"Results · ${hits.size}")
+          results.getEmptyText.setText(if (build) "Index ready. Enter a query to find related scenarios." else "No scenarios match this search")
+          status.setText(built.map(_ => s"Semantic index ready · ${scope.getSelectedItem}")
+            .getOrElse(s"${hits.size} ${if (hits.size == 1) "scenario" else "scenarios"} · ${mode.getSelectedItem} · ${scope.getSelectedItem}"))
         }
         override def onCancel(): Unit = if (!disposed && generation.get() == id) {
+          busy = false
+          updateControls()
+          results.getEmptyText.setText("Search cancelled")
           status.setText("Cancelled. Search or rebuild to try again.")
         }
         override def onThrowable(error: Throwable): Unit = if (!disposed && generation.get() == id) {
+          busy = false
+          updateControls()
+          results.getEmptyText.setText("Search unavailable")
           status.setText("Search unavailable: " + Option(error.getMessage).getOrElse("check Ollama settings") + " Exact text remains available.")
         }
       }.queue()
