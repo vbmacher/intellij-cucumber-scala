@@ -52,6 +52,8 @@ An embedding model converts text into numbers used to compare related wording.
 Exact text search does not need Ollama or a model.
 
 1. Install and start [Ollama](https://docs.ollama.com/quickstart).
+   The `embeddinggemma` example below requires Ollama **0.11.10 or later**;
+   older servers can list the downloaded model but fail to generate embeddings.
 2. Download an embedding model, for example:
 
    ```sh
@@ -77,9 +79,12 @@ Configure [failure explanations](configuration.md#failure-explanations) or
 [edge-case drafts](configuration.md#edge-case-drafts), then follow
 [Explain a failure](running.md#explain-a-failure) or
 [Suggest edge-case scenarios](editing.md#suggest-edge-case-scenarios).
-Draft generation requires a chat model supporting JSON output. A remote server
+Draft generation requires a chat model and a server supporting Ollama's
+[structured JSON output](https://docs.ollama.com/capabilities/structured-outputs).
+A remote server
 receives the context you review and submit; use its URL and optional access token.
-The plugin does not download chat models.
+Local Ollama at `http://localhost:11434` needs no access token; leave the optional
+token fields blank. The plugin does not download chat models.
 
 ## Development environment
 

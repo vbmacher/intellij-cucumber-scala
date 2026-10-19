@@ -52,7 +52,7 @@ class ExportFeaturesAction extends GherkinFileAction("Export Features…") {
                 else documents.head.replace("</body></html>", documents.drop(1).map(d => d.substring(d.indexOf("<body>") + 6, d.lastIndexOf("</body>"))).mkString + "</body></html>")
               val extension = if (format.getSelectedItem == "PDF") "pdf" else "html"
               val saver = FileChooserFactory.getInstance().createSaveFileDialog(new FileSaverDescriptor("Export Features", "Choose an export destination", extension), project)
-              Option(saver.save(java.nio.file.Path.of(project.getBasePath), "features." + extension)).foreach { chosen =>
+              Option(saver.save(Option(project.getBasePath).map(java.nio.file.Path.of(_)).orNull, "features." + extension)).foreach { chosen =>
                 Try {
                   if (extension == "pdf") project.getService(classOf[FeaturePdfExporter]).write(project, chosen.getFile.toPath, html)
                   else ExportFeatures.writeHtml(chosen.getFile.toPath, html)

@@ -55,9 +55,12 @@ class GherkinTablePipe extends com.intellij.codeInsight.editorActions.TypedHandl
   override def beforeCharTyped(c: Char, project: com.intellij.openapi.project.Project, editor: Editor,
                                file: com.intellij.psi.PsiFile, fileType: com.intellij.openapi.fileTypes.FileType): com.intellij.codeInsight.editorActions.TypedHandlerDelegate.Result = {
     import com.intellij.codeInsight.editorActions.TypedHandlerDelegate.Result
+    if (c != '|') return Result.CONTINUE
+    val text = editor.getDocument.getCharsSequence
     val offset = editor.getCaretModel.getOffset
-    val backslashes = editor.getDocument.getCharsSequence.subSequence(0, offset).toString.reverse.takeWhile(_ == '\\').length
-    if (c == '|' && backslashes % 2 == 0 && GherkinTableNavigation.navigate(editor, "next")) Result.STOP else Result.CONTINUE
+    var escapeStart = offset
+    while (escapeStart > 0 && text.charAt(escapeStart - 1) == '\\') escapeStart -= 1
+    if ((offset - escapeStart) % 2 == 0 && GherkinTableNavigation.navigate(editor, "next")) Result.STOP else Result.CONTINUE
   }
 }
 class GherkinTableDelete(original: EditorActionHandler) extends EditorActionHandler {

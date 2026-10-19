@@ -114,7 +114,7 @@ rebuild or perform a semantic search. Changing the server or model requires a ne
 | **Enable failure explanations** | Off | Offers [Explain Cucumber Failure](running.md#explain-a-failure) and retains recent results even when gutter result display is off. No model request is automatic. |
 | **Ollama URL:** | `http://localhost:11434` | Local or remote Ollama-compatible chat server receiving the reviewed context. Independent of the semantic-search server. |
 | **Chat model:** | `llama3.2:3b` | Installed chat model used for explanations. Prepare it as described in [installation](installation.md#prepare-optional-chat-models). |
-| **Access token (optional):** | Blank | Bearer token for a protected server. Stored tokens are never displayed. |
+| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected server; stored tokens are never displayed. |
 | **Save token** / **Clear token** | — | Immediately saves or removes the token in IDE Password Safe for this project and the entered URL. |
 
 Token changes do not wait for **Apply**. They are independent of the other settings;
@@ -129,7 +129,7 @@ and opening a new request.
 | **Enable edge-case scenario drafts** | Off | Offers [Suggest edge cases](editing.md#suggest-edge-case-scenarios) in feature files. Requests require context review and explicit generation. |
 | **Ollama URL:** | `http://localhost:11434` | Ollama-compatible server receiving the reviewed specification. Independent of search and failure-explanation settings. |
 | **Chat model:** | `llama3.2:3b` | Installed chat model supporting JSON output. See [chat-model setup](installation.md#prepare-optional-chat-models). |
-| **Access token (optional):** | Blank | Bearer token for a protected draft-generation server. Stored tokens are never displayed. |
+| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected draft-generation server; stored tokens are never displayed. |
 | **Save token** / **Clear token** | — | Immediately saves or removes the draft token in IDE Password Safe for this project and the entered URL. |
 
 Draft tokens are separate from failure-explanation tokens and excluded from project

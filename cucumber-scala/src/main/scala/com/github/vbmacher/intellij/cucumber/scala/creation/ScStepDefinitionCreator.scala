@@ -56,9 +56,10 @@ class ScStepDefinitionCreator extends AbstractStepDefinitionCreator {
 
   override def getDefaultStepDefinitionFolderPath(step: GherkinStep): String = {
     val featureFile = step.getContainingFile
-    val module = FileIndexFacade.getInstance(featureFile.getProject).getModuleForFile(featureFile.getVirtualFile)
-    ModuleRootManager.getInstance(module).getSourceRoots(JavaSourceRootType.TEST_SOURCE).asScala.headOption
-      .map(featureFile.getManager.findDirectory(_).getVirtualFile.getPath)
+    Option(featureFile.getVirtualFile)
+      .flatMap(file => Option(FileIndexFacade.getInstance(featureFile.getProject).getModuleForFile(file)))
+      .flatMap(module => ModuleRootManager.getInstance(module).getSourceRoots(JavaSourceRootType.TEST_SOURCE).asScala.headOption)
+      .map(_.getPath)
       .orNull
   }
 

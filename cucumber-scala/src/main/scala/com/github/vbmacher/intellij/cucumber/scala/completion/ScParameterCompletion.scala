@@ -20,8 +20,16 @@ class ScParameterCompletion extends CompletionContributor {
       before = file.getText.substring(literal.getTextOffset, offset)
       start = before.lastIndexOf('{')
       if start >= 0 && before.lastIndexOf('}') < start
-      if before.take(start).reverse.takeWhile(_ == '\\').length % 2 == 0
+      if !escaped(literal, before.take(start))
     } yield literal.getTextOffset + start + 1
+  }
+
+  // Regular string literals need `\\` in source for each backslash in the expression; triple-quoted and raw ones do not.
+  private def escaped(literal: ScLiteral, before: String): Boolean = {
+    val sourceBackslashes = before.reverse.takeWhile(_ == '\\').length
+    val text = literal.getText
+    val verbatim = text.startsWith("raw\"") || text.dropWhile(_.isLetterOrDigit).startsWith("\"\"\"")
+    (if (verbatim) sourceBackslashes else sourceBackslashes / 2) % 2 == 1
   }
 
   override def beforeCompletion(context: CompletionInitializationContext): Unit =

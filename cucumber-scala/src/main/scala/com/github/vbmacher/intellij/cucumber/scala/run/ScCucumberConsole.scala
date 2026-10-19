@@ -31,8 +31,10 @@ object ScCucumberConsole {
       if (protocol != "scala-cucumber" || at < 0) util.Collections.emptyList()
       else {
         val url = path.substring(0, at)
-        val file = Option(VirtualFileManager.getInstance().findFileByUrl(url))
-          .orElse(Option(LocalFileSystem.getInstance().findFileByPath(url.stripPrefix("file:"))))
+        val file = Option.when(url.startsWith("file:"))(url)
+          .flatMap(value => scala.util.Try(java.nio.file.Path.of(java.net.URI.create(value))).toOption)
+          .flatMap(value => Option(LocalFileSystem.getInstance().findFileByNioFile(value)))
+          .orElse(Option(VirtualFileManager.getInstance().findFileByUrl(url)))
         (for {
           virtualFile <- file.toSeq
           psi <- Option(PsiManager.getInstance(project).findFile(virtualFile))

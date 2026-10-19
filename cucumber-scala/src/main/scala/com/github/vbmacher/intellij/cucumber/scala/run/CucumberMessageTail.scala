@@ -46,8 +46,8 @@ class CucumberMessageTail(path: Path, handler: ProcessHandler, messages: Cucumbe
     override def processTerminated(event: ProcessEvent): Unit = CucumberMessageTail.this.synchronized {
       scheduled.foreach(_.cancel(false))
       try {
-        drain()
-        messages.close(interrupted = !complete || pending.size() > 0)
+        val drained = Try(drain())
+        messages.close(interrupted = drained.isFailure || !complete || pending.size() > 0)
       } finally {
         closed = true
         input.close()

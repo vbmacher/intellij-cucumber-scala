@@ -132,26 +132,32 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
       result
     }
     override def execute(executor: Executor, runner: ProgramRunner[_]): ExecutionResult = {
-      val context = ScCucumber.inReadAction {
-        val module = getConfigurationModule.getModule
+      val module = getConfigurationModule.getModule
+      val stamp = com.intellij.psi.util.PsiModificationTracker.getInstance(project).getModificationCount
+      val started = System.currentTimeMillis()
+      // Scanning all features and hashing sources is slow; results recorded during the run wait for it in the background.
+      val context = com.intellij.openapi.application.ReadAction.nonBlocking[RunResults.Context](() => {
         val locations = ScenarioSelection.locations(project, module.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten
-        val identities = locations.map(location => RunResults.key(location.target.getContainingFile.getVirtualFile.getUrl, location.line) -> RunResults.identity(location)).toMap
+        val identities = locations.map(location => RunResults.key(RunResults.fileUri(location.target.getContainingFile.getVirtualFile.getUrl), location.line) -> RunResults.identity(location)).toMap
         val scalaSources = com.intellij.psi.search.FileTypeIndex.getFiles(org.jetbrains.plugins.scala.ScalaFileType.INSTANCE, ScCucumber.stepSearchScope(module)).asScala.toSeq
           .filter(file => !com.intellij.openapi.roots.ProjectFileIndex.getInstance(project).isInLibrarySource(file)).sortBy(_.getPath)
           .flatMap(file => Option(com.intellij.psi.PsiManager.getInstance(project).findFile(file)).map(psi => file.getUrl + "\n" + psi.getText))
         val environmentKey = module.getName + " · " + Option(ModuleRootManager.getInstance(module).getSdk).map(_.getVersionString).getOrElse("unknown JDK") +
           " · config " + RunResults.digest(Seq(glue, tags, vmOptions, programOptions, workingDirectory, ScCucumberRunConfiguration.this.environment.toSeq.sorted.mkString, RunResults.digest(scalaSources.mkString("\n"))).mkString("\n")).take(12)
-        RunResults.Context(com.intellij.psi.util.PsiModificationTracker.getInstance(project).getModificationCount, RunResults.revision(project), environmentKey, identities, System.currentTimeMillis())
-      }
+        RunResults.Context(stamp, RunResults.revision(project), environmentKey, identities, started)
+      }).inSmartMode(project).expireWith(project).submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService)
       val handler = try startProcess() catch {
-        case error: Throwable => java.nio.file.Files.deleteIfExists(messageFile); throw error
+        case error: Throwable => context.cancel(); java.nio.file.Files.deleteIfExists(messageFile); throw error
       }
       val properties = new ScCucumberConsoleProperties(ScCucumberRunConfiguration.this, executor)
-      var runtimeMetadata = "unknown runtime"
+      @volatile var runtimeMetadata = "unknown runtime"
+      def record(store: (RunResults, RunResults.Context) => Unit): Unit = Try(context.get()).foreach { value =>
+        store(RunResults.getInstance(project), value.copy(environment = value.environment + " · " + runtimeMetadata))
+      }
       val messages = new CucumberMessages(runId,
         text => handler.notifyTextAvailable(text, com.intellij.execution.process.ProcessOutputTypes.STDOUT),
-        result => RunResults.getInstance(project).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
-        result => RunResults.getInstance(project).record(result, context.copy(environment = context.environment + " · " + runtimeMetadata)),
+        result => record((results, context) => results.record(result, context)),
+        result => record((results, context) => results.record(result, context)),
         metadata => runtimeMetadata = metadata)
       // Drain final messages before the native console handles process termination and closes its test tree.
       new CucumberMessageTail(messageFile, handler, messages)

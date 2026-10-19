@@ -225,4 +225,17 @@ class SuitePanelSpec extends ScCucumberSpecBase {
     await(view, "step usages")
     findings(view).size shouldBe 0
   }
+
+  @Test
+  def testFilteringKeepsTheSelectedFinding(): Unit = {
+    fixtures()
+    val view = panel()
+    combo(view, "Scenarios").setSelectedItem("Step definitions")
+    select(view, findings(view).size - 1)
+    val target = tree(view).getLastSelectedPathComponent.asInstanceOf[DefaultMutableTreeNode].getUserObject.asInstanceOf[SuiteAnalysis.Finding].source.target
+    field(view, "Suite text filter").setText(".scala")
+    findings(view).size should be > 0
+    tree(view).getLastSelectedPathComponent.asInstanceOf[DefaultMutableTreeNode].getUserObject
+      .asInstanceOf[SuiteAnalysis.Finding].source.target shouldBe target
+  }
 }

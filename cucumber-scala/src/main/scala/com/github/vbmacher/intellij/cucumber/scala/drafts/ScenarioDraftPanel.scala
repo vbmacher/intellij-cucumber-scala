@@ -136,7 +136,7 @@ class ScenarioDraftPanel(project: Project, context: DraftContext.Snapshot, inser
         val id = generation.get()
         busy = true
         controls()
-        status.setText("Requesting drafts, then validating steps (waiting for indexing if needed)…")
+        status.setText("Generating drafts, then validating steps. Slow models can take several minutes; Cancel request stops waiting. Validation waits for indexing if needed.")
         new Task.Backgroundable(project, "Suggest Cucumber edge cases", true) {
           private var answers = Seq.empty[(ScenarioDraft, DraftContext.Validation)]
           override def run(indicator: ProgressIndicator): Unit = {

@@ -63,7 +63,7 @@ object FailureContext {
     else if (store.stale(result)) Left("Source changed after this run. Run the scenario again before explaining it.")
     else if (!failureStatuses(result.result.status)) Left("Select a failed Cucumber result to explain.")
     else {
-      if (!feature.isValid || RunResults.uri(feature.getVirtualFile.getUrl) != RunResults.uri(result.result.uri))
+      if (!feature.isValid || RunResults.fileUri(feature.getVirtualFile.getUrl) != RunResults.uri(result.result.uri))
         Left("The feature file for this result is unavailable. Open its project and run the scenario again.")
       else {
         val locations = ScenarioSelection.locations(project, GlobalSearchScope.fileScope(feature), "").toOption.toSeq.flatten

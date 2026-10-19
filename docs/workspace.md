@@ -57,8 +57,10 @@ duplicates for the selected entry. Select a related source and use **Open relate
 source**. Enter or a double-click opens a source entry in either the tree or the
 related-source list.
 
-Source edits refresh the view automatically. **Refresh** scans the project
-again; **Cancel** stops a pending scan and clears its results.
+Edits to feature and Scala files refresh the view automatically; the current results
+and selection stay visible until the update finishes. **Refresh** scans the project
+again. **Cancel** stops a pending scan; if it was an automatic update, the previous
+results stay but may be outdated.
 Findings describe the available project source. An unused library step may
 have consumers outside the project, and matching or duplicate wording does not establish
 execution coverage or business equivalence.

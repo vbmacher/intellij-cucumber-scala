@@ -26,8 +26,8 @@ import javax.swing._
 class ScenarioSearchPanel(project: Project,
                           providerFactory: (String, String) => ScenarioSearch.Embeddings = (url, model) => new OllamaEmbeddings(url, model))
   extends JPanel(new BorderLayout()) with Disposable {
-  private val modules = ModuleManager.getInstance(project).getModules.sortBy(_.getName)
-  private val scope = new JComboBox[String](Array("Project contents") ++ modules.map(_.getName))
+  private def scopeNames: Array[String] = Array("Project contents") ++ ModuleManager.getInstance(project).getModules.map(_.getName).sorted
+  private val scope = new JComboBox[String](scopeNames)
   private val mode = new JComboBox[String](Array("Exact text", "Semantic"))
   private val query = new JBTextField(24)
   private val search = new JButton("Search")
@@ -156,6 +156,17 @@ class ScenarioSearchPanel(project: Project,
     status.setText("Cancelled. Search or rebuild to try again.")
   })
   scope.addActionListener(_ => invalidate("Scope changed. The semantic index will rebuild on the next search."))
+  scope.addPopupMenuListener(new com.intellij.ui.PopupMenuListenerAdapter {
+    override def popupMenuWillBecomeVisible(event: javax.swing.event.PopupMenuEvent): Unit = reloadScopes()
+  })
+  private def reloadScopes(): Unit = {
+    val names = scopeNames
+    if (!(0 until scope.getItemCount).map(scope.getItemAt).sameElements(names)) {
+      val selected = String.valueOf(scope.getSelectedItem)
+      scope.setModel(new DefaultComboBoxModel[String](names))
+      scope.setSelectedItem(if (names.contains(selected)) selected else names.head)
+    }
+  }
   mode.addActionListener(_ => {
     stop()
     clearResults()
@@ -273,6 +284,15 @@ class ScenarioSearchPanel(project: Project,
   }
 
   private def start(build: Boolean): Unit = {
+    val resolvedScope = if (scope.getSelectedIndex == 0) Some(GlobalSearchScope.projectScope(project))
+      else Option(ModuleManager.getInstance(project).findModuleByName(String.valueOf(scope.getSelectedItem))).filterNot(_.isDisposed).map(_.getModuleContentScope)
+    if (resolvedScope.isEmpty) {
+      val removed = scope.getSelectedItem
+      reloadScopes()
+      status.setText(s"Module $removed no longer exists. Choose another scope.")
+      return
+    }
+    val selectedScope = resolvedScope.get
     PsiDocumentManager.getInstance(project).commitAllDocuments()
     stop()
     clearResults()
@@ -280,8 +300,6 @@ class ScenarioSearchPanel(project: Project,
     val id = generation.get()
     val semantic = mode.getSelectedIndex == 1
     val text = query.getText
-    val selectedScope = if (scope.getSelectedIndex == 0) GlobalSearchScope.projectScope(project)
-      else modules(scope.getSelectedIndex - 1).getModuleContentScope
     val embedding = provider
     val previousIndex = index
     if (build) index = None

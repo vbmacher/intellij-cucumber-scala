@@ -26,7 +26,7 @@ object ScFuzzySteps {
       val registry = ScParameterTypes.registry(Some(module), snippetsOnly = true)
       val generated = new CucumberExpressionGenerator(registry).generateExpressions(step.getName).asScala.toSeq
       val factory = new ExpressionFactory(registry)
-      new ScCucumberExtension().loadStepsFor(module).asScala.toSeq.sortBy(d => (d.getExpression, d.getElement.getTextOffset)).take(1000).flatMap { definition =>
+      new ScCucumberExtension().loadStepsFor(module).asScala.toSeq.filter(_.getElement != null).sortBy(d => (d.getExpression, d.getElement.getTextOffset)).take(1000).flatMap { definition =>
         ProgressManager.checkCanceled()
         val expression = definition.getExpression
         generated.flatMap { from =>

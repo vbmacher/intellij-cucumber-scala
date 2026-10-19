@@ -40,6 +40,8 @@ enabled state remain independent of feature breakpoints.
 
 With [result display enabled](configuration.md#run-results-and-history), feature
 steps and Examples data rows show their latest recorded result in the gutter.
+A step that ran several times in the latest run, such as an outline step or a
+Background step, shows its worst outcome from that run.
 Hover for the status, duration, run, selected location and error; click for
 **Cucumber Result Details**. Quick Documentation can also show these results.
 

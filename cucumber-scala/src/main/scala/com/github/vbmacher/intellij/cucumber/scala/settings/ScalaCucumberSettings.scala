@@ -170,7 +170,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
       .addLabeledComponent("Chat model:", draftModel)
       .addComponent(hint("Use a chat model already installed on that server with JSON output support, such as llama3.2:3b. The plugin does not download models."))
       .addLabeledComponent("Access token (optional):", draftToken)
-      .addComponent(hint("Only needed if the server requires a bearer token. Saved in IDE Password Safe separately from failure-explanation tokens; stored tokens stay hidden."))
+      .addComponent(hint("Local Ollama needs no token: leave this blank. Only protected remote servers need a bearer token; draft tokens stay hidden and separate from failure-explanation tokens."))
       .addComponent(row(saveDraftToken, clearDraftToken))
       .addComponent(draftTokenStatus)
       .getPanel
@@ -194,7 +194,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     scroll.setBorder(JBUI.Borders.empty())
     scroll
   }
-  override def isModified: Boolean = drafts.isSelected != settings.scenarioDrafts || draftUrl.getText != settings.draftUrl || draftModel.getText != settings.draftModel || explanations.isModified || ollamaUrl.getText != settings.ollamaUrl || embeddingModel.getText != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
+  override def isModified: Boolean = drafts.isSelected != settings.scenarioDrafts || draftUrl.getText.trim != settings.draftUrl || draftModel.getText.trim != settings.draftModel || explanations.isModified || ollamaUrl.getText.trim != settings.ollamaUrl || embeddingModel.getText.trim != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
   override def apply(): Unit = {
     if (drafts.isSelected) {
       try OllamaHttp.endpoint(draftUrl.getText.trim, "")
@@ -216,7 +216,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     settings.featureWording = wording.isSelected
     settings.ollamaUrl = ollamaUrl.getText.trim
     settings.embeddingModel = embeddingModel.getText.trim
-    RunResults.getInstance(project).refreshHistory()
+    RunResults.getInstance(project).retentionChanged()
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)

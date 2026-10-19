@@ -159,4 +159,69 @@ class RunResultsSpec extends ScCucumberSpecBase {
     scenarios.foreach(_.status shouldBe "FAILED")
   }
 
+  @Test
+  def testReducingRetentionTrimsHistoryImmediately(): Unit = {
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    val service = RunResults.getInstance(getProject)
+    val retention = settings.historyRetention
+    settings.runHistory = true
+    settings.historyRetention = 3
+    try {
+      val context = RunResults.Context(0L, "revision", "environment", Map.empty, 0L)
+      (1 to 3).foreach(i => service.record(CucumberMessages.ScenarioResult(i.toString, "uri", 2, "Result", 0, "PASSED", false), context))
+      service.history.size shouldBe 3
+      settings.historyRetention = 1
+      service.retentionChanged()
+      service.history.map(_.run) shouldBe Seq("3")
+    } finally {
+      settings.runHistory = false
+      settings.historyRetention = retention
+      service.clearHistory()
+    }
+  }
+
+  @Test
+  def testVfsUrlsWithSpecialCharactersMatchCucumberUris(): Unit = {
+    RunResults.fileUri("file:///home/u/my proj/a#1.feature") shouldBe RunResults.uri("file:///home/u/my%20proj/a%231.feature")
+    RunResults.fileUri("file:///home/u/my proj/a.feature") shouldBe RunResults.uri("file:/home/u/my%20proj/a.feature")
+    RunResults.key(RunResults.fileUri("file:///home/u/my proj/a.feature"), 3) shouldBe RunResults.key("file:/home/u/my%20proj/a.feature", 3)
+    RunResults.uri("file:///home/u/not encoded.feature") shouldBe "file:///home/u/not encoded.feature"
+    com.github.vbmacher.intellij.cucumber.scala.debug.FeatureBreakpoints.matches(
+      "file:///home/u/my proj/a.feature", 4, None, "file:/home/u/my%20proj/a.feature", 4, 9) shouldBe true
+  }
+
+  @Test
+  def testOutlineStepGutterShowsWorstOutcomeOfLatestRun(): Unit = {
+    val file = myFixture.configureByText("outline.feature",
+      "Feature: Outline\n  Scenario Outline: Rows\n    Given value <n>\n    Examples:\n      | n |\n      | 1 |\n      | 2 |\n")
+    val url = file.getVirtualFile.getUrl
+    val service = RunResults.getInstance(getProject)
+    val stamp = com.intellij.psi.util.PsiModificationTracker.getInstance(getProject).getModificationCount
+    val step = myFixture.findElementByText("Given value <n>", classOf[org.jetbrains.plugins.cucumber.psi.GherkinStep])
+    def icon = new FeatureResultLineMarker().getLineMarkerInfo(step.getFirstChild).getIcon
+    try {
+      val first = RunResults.Context(stamp, "revision", "environment", Map.empty, 1L)
+      service.record(CucumberMessages.StepResult("first", url, 3, url + ":6", "FAILED", 1L, "assertion"), first)
+      service.record(CucumberMessages.StepResult("first", url, 3, url + ":7", "PASSED", 1L, ""), first)
+      icon shouldBe com.intellij.icons.AllIcons.RunConfigurations.TestFailed
+      val second = RunResults.Context(stamp, "revision", "environment", Map.empty, 2L)
+      service.record(CucumberMessages.StepResult("second", url, 3, url + ":6", "PASSED", 1L, ""), second)
+      service.record(CucumberMessages.StepResult("second", url, 3, url + ":7", "PASSED", 1L, ""), second)
+      icon shouldBe com.intellij.icons.AllIcons.RunConfigurations.TestPassed
+    } finally service.clearDecorations()
+  }
+
+  @Test
+  def testConsoleLocatorDecodesCucumberUris(): Unit = {
+    val directory = java.nio.file.Files.createTempDirectory("scala cucumber ")
+    com.intellij.openapi.vfs.newvfs.impl.VfsRootAccess.allowRootAccess(getTestRootDisposable, directory.toString)
+    try {
+      val feature = java.nio.file.Files.writeString(directory.resolve("my feature.feature"), "Feature: Located\n  Scenario: Here\n    Given step\n")
+      com.intellij.openapi.vfs.LocalFileSystem.getInstance().refreshAndFindFileByNioFile(feature) should not be null
+      val locations = ScCucumberConsole.Locator.getLocation("scala-cucumber", feature.toUri.toString + ":2", getProject,
+        com.intellij.psi.search.GlobalSearchScope.allScope(getProject))
+      locations.size() shouldBe 1
+      locations.get(0).getVirtualFile.getName shouldBe "my feature.feature"
+    } finally com.intellij.openapi.util.io.FileUtil.delete(directory)
+  }
 }

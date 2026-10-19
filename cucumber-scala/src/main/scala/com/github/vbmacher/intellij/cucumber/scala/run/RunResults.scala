@@ -71,7 +71,14 @@ object RunResults {
     digest(file.getVirtualFile.getUrl + "\n" + signature(scenario) + "\n" + sameScenarios.indexOf(scenario) + "\n" +
       rowSignature + "\n" + rowOccurrence + "\n" + location.tags.sorted.mkString(" "))
   }
-  def uri(value: String): String = if (value.startsWith("file:")) java.nio.file.Path.of(java.net.URI.create(value)).toUri.toString else value
+  /** Normalizes a percent-encoded Cucumber URI. */
+  def uri(value: String): String =
+    if (value.startsWith("file:")) scala.util.Try(java.nio.file.Path.of(java.net.URI.create(value)).toUri.toString).getOrElse(value) else value
+  /** Normalizes an IntelliJ VFS URL, which is not percent-encoded, to the form produced by [[uri]]. */
+  def fileUri(url: String): String =
+    if (url.startsWith(com.intellij.openapi.vfs.StandardFileSystems.FILE_PROTOCOL_PREFIX))
+      scala.util.Try(java.nio.file.Path.of(com.intellij.openapi.vfs.VfsUtilCore.urlToPath(url)).toUri.toString).getOrElse(url)
+    else url
   def key(uri: String, line: Int): String = RunResults.uri(uri) + ":" + line
   def revision(project: Project): String = {
     // Read only the repository metadata; no external command or credentials enter history.
@@ -151,11 +158,13 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
     if (!settings.resultDecorations) return Seq.empty
     val file = element.getContainingFile
     val line = file.getText.take(element.getTextOffset).count(_ == '\n') + 1
-    synchronized { decorations.values.filter(d => key(d.result.uri, d.result.line) == key(file.getVirtualFile.getUrl, line)).toVector.sortBy(d => (d.timestamp, d.result.run)) }
+    val expected = key(fileUri(file.getVirtualFile.getUrl), line)
+    synchronized { decorations.values.filter(d => key(d.result.uri, d.result.line) == expected).toVector.sortBy(d => (d.timestamp, d.result.run)) }
   }
   def stale(decoration: Decoration): Boolean = decoration.stamp != PsiModificationTracker.getInstance(project).getModificationCount
-  def failures(featureUrl: String): Seq[Decoration] = synchronized {
-    decorations.values.filter(d => uri(d.result.uri) == uri(featureUrl) && Set("FAILED", "AMBIGUOUS", "UNDEFINED")(d.result.status)).toVector
+  def failures(featureUrl: String): Seq[Decoration] = {
+    val expected = fileUri(featureUrl)
+    synchronized { decorations.values.filter(d => uri(d.result.uri) == expected && Set("FAILED", "AMBIGUOUS", "UNDEFINED")(d.result.status)).toVector }
   }
   def contains(decoration: Decoration): Boolean = synchronized {
     val r = decoration.result
@@ -169,6 +178,10 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
   def clearDecorations(): Unit = { synchronized { decorations.clear() }; refresh() }
   def clearHistory(): Unit = {
     synchronized { state.entries.clear(); pendingErrors.clear() }
+    refreshHistory()
+  }
+  def retentionChanged(): Unit = {
+    synchronized { trim() }
     refreshHistory()
   }
   def refreshHistory(): Unit = ApplicationManager.getApplication.invokeLater(() => {
@@ -187,7 +200,13 @@ class FeatureResultLineMarker extends LineMarkerProvider {
     target.flatMap { source =>
       val results = RunResults.getInstance(source.getProject)
       val values = results.at(source)
-      values.lastOption.map { last =>
+      // Outline and Background steps run once per row or scenario; show the worst outcome of the latest run.
+      val latest = values.lastOption.toSeq.flatMap(last => values.filter(_.result.run == last.result.run))
+      latest.minByOption(d => d.result.status match {
+        case "FAILED" | "AMBIGUOUS" | "UNDEFINED" => 0
+        case "PASSED" => 2
+        case _ => 1
+      }).map { last =>
         val icon = if (results.stale(last)) AllIcons.General.Warning else last.result.status match {
           case "PASSED" => AllIcons.RunConfigurations.TestPassed
           case "FAILED" | "AMBIGUOUS" | "UNDEFINED" => AllIcons.RunConfigurations.TestFailed

@@ -17,7 +17,7 @@ final class OllamaEmbeddings(url: String, model: String) extends ScenarioSearch.
     body.addProperty("model", model)
     body.addProperty("input", text)
     body.addProperty("truncate", false)
-    val result = OllamaHttp.post(url, "/api/embed", body, Duration.ofSeconds(30), checkCanceled)
+    val result = OllamaHttp.post(url, "/api/embed", body, Duration.ofMinutes(2), checkCanceled)
     Try {
       val embeddings = result.getAsJsonArray("embeddings")
       require(embeddings.size() == 1)

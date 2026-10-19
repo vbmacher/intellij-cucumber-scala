@@ -44,7 +44,7 @@ class FailureExplanationSettings(project: Project) extends JPanel(new BorderLayo
     .addLabeledComponent("Chat model:", model)
     .addComponent(hint("Use a chat model already installed on that server, such as llama3.2:3b. The plugin does not download models."))
     .addLabeledComponent("Access token (optional):", token)
-    .addComponent(hint("Only needed if the server requires a bearer token. Saved in IDE Password Safe for this project and URL; stored tokens stay hidden."))
+    .addComponent(hint("Local Ollama needs no token: leave this blank. Only protected remote servers need a bearer token; saved tokens stay hidden in IDE Password Safe."))
     .addComponent(buttons)
     .addComponent(status)
     .getPanel, BorderLayout.CENTER)
@@ -79,11 +79,13 @@ class FailureExplanationSettings(project: Project) extends JPanel(new BorderLayo
     }.queue()
   }
 
-  def isModified: Boolean = enabledOption.isSelected != settings.failureExplanations || url.getText != settings.explanationUrl || model.getText != settings.explanationModel
+  def isModified: Boolean = enabledOption.isSelected != settings.failureExplanations || url.getText.trim != settings.explanationUrl || model.getText.trim != settings.explanationModel
   def apply(): Unit = {
-    try OllamaHttp.endpoint(url.getText.trim, "")
-    catch { case error: java.io.IOException => throw new ConfigurationException(error.getMessage) }
-    if (enabledOption.isSelected && model.getText.trim.isEmpty) throw new ConfigurationException("Enter an installed chat model for failure explanations.")
+    if (enabledOption.isSelected) {
+      try OllamaHttp.endpoint(url.getText.trim, "")
+      catch { case error: java.io.IOException => throw new ConfigurationException(error.getMessage) }
+      if (model.getText.trim.isEmpty) throw new ConfigurationException("Enter an installed chat model for failure explanations.")
+    }
     settings.failureExplanations = enabledOption.isSelected
     settings.explanationUrl = url.getText.trim
     settings.explanationModel = model.getText.trim

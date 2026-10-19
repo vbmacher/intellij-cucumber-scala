@@ -1,6 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
 import com.google.gson.JsonParser
+import com.google.gson.JsonObject
+import com.github.vbmacher.intellij.cucumber.scala.util.OllamaHttp
 import com.intellij.openapi.progress.ProcessCanceledException
 import com.sun.net.httpserver.{HttpExchange, HttpServer}
 import org.junit.Test
@@ -9,8 +11,9 @@ import org.junit.runners.JUnit4
 import org.scalatest.matchers.should.Matchers
 import org.scalatestplus.junit.JUnitSuiteLike
 
-import java.net.InetSocketAddress
+import java.net.{InetSocketAddress, ServerSocket}
 import java.nio.charset.StandardCharsets.UTF_8
+import java.time.Duration
 import java.util.concurrent.{CompletableFuture, CountDownLatch, TimeUnit}
 
 @RunWith(classOf[JUnit4])
@@ -53,6 +56,41 @@ class OllamaEmbeddingsSpec extends Matchers with JUnitSuiteLike {
     }
     server(exchange => respond(exchange, 200, "{\"embeddings\":[]}")) { url =>
       intercept[java.io.IOException](new OllamaEmbeddings(url, "model").embed("text", () => ()))
+    }
+  }
+
+  @Test
+  def testUnsupportedEmbeddingModelExplainsCompatibilityWithoutRequestingToken(): Unit = {
+    server(exchange => respond(exchange, 500, """{"error":"this model does not support embeddings","private":"provider-secret"}""")) { url =>
+      val error = intercept[java.io.IOException](new OllamaEmbeddings(url, "embeddinggemma").embed("text", () => ()))
+      error.getMessage should include("HTTP 500")
+      error.getMessage should include("minimum Ollama version")
+      error.getMessage should not include "token"
+      error.getMessage should not include "provider-secret"
+    }
+  }
+
+  @Test
+  def testWrongPortReportsTheConfiguredAddress(): Unit = {
+    val socket = new ServerSocket(0, 0, java.net.InetAddress.getByName("127.0.0.1"))
+    val url = s"http://127.0.0.1:${socket.getLocalPort}"
+    socket.close()
+    val error = intercept[java.io.IOException](new OllamaEmbeddings(url, "model").embed("text", () => ()))
+    error.getMessage should include(url)
+    error.getMessage should include("URL and port")
+    error.getMessage should not include "token"
+  }
+
+  @Test
+  def testSlowResponseExplainsTimeoutWithoutRequestingToken(): Unit = {
+    val release = new CountDownLatch(1)
+    server(_ => release.await(5, TimeUnit.SECONDS)) { url =>
+      try {
+        val error = intercept[java.io.IOException](OllamaHttp.post(url, "/api/embed", new JsonObject(), Duration.ofMillis(200), () => ()))
+        error.getMessage should include("did not respond")
+        error.getMessage should include("model may still be loading")
+        error.getMessage should not include "token"
+      } finally release.countDown()
     }
   }
 

@@ -40,6 +40,14 @@ class StepCompletionSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testEscapedBraceInRegularStringIsNotAParameter(): Unit = {
+    myFixture.addFileToProject("Types.scala", "class Types { ParameterType(\"account\", \"ACC-[0-9]+\") { (id: String) => id } }")
+    myFixture.configureByText("Steps.scala", "class Steps { When(\"I pay \\\\{acc<caret>\") { () => () } }")
+    Option(myFixture.completeBasic()).toSeq.flatten.exists(_.getLookupString == "account") shouldBe false
+    myFixture.getFile.getText should not include "{account}"
+  }
+
+  @Test
   def testFeatureWordingCanBeDisabled(): Unit = {
     val settings = ScalaCucumberSettings.getInstance(getProject)
     settings.featureWording = false

@@ -21,7 +21,6 @@ import org.jetbrains.plugins.cucumber.psi._
 import org.jetbrains.plugins.scala.lang.psi.api.expr.ScFunctionExpr
 
 import scala.jdk.CollectionConverters._
-import scala.util.Try
 
 object FeatureBreakpoints {
   val Category: Key[FeatureJavaBreakpoint] = Key.create("ScalaCucumberFeatureBreakpoint")
@@ -48,7 +47,7 @@ object FeatureBreakpoints {
     else Right(mappings.flatten)
   }
   def matches(expectedUri: String, stepLine: Int, exampleLine: Option[Int], runtimeUri: String, runtimeStep: Int, runtimeExample: Int): Boolean =
-    Try(RunResults.uri(expectedUri) == RunResults.uri(runtimeUri)).getOrElse(false) && stepLine == runtimeStep && exampleLine.forall(_ == runtimeExample)
+    RunResults.fileUri(expectedUri) == RunResults.uri(runtimeUri) && stepLine == runtimeStep && exampleLine.forall(_ == runtimeExample)
 }
 
 class FeatureBreakpointType extends XLineBreakpointType[JavaLineBreakpointProperties]("scala-cucumber-step", "Scala Cucumber Step / Example") {

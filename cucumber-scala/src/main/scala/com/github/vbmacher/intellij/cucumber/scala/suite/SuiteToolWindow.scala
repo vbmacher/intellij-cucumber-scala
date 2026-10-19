@@ -170,8 +170,8 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
     override def changedUpdate(event: DocumentEvent): Unit = display()
   })
   cancel.addActionListener(_ => {
-    pending.foreach(_.cancel()); pending = None; report = None
-    scanState = "Cancelled. Refresh to scan the project."
+    pending.foreach(_.cancel()); pending = None
+    scanState = if (report.isEmpty) "Cancelled. Refresh to scan the project." else "Update cancelled; results may be outdated. Refresh to scan again."
     cancel.setVisible(false)
     display()
   })
@@ -261,11 +261,17 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
     }
   })
   PsiManager.getInstance(project).addPsiTreeChangeListener(new PsiTreeChangeAdapter {
-    override def childrenChanged(event: PsiTreeChangeEvent): Unit = schedule()
-    override def childAdded(event: PsiTreeChangeEvent): Unit = schedule()
-    override def childRemoved(event: PsiTreeChangeEvent): Unit = schedule()
-    override def childReplaced(event: PsiTreeChangeEvent): Unit = schedule()
-    override def propertyChanged(event: PsiTreeChangeEvent): Unit = schedule()
+    // File-level events (create, delete, move) have no file; edits elsewhere cannot change the suite.
+    private def changed(event: PsiTreeChangeEvent): Unit = Option(event.getFile) match {
+      case Some(_: org.jetbrains.plugins.cucumber.psi.GherkinFile | _: org.jetbrains.plugins.scala.lang.psi.api.ScalaFile) | None => schedule()
+      case _ =>
+    }
+    override def childrenChanged(event: PsiTreeChangeEvent): Unit = changed(event)
+    override def childAdded(event: PsiTreeChangeEvent): Unit = changed(event)
+    override def childRemoved(event: PsiTreeChangeEvent): Unit = changed(event)
+    override def childReplaced(event: PsiTreeChangeEvent): Unit = changed(event)
+    override def childMoved(event: PsiTreeChangeEvent): Unit = changed(event)
+    override def propertyChanged(event: PsiTreeChangeEvent): Unit = changed(event)
   }, this)
   display()
   scan()
@@ -352,14 +358,20 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
         .collect { case node: DefaultMutableTreeNode => node.getUserObject }
         .collect { case finding: SuiteAnalysis.Finding => finding }
     }.distinctBy(_.source.target)
-  private def schedule(): Unit = queue.queue(new Update("scan") { override def run(): Unit = scan() })
-  private def scan(): Unit = {
+  private def schedule(): Unit = queue.queue(new Update("scan") { override def run(): Unit = scan(keepResults = true) })
+  // Automatic rescans keep the current results and selection visible until the new report arrives.
+  private def scan(keepResults: Boolean = false): Unit = {
     pending.foreach(_.cancel())
     pending = None
-    report = None
-    scanState = "Scanning project…"
     cancel.setVisible(true)
-    display()
+    if (keepResults && report.nonEmpty) {
+      scanState = "Updating…"
+      summary.setText(scanState)
+    } else {
+      report = None
+      scanState = "Scanning project…"
+      display()
+    }
     val selectedModules = inReadAction(ModuleManager.getInstance(project).getModules.toSeq)
     val searchScope = GlobalSearchScope.projectScope(project)
     pending = Some(ReadAction.nonBlocking[SuiteAnalysis.Report](() => SuiteAnalysis.scan(project, selectedModules, searchScope))
@@ -412,11 +424,18 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
         case None => findings.sortBy(f => (f.source.label, f.source.location)).foreach(f => parent.add(new DefaultMutableTreeNode(f, false)))
       }
     }
+    val previousSelection = Option(resultsTree.getSelectionPaths).toSeq.flatten.map(_.getLastPathComponent)
+      .collect { case node: DefaultMutableTreeNode => node.getUserObject }
+      .collect { case finding: SuiteAnalysis.Finding => finding.source.target }.toSet
     root.removeAllChildren()
     populate(root, baseRows, levels)
     treeModel.reload()
     var row = 0
     while (row < resultsTree.getRowCount) { resultsTree.expandRow(row); row += 1 }
+    val restored = root.depthFirstEnumeration().asScala.collect { case node: DefaultMutableTreeNode => node }
+      .filter(_.getUserObject match { case finding: SuiteAnalysis.Finding => previousSelection(finding.source.target); case _ => false })
+      .map(node => new javax.swing.tree.TreePath(node.getPath.map(_.asInstanceOf[AnyRef]))).toArray
+    if (restored.nonEmpty) resultsTree.setSelectionPaths(restored)
     summary.setText(if (view == "Scenarios" && parsedTags.isEmpty) "Invalid tag expression. Correct the Tags field to show scenarios." else scanState)
     resultsTitle.setText(s"$view · ${baseRows.size}")
     resultsTree.getEmptyText.setText(if (report.isEmpty) scanState else if (view == "Scenarios" && parsedTags.isEmpty) "Invalid tag expression"

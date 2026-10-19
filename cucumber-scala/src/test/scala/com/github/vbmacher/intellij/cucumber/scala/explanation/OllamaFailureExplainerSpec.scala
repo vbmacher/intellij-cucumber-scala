@@ -54,6 +54,18 @@ class OllamaFailureExplainerSpec extends Matchers with JUnitSuiteLike {
   }
 
   @Test
+  def testLocalServerWorksWithoutAToken(): Unit = {
+    val authorization = new CompletableFuture[String]()
+    server { exchange =>
+      authorization.complete(exchange.getRequestHeaders.getFirst("Authorization"))
+      respond(exchange, 200, """{"done":true,"message":{"content":"Check the assertion."}}""")
+    } { url =>
+      new OllamaFailureExplainer(url, "chat", () => None).explain("context", () => ()) shouldBe "Check the assertion."
+      authorization.get(5, TimeUnit.SECONDS) shouldBe null
+    }
+  }
+
+  @Test
   def testFailuresAreActionableWithoutEchoingProviderDataOrCredentials(): Unit = {
     server(exchange => respond(exchange, 401, "private-provider-data")) { url =>
       val error = intercept[IOException](new OllamaFailureExplainer(url, "model", () => Some("secret" )).explain("context", () => ()))

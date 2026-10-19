@@ -53,8 +53,26 @@ class OllamaScenarioDraftProviderSpec extends Matchers with JUnitSuiteLike {
       body.toString should not include "fixture-secret"
       body.get("model").getAsString shouldBe "installed-chat"
       body.get("stream").getAsBoolean shouldBe false
-      body.get("format").getAsString shouldBe "json"
+      val format = body.getAsJsonObject("format")
+      format.get("type").getAsString shouldBe "object"
+      format.get("additionalProperties").getAsBoolean shouldBe false
+      val drafts = format.getAsJsonObject("properties").getAsJsonObject("drafts")
+      drafts.get("maxItems").getAsInt shouldBe OllamaScenarioDraftProvider.maxDrafts
+      drafts.getAsJsonObject("items").getAsJsonArray("required").toString shouldBe "[\"title\",\"reason\",\"gherkin\"]"
+      body.getAsJsonObject("options").get("temperature").getAsInt shouldBe 0
       body.getAsJsonArray("messages").get(1).getAsJsonObject.get("content").getAsString shouldBe "reviewed context only"
+    }
+  }
+
+  @Test
+  def testLocalServerWorksWithoutAToken(): Unit = {
+    val authorization = new CompletableFuture[String]()
+    server { exchange =>
+      authorization.complete(exchange.getRequestHeaders.getFirst("Authorization"))
+      respond(exchange, 200, envelope(content))
+    } { url =>
+      new OllamaScenarioDraftProvider(url, "chat").suggest("context", () => ()).map(_.title) shouldBe Seq("Zero")
+      authorization.get(5, TimeUnit.SECONDS) shouldBe null
     }
   }
 

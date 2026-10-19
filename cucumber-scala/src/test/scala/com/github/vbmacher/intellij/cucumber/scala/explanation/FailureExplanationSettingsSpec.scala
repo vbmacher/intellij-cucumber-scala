@@ -57,6 +57,24 @@ class FailureExplanationSettingsSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testDisabledExplanationsDoNotBlockApplyAndTrimmedValuesAreUnchanged(): Unit = {
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    val previous = settings.explanationUrl
+    settings.failureExplanations = false
+    try {
+      val view = new FailureExplanationSettings(getProject)
+      view.reset()
+      val url = children(view).collectFirst { case f: JTextField if f.getAccessibleContext.getAccessibleName == "Failure explanation Ollama URL" => f }.get
+      url.setText("******localhost")
+      view.apply()
+      url.setText(" http://localhost:11434 ")
+      view.apply()
+      settings.explanationUrl shouldBe "http://localhost:11434"
+      view.isModified shouldBe false
+    } finally settings.explanationUrl = previous
+  }
+
+  @Test
   def testPasswordSafeIsEndpointScopedAndExcludedFromProjectSettings(): Unit = {
     val url = "https://example.test/ollama"
     val credentials = new OllamaCredentials(getProject, "failure explanation")
