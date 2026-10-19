@@ -112,11 +112,11 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
   private def trim(): Unit = while (state.entries.size() > math.max(0, settings.historyRetention)) state.entries.remove(0)
   def record(result: CucumberMessages.StepResult, context: Context): Unit = {
     synchronized {
-      if (settings.runHistory && result.error.nonEmpty) {
+      if ((settings.runHistory || settings.failureExplanations) && result.error.nonEmpty) {
         val key = result.run -> result.selector
         pendingErrors(key) = (pendingErrors.getOrElse(key, Vector.empty) :+ result.error).distinct
       }
-      if (settings.resultDecorations) {
+      if (settings.resultDecorations || settings.failureExplanations) {
         decorations((result.run, uri(result.uri), result.line, result.selector)) = Decoration(result, context.stamp, context.started)
         while (decorations.size > 5000) decorations.remove(decorations.head._1)
       }
@@ -147,6 +147,13 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
     synchronized { decorations.values.filter(d => key(d.result.uri, d.result.line) == key(file.getVirtualFile.getUrl, line)).toVector.sortBy(d => (d.timestamp, d.result.run)) }
   }
   def stale(decoration: Decoration): Boolean = decoration.stamp != PsiModificationTracker.getInstance(project).getModificationCount
+  def failures(featureUrl: String): Seq[Decoration] = synchronized {
+    decorations.values.filter(d => uri(d.result.uri) == uri(featureUrl) && Set("FAILED", "AMBIGUOUS", "UNDEFINED")(d.result.status)).toVector
+  }
+  def contains(decoration: Decoration): Boolean = synchronized {
+    val r = decoration.result
+    decorations.get((r.run, uri(r.uri), r.line, r.selector)).contains(decoration)
+  }
   def describe(element: PsiElement): String = at(element).map { decoration =>
     val r = decoration.result
     s"${r.status} · ${r.durationMillis} ms · run ${r.run} · ${r.selector}" + (if (stale(decoration)) " · STALE (source changed)" else "") +

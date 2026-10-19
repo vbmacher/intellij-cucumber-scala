@@ -49,3 +49,28 @@ describe observed executions, not coverage. See the [icon reference](icons.md).
 
 For comparisons across retained attempts, use [Run History](workspace.md#run-history).
 
+## Explain a failure
+
+After [enabling failure explanations](configuration.md#failure-explanations), run the
+scenario or Examples row with **Scala Cucumber**. Place the caret on its failed step,
+scenario or Examples row, then choose **Explain Cucumber Failure…** from the editor's
+context menu. If several recorded runs match, choose the run and row to explain.
+
+The review window shows the recorded status and error separately from the generated
+explanation. Review or redact **Context to send**, check the displayed server and model,
+then click **Explain**. Opening the window sends nothing. The context includes the
+selected Gherkin, its background, static Scala matches and locally resolved error
+locations. Multiple Scala matches are shown as ambiguous; source resolution does not
+prove which binding executed.
+
+Use the source selector and **Open source** to navigate to a concrete feature, Scala
+match or local stack-trace candidate. **Cancel request** stops waiting for the model;
+closing the window also discards its pending answer. Generated text is a suggestion
+to verify against the recorded facts. The action does not change source files.
+
+Run again after a project source change, after clearing editor results, or when the
+recorded result is unavailable. Recent explanation context is kept for the IDE session;
+saved run history does not restore it. Provider failures leave **Explain** available
+for retry. Long context is visibly shortened before review; edited submissions are
+limited to 32,000 characters. A slow model can take several minutes; shorten the
+reviewed context or choose a smaller chat model if a request times out.

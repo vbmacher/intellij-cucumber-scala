@@ -133,8 +133,9 @@ class CucumberMessages(runId: String, emit: String => Unit, stepResult: Cucumber
         execution.statuses += status
         val pickleStep = objects(execution.testCase, "testSteps").find(s => text(s, "id") == stepId)
           .flatMap(s => objects(execution.pickle, "steps").find(p => text(p, "id") == text(s, "pickleStepId")))
-        pickleStep.foreach { step =>
-          val line = ids(step, "astNodeIds").flatMap(ast.get).find(_.kind == "step").map(_.line).getOrElse(execution.line)
+        // Hook failures belong to the selected scenario/example even without a Gherkin step.
+        if (pickleStep.nonEmpty || error.nonEmpty) {
+          val line = pickleStep.toSeq.flatMap(ids(_, "astNodeIds")).flatMap(ast.get).find(_.kind == "step").map(_.line).getOrElse(execution.line)
           val uri = text(execution.pickle, "uri")
           stepResult(StepResult(runId, uri, line, uri + ":" + execution.line, status, millis, error))
         }

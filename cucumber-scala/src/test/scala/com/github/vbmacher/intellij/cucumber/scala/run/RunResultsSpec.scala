@@ -131,4 +131,32 @@ class RunResultsSpec extends ScCucumberSpecBase {
     }
   }
 
+  @Test
+  def testHookFailuresRetainErrorOnTheSelectedExampleWithoutAStepBinding(): Unit = {
+    import scala.jdk.CollectionConverters._
+    val steps = ArrayBuffer.empty[CucumberMessages.StepResult]
+    val scenarios = ArrayBuffer.empty[CucumberMessages.ScenarioResult]
+    val bridge = new CucumberMessages("hooks", _ => (), steps += _, scenarios += _)
+    val messages = envelopes.asScala.map(s => JsonParser.parseString(s).getAsJsonObject)
+    val hookIds = messages.filter(_.has("testCase")).flatMap(_.getAsJsonObject("testCase")
+      .getAsJsonArray("testSteps").asScala.map(_.getAsJsonObject).filter(_.has("hookId")).map(_.get("id").getAsString)).toSet
+    messages.foreach { envelope =>
+      if (envelope.has("testStepFinished")) {
+        val finished = envelope.getAsJsonObject("testStepFinished")
+        if (hookIds(finished.get("testStepId").getAsString)) {
+          finished.getAsJsonObject("testStepResult").addProperty("status", "FAILED")
+          finished.getAsJsonObject("testStepResult").addProperty("message", "Hook setup failed")
+        }
+      }
+      bridge.consume(envelope.toString)
+    }
+    val failed = steps.filter(_.status == "FAILED")
+    failed.map(_.line).toSet shouldBe Set(11, 12)
+    failed.foreach { failure =>
+      failure.error shouldBe "Hook setup failed"
+      failure.selector should endWith(":" + failure.line)
+    }
+    scenarios.foreach(_.status shouldBe "FAILED")
+  }
+
 }

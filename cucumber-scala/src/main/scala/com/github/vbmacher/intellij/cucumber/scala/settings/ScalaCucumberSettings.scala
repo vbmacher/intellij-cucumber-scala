@@ -26,6 +26,9 @@ class ScalaCucumberSettings extends PersistentStateComponent[ScalaCucumberSettin
   @BeanProperty var featureWording: Boolean = true
   @BeanProperty var ollamaUrl: String = "http://localhost:11434"
   @BeanProperty var embeddingModel: String = "embeddinggemma"
+  @BeanProperty var failureExplanations: Boolean = false
+  @BeanProperty var explanationUrl: String = "http://localhost:11434"
+  @BeanProperty var explanationModel: String = "llama3.2:3b"
   override def getState: ScalaCucumberSettings = this
   override def loadState(state: ScalaCucumberSettings): Unit = XmlSerializerUtil.copyBean(state, this)
 }
@@ -50,6 +53,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val wording = new JCheckBox("Suggest wording from feature files in the current module")
   private val ollamaUrl = new javax.swing.JTextField(28)
   private val embeddingModel = new javax.swing.JTextField(28)
+  private val explanations = new FailureExplanationSettings(project)
   private val retentionLabel = new JBLabel("Maximum history entries:")
   private def updateHistoryControls(): Unit = {
     retention.setEnabled(history.isSelected)
@@ -105,6 +109,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
       .addLabeledComponent("Ollama URL:", ollamaUrl)
       .addLabeledComponent("Embedding model:", embeddingModel)
       .addComponent(hint("Use a model already installed in Ollama. Rebuild the index after changing it."))
+      .addComponent(explanations, 16)
       .getPanel
     form.setBorder(JBUI.Borders.empty(8, 12, 16, 12))
 
@@ -121,8 +126,9 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     scroll.setBorder(JBUI.Borders.empty())
     scroll
   }
-  override def isModified: Boolean = ollamaUrl.getText != settings.ollamaUrl || embeddingModel.getText != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
+  override def isModified: Boolean = explanations.isModified || ollamaUrl.getText != settings.ollamaUrl || embeddingModel.getText != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
   override def apply(): Unit = {
+    explanations.apply()
     settings.resultDecorations = results.isSelected
     settings.runHistory = history.isSelected
     settings.historyRetention = retention.getValue.asInstanceOf[Integer].intValue()
@@ -147,6 +153,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     wording.setSelected(settings.featureWording)
     ollamaUrl.setText(settings.ollamaUrl)
     embeddingModel.setText(settings.embeddingModel)
+    explanations.reset()
     updateHistoryControls()
   }
 }

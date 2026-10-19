@@ -23,6 +23,7 @@ Cucumber Scala DSL. Use the guides below for each feature.
 | Run selected scenarios or Examples rows and rerun failures | [Running features](running.md#run-a-feature-scenario-or-examples-row) |
 | Debug a feature step or a specific Examples row | [Feature breakpoints](running.md#debug-a-feature-step-or-examples-row) |
 | Read result gutter markers and compare retained run outcomes | [Results](running.md#editor-results) and [Run History](workspace.md#run-history) |
+| Review failed-run context and request a generated explanation | [Failure explanations](running.md#explain-a-failure) |
 | Preview feature documents and export HTML or PDF | [Preview and export](editing.md#preview-and-export) |
 | Add numbers to scenario titles | [Scenario numbering](editing.md#number-scenario-titles) |
 | Change project settings, requirement mappings and inspection options | [Configuration](configuration.md) |

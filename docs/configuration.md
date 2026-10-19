@@ -1,7 +1,7 @@
 # Configuration
 
 Open **Settings → Scala Cucumber** for project settings. Changes take effect when you
-click **Apply** or **OK**; the two clear buttons act immediately.
+click **Apply** or **OK**; result/history clearing and token changes act immediately.
 
 ![Scala Cucumber settings](images/settings.png)
 
@@ -82,6 +82,21 @@ The plugin does not download models. Prepare the server and model using
 [search workflow](workspace.md#semantic-search). Requests occur when you explicitly
 rebuild or perform a semantic search. Changing the server or model requires a new index.
 
+## Failure explanations
+
+| Setting or action | Default | Effect |
+| --- | --- | --- |
+| **Enable failure explanations** | Off | Offers [Explain Cucumber Failure](running.md#explain-a-failure) and retains recent results even when gutter result display is off. No model request is automatic. |
+| **Ollama URL:** | `http://localhost:11434` | Local or remote Ollama-compatible chat server receiving the reviewed context. Independent of the semantic-search server. |
+| **Chat model:** | `llama3.2:3b` | Installed chat model used for explanations. Prepare it as described in [installation](installation.md#prepare-optional-failure-explanations). |
+| **Access token (optional):** | Blank | Bearer token for a protected server. Stored tokens are never displayed. |
+| **Save token** / **Clear token** | — | Immediately saves or removes the token in IDE Password Safe for this project and the entered URL. |
+
+Token changes do not wait for **Apply**. They are independent of the other settings;
+cancelling the settings window does not undo them. Tokens are excluded from project
+XML. Changing the server or chat model requires closing an existing review window
+and opening a new request.
+
 ## Project configuration file
 
 For directory-based projects, the settings above are stored in
@@ -112,6 +127,9 @@ navigation and changes the search server:
 | `requirementMappings` | Requirement mappings, as newline-separated mappings |
 | `ollamaUrl` | Ollama URL |
 | `embeddingModel` | Embedding model |
+| `failureExplanations` | Enable failure explanations |
+| `explanationUrl` | Failure explanations: Ollama URL |
+| `explanationModel` | Chat model |
 
 ## Inspections
 
