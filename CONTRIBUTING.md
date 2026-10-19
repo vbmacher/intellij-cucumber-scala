@@ -18,6 +18,7 @@ Plugin sources live under
 | `steps` | Scala DSL, step index, definitions, parameter types and usages |
 | `completion` | Step wording, templates and custom-parameter completion |
 | `creation` | Single and batch step generation |
+| `drafts` | Reviewed model-assisted scenario drafts and insertion |
 | `refactoring` | Rename and existing-wording suggestions |
 | `editor` | Quick Documentation, hooks, requirements and numbering |
 | `inspections` | Gherkin and Scala step inspections |

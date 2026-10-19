@@ -14,6 +14,9 @@ shows the light-theme assets from the plugin and its IntelliJ/Gherkin dependenci
 | <img src="images/icons/failed.svg" width="16" height="16" alt="Failed"> | Failed result | In the same result gutters for `FAILED`, `AMBIGUOUS` or `UNDEFINED` outcomes. Click for result details. |
 | <img src="images/icons/ignored.svg" width="16" height="16" alt="Ignored"> | Other outcome | In the same result gutters for recorded statuses other than the passed and failed groups, while the result is current. Read the tooltip or details for the actual status. |
 | <img src="images/icons/stale.svg" width="16" height="16" alt="Warning"> | Stale result | Replaces the result icon when project source has changed since the run. Rerun to obtain a current result. |
+| <img src="images/icons/refresh.svg" width="16" height="16" alt="Refresh"> | Refresh history | In **Run History**, reloads retained entries and rechecks source links. |
+| <img src="images/icons/clear.svg" width="16" height="16" alt="Trash"> | Clear History | In **Run History**, deletes retained entries. Disabled when there are no entries. |
+| <img src="images/icons/settings.svg" width="16" height="16" alt="Settings"> | History Settings | In **Run History**, opens **Scala Cucumber** settings. |
 | <img src="images/icons/collapsed.svg" width="16" height="16" alt="Expand"> | Collapsed index options | In **Scenario Search**, on **Semantic index** when its model and index controls are hidden. |
 | <img src="images/icons/expanded.svg" width="16" height="16" alt="Collapse"> | Expanded index options | On the same control when its model and index controls are visible. Selecting **Semantic** expands them. |
 

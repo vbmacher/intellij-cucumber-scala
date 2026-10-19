@@ -5,43 +5,76 @@ Its four tabs cover browsing, observed run outcomes, step implementations and sc
 
 ## Suite
 
-Choose **Project contents** or a module, then choose what to browse:
+The tab browses the whole project. **View** starts on **Scenarios**; each view
+explains what its results mean and what to do next.
 
 | View | What it shows |
 | --- | --- |
-| **Steps** | Scala step definitions and their expressions |
-| **Scenarios** | Feature scenarios, with outlines counted once |
-| **Undefined** | Feature steps with no matching definition |
-| **Ambiguous** | Feature steps with several matching definitions |
-| **Unused** | Definitions with no matching feature step in the selected scope |
-| **Identical expressions** | Definitions declaring the same expression |
+| **Scenarios** | Scenarios; select one to see its steps, including undefined or ambiguous bindings |
+| **Step definitions** | Scala expressions; select one to see matching scenarios, with outlines counted once |
+| **Undefined steps** | Feature steps with no matching Scala definition |
+| **Ambiguous steps** | Feature steps matching several Scala definitions; select one to see its competing definitions |
+| **Unused definitions** | Definitions with no matching feature step in this project |
+| **Repeated expressions** | Definitions declaring the same expression; select one to compare other declarations |
 | **Duplicate scenarios** | Scenarios with the same ordered step bodies |
 
-Use the text filter to narrow the list, and the step-kind selector for **Given**,
-**When** or **Then** definitions. In **Scenarios**, a tag expression such as
-`@smoke and not @ignored` filters scenarios by their tags. Group scenarios by
-**Module**, **Tag** or **Category**; categories come from
-[category mappings](configuration.md#scenario-categories).
+Results show a file path and line number beneath each entry. **Filter** searches
+names, expressions, module names and file paths. In **Step definitions**, use **Step kind** for
+**Given**, **When** or **Then** definitions. In **Scenarios**, **Tags** accepts an
+expression such as `@smoke and not @ignored`.
+
+Use the **Group by** checkboxes independently or together. Selected groups nest
+in the order **Module → Tag → Category**; clear all three for a flat list.
+
+- **Module** groups by sbt project, combining its `main` and `test` source sets.
+  Other builds use their IDE modules. If a group says **Unresolved sbt project**,
+  reload the sbt project and click **Refresh**.
+- **Tag** puts each scenario or feature step under its tags, with **Untagged**
+  for entries without tags.
+- **Category** uses [category mappings](configuration.md#scenario-categories),
+  with **Uncategorized** for entries that match none.
+
+Tag and category groups are available for scenarios and feature steps. Expand or
+collapse a group to browse its entries. Counts show distinct entries within each
+group; an entry can appear in several tag or category groups.
+
+An ambiguous step needs a unique binding: compare the competing definitions and
+change the expressions or feature wording so only one matches. The competing
+expressions can differ; **Repeated expressions** finds declarations with identical
+expression text.
 
 Select an entry and use:
 
-- **Go to source** to open its definition or feature location.
+- **Source** to open its definition or feature location.
 - **Preview** to inspect its source in a dialog.
-- **Insert step** to insert a selected definition into the active feature editor,
+- **Insert** to insert a selected definition into the active feature editor,
   with editable sample arguments.
-- **Run selection** to run selected scenarios. Select scenarios from one module at a time.
+- **Run** to run selected scenarios or groups from one runnable module. You can
+  select several entries or groups; overlapping groups run each scenario once.
 
-**Refresh** rebuilds the view for the selected scope; **Cancel** stops a pending refresh.
-Findings describe the available source in that scope. An unused library step may
-have consumers outside it, and matching or duplicate wording does not establish
+The related-source list shows matching scenarios, competing definitions or other
+duplicates for the selected entry. Select a related source and use **Open related
+source**. Enter or a double-click opens a source entry in either the tree or the
+related-source list.
+
+Source edits refresh the view automatically. **Refresh** scans the project
+again; **Cancel** stops a pending scan and clears its results.
+Findings describe the available project source. An unused library step may
+have consumers outside the project, and matching or duplicate wording does not establish
 execution coverage or business equivalence.
 
 ## Run History
 
-The tab shows retained scenario outcomes when
-[workspace history is enabled](configuration.md#run-results-and-history).
-Use **Refresh** to update the list, **Open Current Scenario** to open the selected
-scenario, or **Clear History** to remove the saved entries.
+The tab shows retained outcomes from Scala Cucumber runs and updates automatically
+as scenarios finish. When recording is off, click **Enable History** to retain future
+runs. **History Settings** opens the
+[history settings](configuration.md#run-results-and-history); a limit of 0 retains
+no entries.
+
+The table shows each scenario's latest outcome, attempt counts, last run time,
+source revision and runtime environment. Select a row and click **Attempts** for
+details or **Open Scenario** to open its source. **Refresh** rechecks the source
+links; **Clear History** removes the saved entries.
 
 Results are grouped by scenario, source revision and runtime environment so that
 different contexts remain separate. Details include the run time, outcome, attempt,
@@ -50,16 +83,17 @@ and failing outcomes describe what happened; they do not identify the cause.
 Renamed, changed or deleted scenarios do not transfer their old outcomes to a new
 scenario at the same location.
 
-## Implementation
+## Step Implementation
 
-Enable **Follow feature caret**, then move the caret to a feature step. The tab shows
-its Scala implementation in a read-only editor while focus stays in the feature.
-If several definitions match, select a candidate from the dropdown. **Pin** keeps
-that implementation visible while you move elsewhere; **Go to definition** opens
-the selected Scala source. An undefined step displays an explanation instead of a
-candidate.
+Place the caret on a step in a `.feature` file. The tab automatically shows the
+selected step and its matching Scala definition in a read-only preview while focus
+stays in the feature editor.
 
-![Implementation beside the feature editor](images/implementation.png)
+The status distinguishes a single match, an undefined step and an ambiguous step.
+For an ambiguous step, choose a **Definition** to compare the matching sources.
+**Pin preview** keeps the current step and definition visible while you move
+elsewhere; uncheck it to follow the current feature caret again. **Open definition**
+opens the selected Scala source. These controls are available when a definition matches.
 
 ## Scenario Search
 

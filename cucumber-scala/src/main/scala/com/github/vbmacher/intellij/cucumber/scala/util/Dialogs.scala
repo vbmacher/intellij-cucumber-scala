@@ -3,7 +3,7 @@ package com.github.vbmacher.intellij.cucumber.scala.util
 import com.intellij.openapi.project.Project
 import com.intellij.openapi.ui.DialogWrapper
 
-import java.awt.GridLayout
+import java.awt.{BorderLayout, GridLayout}
 import javax.swing.{JComponent, JLabel, JPanel, JScrollPane, JTextArea}
 
 object Dialogs {
@@ -18,10 +18,13 @@ object Dialogs {
     if (show(project, title, new JScrollPane(text))) Some(text.getText) else None
   }
 
-  /** Shows labeled `fields` in a two-column form and returns whether the user confirmed it. */
-  def form(project: Project, title: String, fields: (String, JComponent)*): Boolean = {
-    val panel = new JPanel(new GridLayout(0, 2))
-    fields.foreach { case (label, field) => panel.add(new JLabel(label)); panel.add(field) }
+  /** Shows an optional description above labeled `fields` and returns whether the user confirmed it. */
+  def form(project: Project, title: String, description: Option[String], fields: (String, JComponent)*): Boolean = {
+    val form = new JPanel(new GridLayout(0, 2))
+    fields.foreach { case (label, field) => form.add(new JLabel(label)); form.add(field) }
+    val panel = new JPanel(new BorderLayout(0, 12))
+    description.foreach(text => panel.add(new JLabel(text), BorderLayout.NORTH))
+    panel.add(form, BorderLayout.CENTER)
     show(project, title, panel)
   }
 

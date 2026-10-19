@@ -64,7 +64,7 @@ Exact text search does not need Ollama or a model.
 The plugin uses the model already available on your server; it does not download models.
 See the [EmbeddingGemma model page](https://ollama.com/library/embeddinggemma) for model requirements.
 
-## Prepare optional failure explanations
+## Prepare optional chat models
 
 Use a local or remote [Ollama-compatible chat server](https://docs.ollama.com/api/chat)
 with an installed chat model. For a local Ollama server, for example:
@@ -73,10 +73,13 @@ with an installed chat model. For a local Ollama server, for example:
 ollama pull llama3.2:3b
 ```
 
-Enable and configure the feature in [failure-explanation settings](configuration.md#failure-explanations),
-then follow [Explain a failure](running.md#explain-a-failure). A remote server receives
-the context you review and submit; use its URL and optional access token. The plugin
-does not download chat models.
+Configure [failure explanations](configuration.md#failure-explanations) or
+[edge-case drafts](configuration.md#edge-case-drafts), then follow
+[Explain a failure](running.md#explain-a-failure) or
+[Suggest edge-case scenarios](editing.md#suggest-edge-case-scenarios).
+Draft generation requires a chat model supporting JSON output. A remote server
+receives the context you review and submit; use its URL and optional access token.
+The plugin does not download chat models.
 
 ## Development environment
 

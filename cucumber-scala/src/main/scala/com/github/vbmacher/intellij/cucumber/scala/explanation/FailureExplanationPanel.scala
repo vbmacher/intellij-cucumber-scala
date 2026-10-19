@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.explanation
 
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
+import com.github.vbmacher.intellij.cucumber.scala.util.OllamaCredentials
 import com.intellij.openapi.Disposable
 import com.intellij.openapi.progress.{ProcessCanceledException, ProgressIndicator, Task}
 import com.intellij.openapi.project.Project
@@ -14,7 +15,7 @@ import javax.swing.{JButton, JComboBox, JComponent, JPanel, JSplitPane}
 
 class FailureExplanationPanel(project: Project, context: FailureContext.Snapshot,
                               providerFactory: (Project, String, String) => FailureExplainer = (p, url, model) =>
-                                new OllamaFailureExplainer(url, model, () => FailureExplanationCredentials.token(p, url)))
+                                new OllamaFailureExplainer(url, model, () => new OllamaCredentials(p, "failure explanation").token(url)))
   extends JPanel(new BorderLayout(0, JBUI.scale(8))) with Disposable {
   private val settings = ScalaCucumberSettings.getInstance(project)
   private val url = settings.explanationUrl

@@ -29,7 +29,7 @@ matches are included. A zero count describes the module's available feature file
 it does not establish that no other project uses a library step.
 
 For a view that follows the feature caret without moving editor focus, use the
-[Implementation tab](workspace.md#implementation).
+[Step Implementation tab](workspace.md#step-implementation).
 
 ## Supported step patterns
 

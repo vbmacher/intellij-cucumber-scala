@@ -51,7 +51,8 @@ class NumberScenariosAction extends GherkinFileAction("Number Scenario Titles…
       val width = new JSpinner(new SpinnerNumberModel(2, 1, 20, 1))
       val prefix = new JTextField("")
       val scope = new JComboBox[String](Array("Current file / editor selection", "Selected feature files"))
-      if (Dialogs.form(project, "Number Scenario Titles", "Start" -> start, "Minimum width" -> width, "Prefix" -> prefix, "Scope" -> scope)) {
+      val description = "<html>Add or update sequential numbers in scenario titles.<br>Example: Transfer succeeds → 01 - Transfer succeeds</html>"
+      if (Dialogs.form(project, "Number Scenario Titles", Some(description), "Start" -> start, "Minimum width" -> width, "Prefix" -> prefix, "Scope" -> scope)) {
         val files = if (scope.getSelectedIndex == 0) Seq(file)
           else Option(event.getData(CommonDataKeys.VIRTUAL_FILE_ARRAY)).toSeq.flatten.filter(_.getExtension == "feature")
             .flatMap(f => Option(PsiManager.getInstance(project).findFile(f)))

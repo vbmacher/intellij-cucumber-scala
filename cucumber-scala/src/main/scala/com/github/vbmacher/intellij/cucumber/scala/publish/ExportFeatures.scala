@@ -33,7 +33,7 @@ class ExportFeaturesAction extends GherkinFileAction("Export Features…") {
       val scope = new JComboBox[String](Array("Current feature", "Owning module", "Project contents"))
       val tags = new JTextField("")
       val format = new JComboBox[String](Array("HTML") ++ Option(project.getService(classOf[FeaturePdfExporter])).map(_ => "PDF"))
-      if (Dialogs.form(project, "Export Features", "Scope" -> scope, "Tag expression" -> tags, "Format" -> format)) {
+      if (Dialogs.form(project, "Export Features", None, "Scope" -> scope, "Tag expression" -> tags, "Format" -> format)) {
         val searchScope = scope.getSelectedIndex match {
           case 0 => GlobalSearchScope.fileScope(feature)
           case 1 => moduleOf(feature).map(_.getModuleWithDependenciesAndLibrariesScope(true)).getOrElse(GlobalSearchScope.EMPTY_SCOPE)

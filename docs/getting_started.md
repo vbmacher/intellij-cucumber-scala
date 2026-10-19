@@ -13,12 +13,13 @@ Cucumber Scala DSL. Use the guides below for each feature.
 | Inspect parameters, definitions and usages in Quick Documentation | [Step documentation](editing.md#quick-documentation) |
 | Complete step wording and edit generated sample arguments | [Completion](editing.md#completion) |
 | Create one missing step or a batch of definitions | [Step generation](editing.md#create-step-definitions) |
+| Review AI-assisted negative and boundary scenario drafts before insertion | [Edge-case drafts](editing.md#suggest-edge-case-scenarios) |
 | Rename steps or replace undefined wording with an existing step | [Step wording](editing.md#rename-and-reuse-wording) |
 | Find argument-count, parameter-type, Examples and style problems | [Inspections](editing.md#inspections) |
 | Edit tables, exchange spreadsheet cells and generate case classes | [Tables](editing.md#tables) |
 | Navigate and complete headers mapped to Scala case-class fields | [DataTable mappings](navigation.md#table-headers) |
 | Browse, group and inspect steps and scenarios across a project or module | [Suite tab](workspace.md#suite) |
-| View the implementation of the step under the feature caret | [Implementation tab](workspace.md#implementation) |
+| View the implementation of the step under the feature caret | [Step Implementation tab](workspace.md#step-implementation) |
 | Search scenarios by text or by related wording | [Scenario Search tab](workspace.md#scenario-search) |
 | Run selected scenarios or Examples rows and rerun failures | [Running features](running.md#run-a-feature-scenario-or-examples-row) |
 | Debug a feature step or a specific Examples row | [Feature breakpoints](running.md#debug-a-feature-step-or-examples-row) |

@@ -9,13 +9,13 @@ click **Apply** or **OK**; result/history clearing and token changes act immedia
 
 | Setting | Default | Effect |
 | --- | --- | --- |
-| **Prefer steps used by more scenarios** | On | Ranks completion candidates using their matching-scenario counts. Outlines count once; ambiguous matches are included. |
-| **Prefer steps from the same module and with shared tags** | On | Ranks candidates using the current module and scenario tags. |
-| **Suggest wording from feature files in the current module** | On | Adds marked wording suggestions even when they have no Scala definition. |
-| **Navigate and extend Gherkin tables with Tab, Shift-Tab and Enter** | Off | Enables [cell navigation and keyboard clearing](editing.md#keyboard-navigation). |
+| **Show frequently used step definitions higher in autocomplete** | On | Gives a larger boost to definitions used by more scenarios. Outlines count once; ambiguous matches are included. |
+| **Show steps from this module or with shared tags higher in autocomplete** | On | Raises definitions in the current IntelliJ module and those used by scenarios sharing tags with yours, such as `@payments`. |
+| **Include unimplemented steps from existing feature files in autocomplete** | On | Suggests step text with no matching Scala definition from the current module and its dependencies, marked **Feature wording · undefined**. Accepting inserts text only. |
+| **Navigate table cells with Tab, Shift-Tab and Enter** | Off | Tab selects the next cell, Shift-Tab the previous cell, and Enter the cell below. Moving past the last row adds an empty row. See [cell navigation and keyboard clearing](editing.md#keyboard-navigation). |
 
-Ranking changes suggestion order. It does not decide which definition binds to a
-step at runtime.
+The first three settings control autocomplete in `.feature` files. Ranking changes
+suggestion order; it does not change which Scala definition runs.
 
 ## Run results and history
 
@@ -34,40 +34,65 @@ when you also want to remove existing entries.
 
 ## Scenario categories
 
-Under **Tags and requirements → Scenario categories:**, enter one mapping per line:
+Use **Tags and requirements → Scenario categories:** to name groups of scenarios
+based on their tags. This is optional; leave the field empty if you do not need
+custom groups. Enter one mapping per line:
 
 ```text
-Smoke => @smoke and not @ignored
-Payments => @payments
+Smoke => @smoke
+Payments => @payments and not @ignored
 ```
 
-The left side is the category name; the right side is a Cucumber tag expression.
-The **Suite** tab uses these mappings when grouping scenarios by **Category**.
+The left side is the group name; the right side selects tags. Combine tags with
+`and`, `or`, `not` and parentheses. For example, a scenario tagged `@smoke @payments`
+appears in both groups; adding `@ignored` excludes it from **Payments**.
+
+Open **Scala Cucumber → Suite**, select **Scenarios**, then **Group → Category**.
 Unmatched scenarios appear as **Uncategorized**. Blank lines and invalid mappings
 do not create a category.
 
 ## Requirement mappings
 
-Under **Tags and requirements → Requirement mappings:**, map a tag regular expression
-to a relative Markdown path with an anchor, or to a URL template:
+Use **Tags and requirements → Requirement mappings:** to link feature tags to
+specifications or issues. This is optional; leave the field empty if you do not
+use these links. Enter one mapping per line: a tag pattern (regular expression)
+on the left and a Markdown destination or URL on the right.
 
 ```text
 @REQ-(.*) => docs/requirements.md#$1
 @ISSUE-(\d+) => https://tracker.example.com/issues/$1
 ```
 
-The expression must match the entire tag, including `@`. The first matching mapping
-wins. `$1`, `$2` and later references insert captured parts of the tag. Blank lines
-and lines beginning with `#` are ignored.
+In the first mapping, `(.*)` captures any text after `@REQ-`, and `$1` inserts that
+text into the destination. For example:
 
-For the first mapping, `@REQ-PAY-12` points to `docs/requirements.md#PAY-12`.
+```gherkin
+@REQ-PAY-12
+Scenario: Pay by card
+  When I pay with a valid card
+  Then the payment is accepted
+```
+
+This tag links to `docs/requirements.md#PAY-12`. Create `docs/requirements.md` with
+a matching heading, for example:
+
+```markdown
+## PAY-12
+A valid card payment must be accepted.
+```
+
+Use [Go to Declaration on the tag](navigation.md#requirements) to open that heading.
+In the second mapping, `(\d+)` captures digits: `@ISSUE-123` opens
+`https://tracker.example.com/issues/123` after confirmation in **Open Requirement URL**.
+
+Patterns must match the entire tag, including `@`. The first matching mapping wins.
+`$1`, `$2` and later references insert the corresponding parenthesized captures.
+Blank lines and lines beginning with `#` are ignored.
+
 Local paths are resolved from the project and content roots. A local destination
 requires `#id`; the ID can match a Markdown heading's text, a `{#PAY-12}` heading
 anchor or an HTML `id="PAY-12"` anchor. If several anchors match, navigation offers
 the candidates. A missing local destination is reported by **Missing configured requirement**.
-URL navigation asks for confirmation in **Open Requirement URL** before opening a browser.
-
-Use [requirement navigation](navigation.md#requirements) from the feature tag.
 
 ## Scenario semantic search
 
@@ -88,7 +113,7 @@ rebuild or perform a semantic search. Changing the server or model requires a ne
 | --- | --- | --- |
 | **Enable failure explanations** | Off | Offers [Explain Cucumber Failure](running.md#explain-a-failure) and retains recent results even when gutter result display is off. No model request is automatic. |
 | **Ollama URL:** | `http://localhost:11434` | Local or remote Ollama-compatible chat server receiving the reviewed context. Independent of the semantic-search server. |
-| **Chat model:** | `llama3.2:3b` | Installed chat model used for explanations. Prepare it as described in [installation](installation.md#prepare-optional-failure-explanations). |
+| **Chat model:** | `llama3.2:3b` | Installed chat model used for explanations. Prepare it as described in [installation](installation.md#prepare-optional-chat-models). |
 | **Access token (optional):** | Blank | Bearer token for a protected server. Stored tokens are never displayed. |
 | **Save token** / **Clear token** | — | Immediately saves or removes the token in IDE Password Safe for this project and the entered URL. |
 
@@ -96,6 +121,20 @@ Token changes do not wait for **Apply**. They are independent of the other setti
 cancelling the settings window does not undo them. Tokens are excluded from project
 XML. Changing the server or chat model requires closing an existing review window
 and opening a new request.
+
+## Edge-case drafts
+
+| Setting | Default | Effect |
+| --- | --- | --- |
+| **Enable edge-case scenario drafts** | Off | Offers [Suggest edge cases](editing.md#suggest-edge-case-scenarios) in feature files. Requests require context review and explicit generation. |
+| **Ollama URL:** | `http://localhost:11434` | Ollama-compatible server receiving the reviewed specification. Independent of search and failure-explanation settings. |
+| **Chat model:** | `llama3.2:3b` | Installed chat model supporting JSON output. See [chat-model setup](installation.md#prepare-optional-chat-models). |
+| **Access token (optional):** | Blank | Bearer token for a protected draft-generation server. Stored tokens are never displayed. |
+| **Save token** / **Clear token** | — | Immediately saves or removes the draft token in IDE Password Safe for this project and the entered URL. |
+
+Draft tokens are separate from failure-explanation tokens and excluded from project
+XML. Saving or clearing a token does not wait for **Apply**, and cancelling settings
+does not undo that change.
 
 ## Project configuration file
 
@@ -116,10 +155,10 @@ navigation and changes the search server:
 
 | XML option | Settings control |
 | --- | --- |
-| `rankByReuse` | Prefer steps used by more scenarios |
-| `rankByContext` | Prefer steps from the same module and with shared tags |
-| `featureWording` | Suggest wording from feature files in the current module |
-| `tableNavigation` | Navigate and extend Gherkin tables |
+| `rankByReuse` | Show frequently used step definitions higher in autocomplete |
+| `rankByContext` | Show steps from this module or with shared tags higher in autocomplete |
+| `featureWording` | Include unimplemented steps from existing feature files in autocomplete |
+| `tableNavigation` | Navigate table cells with Tab, Shift-Tab and Enter |
 | `resultDecorations` | Show run results in feature gutters and documentation |
 | `runHistory` | Keep scenario run history in this workspace |
 | `historyRetention` | Maximum history entries |
@@ -130,6 +169,9 @@ navigation and changes the search server:
 | `failureExplanations` | Enable failure explanations |
 | `explanationUrl` | Failure explanations: Ollama URL |
 | `explanationModel` | Chat model |
+| `scenarioDrafts` | Enable edge-case scenario drafts |
+| `draftUrl` | Edge-case drafts: Ollama URL |
+| `draftModel` | Edge-case drafts: Chat model |
 
 ## Inspections
 

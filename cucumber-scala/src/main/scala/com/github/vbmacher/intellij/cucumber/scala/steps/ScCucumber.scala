@@ -88,8 +88,11 @@ object ScCucumber {
   def moduleOf(element: PsiElement): Option[Module] = Option(ModuleUtilCore.findModuleForPsiElement(element))
 
   def matchingSteps(step: GherkinStep): Seq[AbstractStepDefinition] =
-    moduleOf(step).toSeq
-      .flatMap(module => CucumberStepHelper.loadStepsFor(module).asScala)
+    moduleOf(step).toSeq.flatMap(module => matchingSteps(step, module))
+
+  /** Resolve preview PSI using the destination module rather than a temporary file's location. */
+  def matchingSteps(step: GherkinStep, module: Module): Seq[AbstractStepDefinition] =
+    CucumberStepHelper.loadStepsFor(module).asScala.toSeq
       .filter(d => d.getElement != null && d.supportsStep(step) && d.matches(step.getSubstitutedName))
 
   def stepSearchScope(module: Module): GlobalSearchScope = {

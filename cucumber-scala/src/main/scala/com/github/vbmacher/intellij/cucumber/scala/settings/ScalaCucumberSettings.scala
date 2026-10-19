@@ -1,9 +1,11 @@
 package com.github.vbmacher.intellij.cucumber.scala.settings
 
 import com.github.vbmacher.intellij.cucumber.scala.run.RunResults
+import com.github.vbmacher.intellij.cucumber.scala.util.{OllamaCredentials, OllamaHttp}
 import com.intellij.openapi.components.{PersistentStateComponent, State, Storage}
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.progress.{ProgressIndicator, Task}
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.{JBLabel, JBScrollPane}
 import com.intellij.util.ui.{FormBuilder, JBUI, UIUtil}
@@ -29,6 +31,9 @@ class ScalaCucumberSettings extends PersistentStateComponent[ScalaCucumberSettin
   @BeanProperty var failureExplanations: Boolean = false
   @BeanProperty var explanationUrl: String = "http://localhost:11434"
   @BeanProperty var explanationModel: String = "llama3.2:3b"
+  @BeanProperty var scenarioDrafts: Boolean = false
+  @BeanProperty var draftUrl: String = "http://localhost:11434"
+  @BeanProperty var draftModel: String = "llama3.2:3b"
   override def getState: ScalaCucumberSettings = this
   override def loadState(state: ScalaCucumberSettings): Unit = XmlSerializerUtil.copyBean(state, this)
 }
@@ -47,13 +52,47 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   clearHistory.addActionListener(_ => RunResults.getInstance(project).clearHistory())
   private val categories = new javax.swing.JTextArea(3, 36)
   private val requirements = new javax.swing.JTextArea(3, 36)
-  private val tables = new JCheckBox("Navigate and extend Gherkin tables with Tab, Shift-Tab and Enter")
-  private val reuse = new JCheckBox("Prefer steps used by more scenarios")
-  private val context = new JCheckBox("Prefer steps from the same module and with shared tags")
-  private val wording = new JCheckBox("Suggest wording from feature files in the current module")
+  private val tables = new JCheckBox("Navigate table cells with Tab, Shift-Tab and Enter")
+  private val reuse = new JCheckBox("Show frequently used step definitions higher in autocomplete")
+  private val context = new JCheckBox("Show steps from this module or with shared tags higher in autocomplete")
+  private val wording = new JCheckBox("Include unimplemented steps from existing feature files in autocomplete")
   private val ollamaUrl = new javax.swing.JTextField(28)
   private val embeddingModel = new javax.swing.JTextField(28)
   private val explanations = new FailureExplanationSettings(project)
+  private val drafts = new JCheckBox("Enable edge-case scenario drafts")
+  private val draftUrl = new javax.swing.JTextField(28)
+  private val draftModel = new javax.swing.JTextField(28)
+  private val draftToken = new javax.swing.JPasswordField(28)
+  private val saveDraftToken = new javax.swing.JButton("Save token")
+  private val clearDraftToken = new javax.swing.JButton("Clear token")
+  private val draftTokenStatus = new JBLabel("Save token and Clear token act immediately for this URL, even if you cancel settings. Other changes require Apply.").setAllowAutoWrapping(true)
+  private def updateDraftControls(): Unit = Seq(draftUrl, draftModel, draftToken, saveDraftToken, clearDraftToken).foreach(_.setEnabled(drafts.isSelected))
+  drafts.addActionListener(_ => updateDraftControls())
+  saveDraftToken.addActionListener(_ => {
+    val password = draftToken.getPassword
+    val value = new String(password)
+    java.util.Arrays.fill(password, '\u0000')
+    draftToken.setText("")
+    if (value.isEmpty) draftTokenStatus.setText("Enter a token to save, or use Clear token to remove the stored token.")
+    else updateDraftToken(Some(value))
+  })
+  clearDraftToken.addActionListener(_ => updateDraftToken(None))
+  private def updateDraftToken(value: Option[String]): Unit = {
+    val endpoint = draftUrl.getText.trim
+    saveDraftToken.setEnabled(false)
+    clearDraftToken.setEnabled(false)
+    new Task.Backgroundable(project, "Update edge-case draft access token", false) {
+      override def run(indicator: ProgressIndicator): Unit = new OllamaCredentials(project, "scenario drafts").save(endpoint, value)
+      override def onSuccess(): Unit = if (!project.isDisposed) {
+        updateDraftControls()
+        draftTokenStatus.setText(if (value.nonEmpty) "Token saved in IDE Password Safe for the URL above." else "Stored token cleared for the URL above.")
+      }
+      override def onThrowable(error: Throwable): Unit = if (!project.isDisposed) {
+        updateDraftControls()
+        draftTokenStatus.setText("Could not update the token. Check the URL and IDE Password Safe settings.")
+      }
+    }.queue()
+  }
   private val retentionLabel = new JBLabel("Maximum history entries:")
   private def updateHistoryControls(): Unit = {
     retention.setEnabled(history.isSelected)
@@ -78,39 +117,68 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
       new JBScrollPane(area, ScrollPaneConstants.VERTICAL_SCROLLBAR_AS_NEEDED, ScrollPaneConstants.HORIZONTAL_SCROLLBAR_NEVER)
     }
 
-    reuse.setToolTipText("Rank step completion by the number of matching scenarios.")
-    context.setToolTipText("Rank step completion by module proximity and shared scenario tags.")
     retention.setToolTipText("Maximum stored scenario results. Oldest entries are removed first; 0 keeps none.")
     clearResults.setToolTipText("Immediately clear run results shown in feature gutters and documentation.")
     clearHistory.setToolTipText("Immediately delete the scenario run history stored in this workspace.")
     ollamaUrl.setToolTipText("Scenario text and queries are sent here only when semantic search or index rebuild is requested.")
     embeddingModel.setToolTipText("An embedding model converts text into vectors for similarity search. Changing it requires rebuilding the index.")
+    drafts.setToolTipText("Offer Suggest edge cases in feature files. Context is sent only after review and explicit generation.")
+    draftUrl.setToolTipText("Address of a running local or remote Ollama-compatible server, independent of semantic search and failure explanations.")
+    draftModel.setToolTipText("An installed chat model that supports JSON output, not an embedding model.")
+    draftToken.setToolTipText("Optional bearer token. Save it in IDE Password Safe for the URL above; stored tokens are never displayed here.")
+    updateDraftControls()
     retentionLabel.setLabelFor(retention)
     updateHistoryControls()
 
     val form = FormBuilder.createFormBuilder()
       .addComponent(new TitledSeparator("Editor and completion"), 0)
+      .addComponent(hint("Autocomplete in .feature files. Ranking changes suggestion order, not which Scala definition runs."))
       .addComponent(reuse)
+      .addComponent(hint("Gives a larger boost to definitions used by more scenarios."), 0)
       .addComponent(context)
+      .addComponent(hint("Raises definitions in this IntelliJ module and those used by scenarios sharing tags with yours, such as @payments."), 0)
       .addComponent(wording)
+      .addComponent(hint("Suggests step text with no matching Scala definition from this module and its dependencies. Marked Feature wording · undefined; accepting inserts text only."), 0)
       .addComponent(tables)
+      .addComponent(hint("Tab: next cell; Shift-Tab: previous cell; Enter: cell below. Moving past the last row adds an empty row."), 0)
       .addComponent(new TitledSeparator("Run results and history"), 16)
       .addComponent(results)
       .addComponent(history)
       .addComponent(row(retentionLabel, retention))
       .addComponent(row(clearResults, clearHistory))
       .addComponent(new TitledSeparator("Tags and requirements"), 16)
+      .addComponent(hint("Both settings are optional. Leave a field empty if you do not use it."))
       .addLabeledComponent("Scenario categories:", editor(categories), true)
-      .addComponent(hint("One per line: category name => tag expression. Example: Smoke => @smoke"))
+      .addComponent(hint("Group tagged scenarios in Scala Cucumber → Suite: select Group → Category."))
+      .addComponent(hint("One per line: category name => tag expression. Example: Smoke => @smoke"), 0)
       .addLabeledComponent("Requirement mappings:", editor(requirements), true)
-      .addComponent(hint("One per line: tag regex => Markdown path#id or URL template."))
+      .addComponent(hint("Open documentation or issues from feature tags with Go to Declaration."))
+      .addComponent(hint("One per line: tag regular expression => Markdown path#id or URL."), 0)
       .addComponent(hint("Example: @REQ-(.*) => docs/requirements.md#$1"), 0)
+      .addComponent(hint("For @REQ-PAY-12, (.*) captures PAY-12; $1 inserts it as the Markdown heading or anchor ID."), 0)
       .addComponent(new TitledSeparator("Scenario semantic search"), 16)
       .addLabeledComponent("Ollama URL:", ollamaUrl)
       .addLabeledComponent("Embedding model:", embeddingModel)
       .addComponent(hint("Use a model already installed in Ollama. Rebuild the index after changing it."))
       .addComponent(explanations, 16)
+      .addComponent(new TitledSeparator("Edge-case drafts"), 16)
+      .addComponent(drafts)
+      .addComponent(hint("Suggest additional Gherkin scenarios for boundary conditions and missing cases. Review drafts and choose which to insert; they have not been executed."))
+      .addComponent(hint("Right-click a feature, Rule or scenario and choose Suggest edge cases…"))
+      .addComponent(hint("Review or redact the context, then click Generate drafts to send it to the server below."))
+      .addLabeledComponent("Ollama URL:", draftUrl)
+      .addLabeledComponent("Chat model:", draftModel)
+      .addComponent(hint("Use a chat model already installed on that server with JSON output support, such as llama3.2:3b. The plugin does not download models."))
+      .addLabeledComponent("Access token (optional):", draftToken)
+      .addComponent(hint("Only needed if the server requires a bearer token. Saved in IDE Password Safe separately from failure-explanation tokens; stored tokens stay hidden."))
+      .addComponent(row(saveDraftToken, clearDraftToken))
+      .addComponent(draftTokenStatus)
       .getPanel
+    draftUrl.getAccessibleContext.setAccessibleName("Edge-case draft Ollama URL")
+    draftModel.getAccessibleContext.setAccessibleName("Edge-case draft chat model")
+    draftToken.getAccessibleContext.setAccessibleName("Edge-case draft access token")
+    saveDraftToken.getAccessibleContext.setAccessibleName("Save edge-case draft token")
+    clearDraftToken.getAccessibleContext.setAccessibleName("Clear edge-case draft token")
     form.setBorder(JBUI.Borders.empty(8, 12, 16, 12))
 
     // Track the viewport width so only the page scrolls vertically, without stretching control heights.
@@ -126,9 +194,17 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     scroll.setBorder(JBUI.Borders.empty())
     scroll
   }
-  override def isModified: Boolean = explanations.isModified || ollamaUrl.getText != settings.ollamaUrl || embeddingModel.getText != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
+  override def isModified: Boolean = drafts.isSelected != settings.scenarioDrafts || draftUrl.getText != settings.draftUrl || draftModel.getText != settings.draftModel || explanations.isModified || ollamaUrl.getText != settings.ollamaUrl || embeddingModel.getText != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
   override def apply(): Unit = {
+    if (drafts.isSelected) {
+      try OllamaHttp.endpoint(draftUrl.getText.trim, "")
+      catch { case error: java.io.IOException => throw new com.intellij.openapi.options.ConfigurationException(error.getMessage) }
+      if (draftModel.getText.trim.isEmpty) throw new com.intellij.openapi.options.ConfigurationException("Enter an installed chat model for edge-case drafts.")
+    }
     explanations.apply()
+    settings.scenarioDrafts = drafts.isSelected
+    settings.draftUrl = draftUrl.getText.trim
+    settings.draftModel = draftModel.getText.trim
     settings.resultDecorations = results.isSelected
     settings.runHistory = history.isSelected
     settings.historyRetention = retention.getValue.asInstanceOf[Integer].intValue()
@@ -140,6 +216,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     settings.featureWording = wording.isSelected
     settings.ollamaUrl = ollamaUrl.getText.trim
     settings.embeddingModel = embeddingModel.getText.trim
+    RunResults.getInstance(project).refreshHistory()
   }
   override def reset(): Unit = {
     results.setSelected(settings.resultDecorations)
@@ -154,6 +231,11 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     ollamaUrl.setText(settings.ollamaUrl)
     embeddingModel.setText(settings.embeddingModel)
     explanations.reset()
+    drafts.setSelected(settings.scenarioDrafts)
+    draftUrl.setText(settings.draftUrl)
+    draftModel.setText(settings.draftModel)
+    draftToken.setText("")
+    updateDraftControls()
     updateHistoryControls()
   }
 }

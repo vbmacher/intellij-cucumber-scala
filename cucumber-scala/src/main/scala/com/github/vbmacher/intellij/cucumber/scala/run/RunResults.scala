@@ -10,6 +10,7 @@ import com.intellij.openapi.editor.markup.GutterIconRenderer
 import com.intellij.openapi.project.Project
 import com.intellij.psi.PsiElement
 import com.intellij.psi.util.{PsiModificationTracker, PsiTreeUtil}
+import com.intellij.util.messages.Topic
 import org.jetbrains.plugins.cucumber.psi.{GherkinStep, GherkinTableRow}
 
 import java.nio.charset.StandardCharsets
@@ -39,6 +40,11 @@ class ScenarioHistoryState {
 
 object RunResults {
   def getInstance(project: Project): RunResults = project.getService(classOf[RunResults])
+
+  trait HistoryListener {
+    def historyChanged(): Unit
+  }
+  val HistoryChanged: Topic[HistoryListener] = Topic.create("Scala Cucumber run history", classOf[HistoryListener])
 
   final case class Context(stamp: Long, revision: String, environment: String, identities: Map[String, String], started: Long)
   final case class Decoration(result: CucumberMessages.StepResult, stamp: Long, timestamp: Long)
@@ -139,6 +145,7 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
       trim()
       }
     }
+    refreshHistory()
   }
   def at(element: PsiElement): Seq[Decoration] = {
     if (!settings.resultDecorations) return Seq.empty
@@ -160,7 +167,13 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
       (if (r.error.nonEmpty) "\n" + r.error else "")
   }.mkString("\n\n")
   def clearDecorations(): Unit = { synchronized { decorations.clear() }; refresh() }
-  def clearHistory(): Unit = synchronized { state.entries.clear(); pendingErrors.clear() }
+  def clearHistory(): Unit = {
+    synchronized { state.entries.clear(); pendingErrors.clear() }
+    refreshHistory()
+  }
+  def refreshHistory(): Unit = ApplicationManager.getApplication.invokeLater(() => {
+    if (!project.isDisposed) project.getMessageBus.syncPublisher(HistoryChanged).historyChanged()
+  })
   private def refresh(): Unit = ApplicationManager.getApplication.invokeLater(() => {
     if (!project.isDisposed) DaemonCodeAnalyzer.getInstance(project).restart()
   })

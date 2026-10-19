@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.explanation
 
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.github.vbmacher.intellij.cucumber.scala.util.OllamaCredentials
 import com.github.vbmacher.intellij.cucumber.scala.settings.{FailureExplanationSettings, ScalaCucumberSettings}
 import com.intellij.openapi.actionSystem.{ActionPlaces, AnActionEvent, CommonDataKeys, DataContext}
 import com.intellij.openapi.options.ConfigurationException
@@ -58,16 +59,17 @@ class FailureExplanationSettingsSpec extends ScCucumberSpecBase {
   @Test
   def testPasswordSafeIsEndpointScopedAndExcludedFromProjectSettings(): Unit = {
     val url = "https://example.test/ollama"
+    val credentials = new OllamaCredentials(getProject, "failure explanation")
     val future = AppExecutorUtil.getAppExecutorService.submit(new Callable[Unit] {
       override def call(): Unit = {
         try {
-          FailureExplanationCredentials.save(getProject, url, Some("fixture-private-token"))
-          FailureExplanationCredentials.token(getProject, url + "/") shouldBe Some("fixture-private-token")
-          FailureExplanationCredentials.token(getProject, "https://other.example.test") shouldBe None
+          credentials.save(url, Some("fixture-private-token"))
+          credentials.token(url + "/") shouldBe Some("fixture-private-token")
+          credentials.token("https://other.example.test") shouldBe None
           val serialized = JDOMUtil.writeElement(XmlSerializer.serialize(ScalaCucumberSettings.getInstance(getProject)))
           serialized should not include "fixture-private-token"
-        } finally FailureExplanationCredentials.save(getProject, url, None)
-        FailureExplanationCredentials.token(getProject, url) shouldBe None
+        } finally credentials.save(url, None)
+        credentials.token(url) shouldBe None
       }
     })
     PlatformTestUtil.waitForFuture(future)

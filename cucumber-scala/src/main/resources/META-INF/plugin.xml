@@ -344,6 +344,9 @@
                 language="Scala"/>
     </extensions>
     <actions>
+        <action id="ScalaCucumber.SuggestEdgeCases" class="com.github.vbmacher.intellij.cucumber.scala.drafts.SuggestEdgeCasesAction" text="Suggest edge cases…">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="ScalaCucumber.ExplainFailure" class="com.github.vbmacher.intellij.cucumber.scala.explanation.ExplainFailureAction" text="Explain Cucumber Failure…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>

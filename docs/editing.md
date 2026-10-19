@@ -53,6 +53,31 @@ several conversions are possible, choose the intended candidate.
 The [creation example](../example/src/test/resources/cucumber/examples/scalacalculator/create_step_definition.feature)
 contains an undefined step to try.
 
+## Suggest edge-case scenarios
+
+After [setup](installation.md#prepare-optional-chat-models), enable
+[edge-case drafts](configuration.md#edge-case-drafts). Select specification text in a
+feature file, or place the caret in a scenario, Rule or feature, then choose
+**Suggest edge cases…** from the editor context menu.
+
+Review **Context to send**, including the applicable descriptions and Backgrounds.
+Remove anything you do not want to send. The window shows the destination server
+and model; nothing is sent until you click **Generate drafts**. Context must fit
+within 32,000 characters.
+
+Use **Inspect** to review each draft's proposed Gherkin, reason and validation.
+Select the drafts you want, then click **Insert selected**. They are inserted after
+the current scenario, or at the end of the selected feature or Rule, as one undoable
+edit. Syntax errors block selection. Unresolved steps need implementations; ambiguous
+steps list their matching definitions. **Step definition found** describes source
+resolution. Every draft is **Not executed**: review its assumptions and expected
+outcomes before running it. For outlines, step resolution uses the example
+substitution used by editor navigation.
+
+**Cancel request**, closing the window or a provider error leaves source unchanged.
+If the feature or model settings change during review, reopen the action for a new
+review. Step validation waits for indexing; insertion also requires indexes to be ready.
+
 ## Rename and reuse wording
 
 Use **Rename** on a Scala step definition to change its expression and corresponding
