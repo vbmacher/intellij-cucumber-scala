@@ -38,11 +38,22 @@ class ScCucumberExtension extends AbstractCucumberExtension {
     // Check before the cache so previously resolved steps cannot enable navigation during indexing.
     if (DumbService.isDumb(project)) util.Collections.emptyList()
     else CachedValuesManager.getManager(project).getCachedValue(module, () => CachedValueProvider.Result.create(
-      util.Collections.unmodifiableList(findSteps(module)),
+      util.Collections.unmodifiableList(ScCucumberExtension.findSteps(module)),
       PsiModificationTracker.getInstance(project).forLanguages(_.isKindOf(ScalaLanguage.INSTANCE)),
       ProjectRootManager.getInstance(project)
     ))
   }
+
+  override def getStepDefinitionContainers(featureFile: GherkinFile): util.Collection[_ <: PsiFile] =
+    moduleOf(featureFile).toSeq
+      .flatMap(loadStepsFor(_).asScala)
+      .flatMap(step => Option(step.getElement))
+      .flatMap(element => Try(element.getContainingFile).toOption)
+      .filter(isWritableStepLikeFile)
+      .asJava
+}
+
+object ScCucumberExtension {
 
   private def findSteps(module: Module): util.List[AbstractStepDefinition] = {
     val project = module.getProject
@@ -56,12 +67,4 @@ class ScCucumberExtension extends AbstractCucumberExtension {
       .map(call => new ScStepDefinition(call, parameterTypes): AbstractStepDefinition)
       .asJava
   }
-
-  override def getStepDefinitionContainers(featureFile: GherkinFile): util.Collection[_ <: PsiFile] =
-    moduleOf(featureFile).toSeq
-      .flatMap(loadStepsFor(_).asScala)
-      .flatMap(step => Option(step.getElement))
-      .flatMap(element => Try(element.getContainingFile).toOption)
-      .filter(isWritableStepLikeFile)
-      .asJava
 }

@@ -84,16 +84,22 @@ Semantic search finds related wording using an embedding model. First complete t
 [provider configuration](configuration.md#scenario-semantic-search).
 
 1. Choose the scope and set **Match** to **Semantic**. The **Semantic index** controls expand.
-2. Click **Rebuild index** to send the scope's scenario text to the configured server
-   and build an index in memory.
-3. Enter a query and click **Search**. The query is sent to the same server for comparison.
-4. Inspect the returned scenarios and their similarity scores before opening the source.
+2. Enter a query and click **Search**. If needed, the index builds automatically by
+   sending the scope's scenario text to the configured server. The query is sent
+   to the same server for comparison.
+3. Inspect the returned scenarios and their similarity scores before opening the source.
+
+In a feature editor, right-click a feature title, scenario title or step expression
+and choose **Find similar...**. This opens **Scenario Search** in **Semantic** mode,
+fills the query with the title or step text and starts the search. Selected text
+is used when present.
 
 ![Semantic search and index controls](images/semantic-search.png)
 
 The search returns up to 50 related scenarios. Similarity suggests wording to inspect;
 it does not prove step binding or coverage. The index is not saved to disk. Feature
-edits or deletions, a scope change, or a provider/model change invalidate it; rebuild
-when requested. **Delete index** removes it from memory. **Cancel** stops a pending
+edits or deletions, a scope change, or a provider/model change invalidate it; it rebuilds
+automatically on the next semantic search. **Rebuild index** forces a rebuild;
+**Delete index** removes it from memory. **Cancel** stops a pending
 search or rebuild. If the model server is unavailable, **Exact text** remains usable.
 

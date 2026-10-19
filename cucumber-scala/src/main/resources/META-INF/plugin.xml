@@ -347,6 +347,9 @@
         <action id="ScalaCucumber.ExplainFailure" class="com.github.vbmacher.intellij.cucumber.scala.explanation.ExplainFailureAction" text="Explain Cucumber Failure…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
+        <action id="ScalaCucumber.FindSimilar" class="com.github.vbmacher.intellij.cucumber.scala.suite.FindSimilarAction" text="Find similar...">
+            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+        </action>
         <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.creation.BatchStepCreationAction" text="Create Missing Scala Steps…">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>

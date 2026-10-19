@@ -155,12 +155,12 @@ class ScenarioSearchPanel(project: Project,
     results.getEmptyText.setText("Search cancelled")
     status.setText("Cancelled. Search or rebuild to try again.")
   })
-  scope.addActionListener(_ => invalidate("Scope changed. Rebuild the semantic index for this scope."))
+  scope.addActionListener(_ => invalidate("Scope changed. The semantic index will rebuild on the next search."))
   mode.addActionListener(_ => {
     stop()
     clearResults()
     updateMode()
-    status.setText(if (mode.getSelectedIndex == 1 && index.isEmpty) "Build an index, then enter a query to find related scenarios." else "Enter a query and press Enter, or click Search.")
+    status.setText(if (mode.getSelectedIndex == 1 && index.isEmpty) "Enter a query; the semantic index builds automatically when needed." else "Enter a query and press Enter, or click Search.")
   })
   query.getDocument.addDocumentListener(new javax.swing.event.DocumentListener {
     private def changed(): Unit = { stop(); clearResults(); status.setText("Press Enter or click Search.") }
@@ -172,7 +172,7 @@ class ScenarioSearchPanel(project: Project,
     val previous = provider.id
     ShowSettingsUtil.getInstance().showSettingsDialog(project, "Scala Cucumber")
     updateProvider()
-    if (previous != provider.id) invalidate("Provider or model changed. Rebuild the semantic index.")
+    if (previous != provider.id) invalidate("Provider or model changed. The semantic index will rebuild on the next search.")
   })
   results.addListSelectionListener(_ => {
     snippet.setText(Option(results.getSelectedValue).map(_.document.text).getOrElse(""))
@@ -202,14 +202,14 @@ class ScenarioSearchPanel(project: Project,
   EditorFactory.getInstance().getEventMulticaster.addDocumentListener(new DocumentListener {
     override def documentChanged(event: DocumentEvent): Unit = {
       if (Option(PsiDocumentManager.getInstance(project).getPsiFile(event.getDocument)).exists(_.isInstanceOf[GherkinFile]))
-        invalidate("Feature text changed. Search again; semantic mode requires an index rebuild.")
+        invalidate("Feature text changed. Search again; the semantic index will rebuild automatically.")
     }
   }, this)
   PsiManager.getInstance(project).addPsiTreeChangeListener(new PsiTreeChangeAdapter {
     private def changed(event: PsiTreeChangeEvent): Unit = {
       val files = Seq(event.getFile, event.getChild, event.getOldChild, event.getNewChild).filter(_ != null)
       if (files.isEmpty || files.exists(e => e.isInstanceOf[GherkinFile] || Option(e.getContainingFile).exists(_.isInstanceOf[GherkinFile])))
-        invalidate("Feature sources changed. Search again; semantic mode requires an index rebuild.")
+        invalidate("Feature sources changed. Search again; the semantic index will rebuild automatically.")
     }
     override def childrenChanged(e: PsiTreeChangeEvent): Unit = changed(e)
     override def childAdded(e: PsiTreeChangeEvent): Unit = changed(e)
@@ -265,6 +265,13 @@ class ScenarioSearchPanel(project: Project,
     } else application.invokeLater(() => if (!disposed) invalidate(message))
   }
 
+  def findSimilar(text: String): Unit = {
+    mode.setSelectedItem("Semantic")
+    query.setText(text)
+    start(build = false)
+    query.requestFocusInWindow()
+  }
+
   private def start(build: Boolean): Unit = {
     PsiDocumentManager.getInstance(project).commitAllDocuments()
     stop()
@@ -277,56 +284,62 @@ class ScenarioSearchPanel(project: Project,
       else modules(scope.getSelectedIndex - 1).getModuleContentScope
     val embedding = provider
     val previousIndex = index
-    if (!build && semantic && previousIndex.isEmpty) status.setText("Build the semantic index first, or choose Exact text.")
-    else {
-      if (build) index = None
-      busy = true
-      updateControls()
-      results.getEmptyText.setText(if (build) "Building semantic index…" else "Searching scenarios…")
-      status.setText(if (build) "Building semantic index…" else "Searching…")
-      new Task.Backgroundable(project, "Scala Cucumber scenario search", true) {
-        private var hits = Seq.empty[ScenarioSearch.Hit]
-        private var built: Option[ScenarioSearch.Index] = None
-        override def run(indicator: ProgressIndicator): Unit = {
-          def check(): Unit = {
-            indicator.checkCanceled()
-            if (disposed || generation.get() != id) throw new ProcessCanceledException()
-          }
-          check()
-          val documents = ReadAction.nonBlocking[Seq[ScenarioSearch.Document]](() => ScenarioSearch.documents(project, selectedScope))
-            .inSmartMode(project).expireWith(ScenarioSearchPanel.this).expireWhen(() => disposed || generation.get() != id).executeSynchronously()
-          check()
-          // No read lock or UI thread is held while waiting for Ollama.
-          if (build) built = Some(ScenarioSearch.build(documents, embedding, () => check()))
-          else if (semantic) hits = previousIndex.toSeq.flatMap(ScenarioSearch.semantic(documents, text, embedding, _, () => check()))
-          else hits = ScenarioSearch.exact(documents, text, () => check())
-          check()
+    if (build) index = None
+    busy = true
+    updateControls()
+    results.getEmptyText.setText(if (build || (semantic && previousIndex.isEmpty)) "Building semantic index…" else "Searching scenarios…")
+    status.setText(if (build || (semantic && previousIndex.isEmpty)) "Building semantic index…" else "Searching…")
+    new Task.Backgroundable(project, "Scala Cucumber scenario search", true) {
+      private var hits = Seq.empty[ScenarioSearch.Hit]
+      private var built: Option[ScenarioSearch.Index] = None
+      override def run(indicator: ProgressIndicator): Unit = {
+        def check(): Unit = {
+          indicator.checkCanceled()
+          if (disposed || generation.get() != id) throw new ProcessCanceledException()
         }
-        override def onSuccess(): Unit = if (!disposed && generation.get() == id) {
-          built.foreach(value => index = Some(value))
-          hits.foreach(model.addElement)
-          if (!model.isEmpty) results.setSelectedIndex(0)
-          busy = false
-          updateControls()
-          resultsTitle.setText(if (build) "Results" else s"Results · ${hits.size}")
-          results.getEmptyText.setText(if (build) "Index ready. Enter a query to find related scenarios." else "No scenarios match this search")
-          status.setText(built.map(_ => s"Semantic index ready · ${scope.getSelectedItem}")
-            .getOrElse(s"${hits.size} ${if (hits.size == 1) "scenario" else "scenarios"} · ${mode.getSelectedItem} · ${scope.getSelectedItem}"))
+        check()
+        val documents = ReadAction.nonBlocking[Seq[ScenarioSearch.Document]](() => ScenarioSearch.documents(project, selectedScope))
+          .inSmartMode(project).expireWith(ScenarioSearchPanel.this).expireWhen(() => disposed || generation.get() != id).executeSynchronously()
+        check()
+        // No read lock or UI thread is held while waiting for Ollama.
+        if (build) built = Some(ScenarioSearch.build(documents, embedding, () => check()))
+        else if (semantic) {
+          val current = previousIndex.filter(value => value.provider == embedding.id && documents.map(_.text).toSet == value.vectors.keySet)
+            .getOrElse {
+              val value = ScenarioSearch.build(documents, embedding, () => check())
+              built = Some(value)
+              value
+            }
+          hits = ScenarioSearch.semantic(documents, text, embedding, current, () => check())
         }
-        override def onCancel(): Unit = if (!disposed && generation.get() == id) {
-          busy = false
-          updateControls()
-          results.getEmptyText.setText("Search cancelled")
-          status.setText("Cancelled. Search or rebuild to try again.")
-        }
-        override def onThrowable(error: Throwable): Unit = if (!disposed && generation.get() == id) {
-          busy = false
-          updateControls()
-          results.getEmptyText.setText("Search unavailable")
-          status.setText("Search unavailable: " + Option(error.getMessage).getOrElse("check Ollama settings") + " Exact text remains available.")
-        }
-      }.queue()
-    }
+        else hits = ScenarioSearch.exact(documents, text, () => check())
+        check()
+      }
+      override def onSuccess(): Unit = if (!disposed && generation.get() == id) {
+        built.foreach(value => index = Some(value))
+        hits.foreach(model.addElement)
+        if (!model.isEmpty) results.setSelectedIndex(0)
+        busy = false
+        updateControls()
+        resultsTitle.setText(if (build) "Results" else s"Results · ${hits.size}")
+        results.getEmptyText.setText(if (build) "Index ready. Enter a query to find related scenarios." else "No scenarios match this search")
+        status.setText(Option.when(build)(s"Semantic index ready · ${scope.getSelectedItem}")
+          .getOrElse(s"${hits.size} ${if (hits.size == 1) "scenario" else "scenarios"} · ${mode.getSelectedItem} · ${scope.getSelectedItem}"))
+      }
+      override def onCancel(): Unit = if (!disposed && generation.get() == id) {
+        busy = false
+        updateControls()
+        results.getEmptyText.setText("Search cancelled")
+        status.setText("Cancelled. Search or rebuild to try again.")
+      }
+      override def onThrowable(error: Throwable): Unit = if (!disposed && generation.get() == id) {
+        busy = false
+        updateControls()
+        results.getEmptyText.setText("Search unavailable")
+        status.setText("Search unavailable: " + Option(error.getMessage).getOrElse("check Ollama settings") + " Exact text remains available.")
+      }
+    }.queue()
   }
+
   override def dispose(): Unit = { disposed = true; stop(); index = None }
 }

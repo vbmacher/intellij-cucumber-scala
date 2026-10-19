@@ -1,9 +1,12 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
+import com.intellij.openapi.actionSystem.{ActionPlaces, AnActionEvent, CommonDataKeys, DataContext}
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.util.Disposer
+import com.intellij.openapi.wm.{RegisterToolWindowTask, ToolWindowManager}
 import com.intellij.testFramework.PlatformTestUtil
+import com.intellij.ui.content.ContentFactory
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -111,7 +114,7 @@ class ScenarioSearchPanelSpec extends ScCucumberSpecBase {
     })
     results(view).getModel.getSize shouldBe 0
     button(view, "Search").doClick()
-    status(view, "Build the semantic index first") shouldBe true
+    await(view, "1 scenario · Semantic")
     mode(view, "Exact text")
     children(view).collectFirst { case field: JTextField => field }.get.setText("changed")
     button(view, "Search").doClick()
@@ -121,7 +124,67 @@ class ScenarioSearchPanelSpec extends ScCucumberSpecBase {
     button(view, "Delete index").doClick()
     mode(view, "Semantic")
     button(view, "Search").doClick()
-    status(view, "Build the semantic index first") shouldBe true
+    await(view, "1 scenario · Semantic")
+  }
+
+  @Test
+  def testFindSimilarActionSelectsSearchTabAndRunsSemanticQuery(): Unit = {
+    myFixture.configureByText("payments.feature", "Feature: Payments\n  Scenario: Account\n    Given bal<caret>ance\n")
+    val embedding = new ScenarioSearch.Embeddings {
+      override val id: String = "fixture model"
+      override def embed(text: String, check: () => Unit): Vector[Double] = Vector(1, 0)
+    }
+    val view = panel(embedding)
+    val manager = ToolWindowManager.getInstance(getProject)
+    val window = manager.registerToolWindow(RegisterToolWindowTask.notClosable("Scala Cucumber"))
+    try {
+      val contents = window.getContentManager
+      contents.addContent(ContentFactory.getInstance().createContent(new JPanel(), "Suite", false))
+      val searchContent = ContentFactory.getInstance().createContent(view, "Scenario Search", false)
+      contents.addContent(searchContent)
+      val context: DataContext = key =>
+        if (CommonDataKeys.PROJECT.is(key)) getProject
+        else if (CommonDataKeys.PSI_FILE.is(key)) myFixture.getFile
+        else if (CommonDataKeys.EDITOR.is(key)) myFixture.getEditor
+        else null
+      new FindSimilarAction().actionPerformed(AnActionEvent.createFromDataContext(ActionPlaces.EDITOR_POPUP, null, context))
+      await(view, "1 scenario · Semantic")
+      contents.getSelectedContent shouldBe searchContent
+      children(view).collectFirst { case field: JTextField => field.getText }.get shouldBe "balance"
+    } finally manager.unregisterToolWindow("Scala Cucumber")
+  }
+
+  @Test
+  def testFindSimilarBuildsAutomaticallyAndReusesOnlyCurrentIndex(): Unit = {
+    myFixture.configureByText("payments.feature", "Feature: Payments\n  Scenario: Account\n    Given balance\n")
+    val requests = new java.util.concurrent.CopyOnWriteArrayList[String]()
+    val providerId = new java.util.concurrent.atomic.AtomicReference[String]("first model")
+    val embedding = new ScenarioSearch.Embeddings {
+      override def id: String = providerId.get()
+      override def embed(text: String, check: () => Unit): Vector[Double] = {
+        requests.add(text)
+        Vector(1, 0)
+      }
+    }
+    val view = panel(embedding)
+    view.findSimilar("account balance")
+    await(view, "1 scenario · Semantic")
+    children(view).collectFirst { case field: JTextField => field.getText }.get shouldBe "account balance"
+    requests.size() shouldBe 2
+    button(view, "Search").doClick()
+    await(view, "1 scenario · Semantic")
+    requests.size() shouldBe 3
+    providerId.set("second model")
+    button(view, "Search").doClick()
+    await(view, "1 scenario · Semantic")
+    requests.size() shouldBe 5
+    WriteCommandAction.runWriteCommandAction(getProject, new Runnable {
+      override def run(): Unit = myFixture.getEditor.getDocument.insertString(myFixture.getEditor.getDocument.getTextLength, "    Then updated\n")
+    })
+    button(view, "Search").doClick()
+    await(view, "1 scenario · Semantic")
+    requests.size() shouldBe 7
+    requests.get(5) should include("Then updated")
   }
 
   @Test
@@ -162,8 +225,9 @@ class ScenarioSearchPanelSpec extends ScCucumberSpecBase {
       PlatformTestUtil.waitWithEventsDispatching("embedding finished", () => finished.getCount == 0, 10)
       PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
       mode(view, "Semantic")
+      children(view).collectFirst { case field: JTextField => field }.get.setText("Account")
       button(view, "Search").doClick()
-      status(view, "Build the semantic index first") shouldBe true
+      await(view, "1 scenario · Semantic")
       mode(view, "Exact text")
       button(view, "Search").doClick()
       await(view, "1 scenario · Exact text")
