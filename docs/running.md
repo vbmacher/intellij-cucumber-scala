@@ -12,6 +12,8 @@ the header has no row-run action.
 The plugin creates a **Scala Cucumber** run configuration for the selected location.
 For tag filters, selection preview, glue packages and runtime options, see
 [run configurations](configuration.md#run-configurations).
+See the [selection contract](../features/running.md#contract) for inherited tags and
+the limitation on tagged Rule headers.
 To run several scenarios from one module, select them in the
 [Suite tab](workspace.md#suite) and click **Run selection**.
 

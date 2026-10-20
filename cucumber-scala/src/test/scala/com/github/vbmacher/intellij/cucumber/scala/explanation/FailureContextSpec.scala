@@ -24,14 +24,14 @@ class FailureContextSpec extends ScCucumberSpecBase {
       | 10     |
       | 20     |
 """
-  private def record(file: PsiFile, run: String = "run", row: Int = 8, status: String = "FAILED", step: Int = 5): RunResults.Decoration = {
+  private def record(file: PsiFile, run: String = "run", row: Int = 8, status: String = "FAILED", step: Int = 5): RunResults.RecordedResult = {
     val store = RunResults.getInstance(getProject)
     val context = RunResults.Context(PsiModificationTracker.getInstance(getProject).getModificationCount, "revision", "local", Map.empty, 123L)
     store.record(CucumberMessages.StepResult(run, file.getVirtualFile.getUrl, step, file.getVirtualFile.getUrl + ":" + row,
       status, 1L, "AssertionError: expected 90, actual 100\n  at Steps.apply(Steps.scala:3)"), context)
     store.failures(file.getVirtualFile.getUrl).find(d => d.result.run == run && d.result.line == step).get
   }
-  private def collect(result: RunResults.Decoration): FailureContext.Snapshot =
+  private def collect(result: RunResults.RecordedResult): FailureContext.Snapshot =
     inReadAction(FailureContext.collect(com.intellij.psi.PsiManager.getInstance(getProject).findFile(myFixture.findFileInTempDir("payments.feature")).asInstanceOf[GherkinFile], result)).fold(message => fail(message), identity)
 
   @Test
@@ -93,7 +93,7 @@ class FailureContextSpec extends ScCucumberSpecBase {
       myFixture.configureFromExistingVirtualFile(file.getVirtualFile)
       val result = record(file)
       val snapshot = collect(result)
-      RunResults.getInstance(getProject).clearDecorations()
+      RunResults.getInstance(getProject).clearEditorResults()
       snapshot.problem(getProject).get should include("cleared or replaced")
       inReadAction(FailureContext.collect(com.intellij.psi.PsiManager.getInstance(getProject).findFile(myFixture.findFileInTempDir("payments.feature")).asInstanceOf[GherkinFile], result)).left.toOption.get should include("no longer available")
       val current = record(file, "current")

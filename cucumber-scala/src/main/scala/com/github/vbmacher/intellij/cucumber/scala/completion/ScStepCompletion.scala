@@ -1,8 +1,9 @@
 package com.github.vbmacher.intellij.cucumber.scala.completion
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
-import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumberExtension, StepUsage}
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumberExtension
 import com.github.vbmacher.intellij.cucumber.scala.suite.SuiteCatalog
 import com.intellij.codeInsight.completion._
 import com.intellij.codeInsight.lookup._
@@ -23,7 +24,7 @@ class ScStepCompletion extends CompletionContributor {
     val settings = ScalaCucumberSettings.getInstance(project)
     val entries = SuiteCatalog.entries(project, module.getModuleWithDependenciesAndLibrariesScope(true))
     val step = Option(PsiTreeUtil.getParentOfType(parameters.getPosition, classOf[GherkinStep], false))
-    val tags = step.toSeq.flatMap(StepUsage.tags).toSet
+    val tags = step.toSeq.flatMap(Scenarios.inheritedTags).toSet
     result.runRemainingContributors(parameters, (completion: CompletionResult) => {
       val lookup = completion.getLookupElement
       val element = lookup.getPsiElement
@@ -33,7 +34,7 @@ class ScStepCompletion extends CompletionContributor {
           val usages = SuiteCatalog.usages(entries, c.getFirstChild)
           val sourceModule = moduleOf(c)
           val source = c.getContainingFile.getName + sourceModule.map(m => " · " + m.getName).getOrElse("")
-          val usedTags = usages.flatMap(StepUsage.tags).distinct.sorted
+          val usedTags = usages.flatMap(Scenarios.inheritedTags).distinct.sorted
           val sharedTags = usedTags.toSet.intersect(tags).size
           val deprecated = ScStepCompletion.deprecation(c)
           val score = (if (settings.rankByReuse) usages.size.toDouble else 0.0) +

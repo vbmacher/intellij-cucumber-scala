@@ -1,7 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.completion.ScStepTemplates
-import com.github.vbmacher.intellij.cucumber.scala.run.{RunHistoryPanel, ScCucumberConfigurationType, ScCucumberRunConfiguration, ScenarioSelection}
+import com.github.vbmacher.intellij.cucumber.scala.run.{RunHistoryPanel, ScCucumberConfigurationType, ScCucumberRunConfiguration}
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
@@ -57,16 +58,8 @@ class ShowSuiteAction extends AnAction("Scala Cucumber Suite") {
 }
 
 class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Disposable {
-  private val descriptions = Seq(
-    "Scenarios" -> "Browse all project scenarios. Select a scenario to inspect its steps.",
-    "Step definitions" -> "Scala expressions and the scenarios whose steps match them. Select a definition to see those scenarios. Matches include ambiguous bindings; outlines count once.",
-    "Undefined steps" -> "Feature steps with no matching Scala definition. Open a step to add or correct its implementation.",
-    "Ambiguous steps" -> "Feature steps matching more than one Scala definition. Select a step to see the competing definitions; make its binding unique before running.",
-    "Unused definitions" -> "Scala definitions with no matching feature step in this project. They may have consumers outside this project.",
-    "Repeated expressions" -> "Scala definitions declaring the same expression. Select a definition to compare the other declarations; different expressions can also cause ambiguous steps.",
-    "Duplicate scenarios" -> "Scenarios with the same ordered step bodies and arguments. Select a scenario to compare the others; matching wording does not prove business equivalence."
-  )
-  private val category = new JComboBox[String](descriptions.map(_._1).toArray)
+  private val viewSelector = new JComboBox[SuiteView](SuiteView.values.toArray)
+  private def selectedView: SuiteView = viewSelector.getItemAt(viewSelector.getSelectedIndex)
   private val kind = new JComboBox[String](Array("Any step kind", "Given", "When", "Then"))
   private val byModule = new JCheckBox("Module", true)
   private val byTag = new JCheckBox("Tag")
@@ -104,12 +97,12 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
     panel.add(component, BorderLayout.CENTER)
     panel
   }
-  Seq(category, kind).foreach(c => c.setMinimumSize(new Dimension(0, c.getPreferredSize.height)))
+  Seq(viewSelector, kind).foreach(c => c.setMinimumSize(new Dimension(0, c.getPreferredSize.height)))
   private val viewRow = new JPanel(new BorderLayout(JBUI.scale(6), 0))
   private val scanButtons = new JPanel(new FlowLayout(FlowLayout.RIGHT, JBUI.scale(6), 0))
   scanButtons.add(refresh)
   scanButtons.add(cancel)
-  viewRow.add(labeled("View:", category), BorderLayout.CENTER)
+  viewRow.add(labeled("View:", viewSelector), BorderLayout.CENTER)
   viewRow.add(scanButtons, BorderLayout.EAST)
   private val groupingOptions = new JPanel(new FlowLayout(FlowLayout.LEFT, JBUI.scale(6), 0))
   groupingOptions.add(new JLabel("Group by:"))
@@ -153,7 +146,7 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   filter.getEmptyText.setText("Filter names, modules or file paths")
   filter.getAccessibleContext.setAccessibleName("Suite text filter")
   refresh.addActionListener(_ => scan())
-  category.addActionListener(_ => display())
+  viewSelector.addActionListener(_ => display())
   kind.addActionListener(_ => display())
   Seq(byModule, byTag, byCategory).foreach(_.addActionListener(_ => display()))
   tagFilter.getEmptyText.setText("@smoke and not @ignored")
@@ -218,7 +211,7 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
     inReadAction(Option(finding.source.target).filter(_.isValid).map(_.getText))
       .foreach(text => Dialogs.confirm(project, finding.source.toString, text))
   })
-  insert.addActionListener(_ => selected.filter(_.category == "Step definitions").foreach { finding =>
+  insert.addActionListener(_ => selected.filter(_.view == SuiteView.Definitions).foreach { finding =>
     val target = finding.source.target
     inReadAction(Option(target).filter(_.isValid).flatMap(t => ScCucumber.asCall(t.getParent)).flatMap(_.pattern)).foreach { expression =>
       val editor = com.intellij.openapi.fileEditor.FileEditorManager.getInstance(project).getSelectedTextEditor
@@ -250,7 +243,7 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
         val configuration = settings.getConfiguration.asInstanceOf[ScCucumberRunConfiguration]
         configuration.setModule(selectedModules.head)
         configuration.featureUrl = targets.head.getContainingFile.getVirtualFile.getUrl
-        configuration.selectedLocations = targets.map(s => s.getContainingFile.getVirtualFile.getPath + ":" + (s.getContainingFile.getText.take(ScenarioSelection.sourceOffset(s)).count(_ == '\n') + 1))
+        configuration.selectedLocations = targets.map(s => s.getContainingFile.getVirtualFile.getPath + ":" + (s.getContainingFile.getText.take(Scenarios.sourceOffset(s)).count(_ == '\n') + 1))
         configuration.tags = tagFilter.getText
         Some(settings)
       } else None
@@ -317,7 +310,7 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   }
   private def navigate(source: SuiteAnalysis.Source): Unit = {
     val descriptor = inReadAction {
-      Option(source.target).filter(_.isValid).map(t => new OpenFileDescriptor(project, t.getContainingFile.getVirtualFile, ScenarioSelection.sourceOffset(t)))
+      Option(source.target).filter(_.isValid).map(t => new OpenFileDescriptor(project, t.getContainingFile.getVirtualFile, Scenarios.sourceOffset(t)))
     }
     descriptor match {
       case Some(value) => value.navigate(true)
@@ -327,22 +320,15 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
   private def showRelated(): Unit = {
     relatedModel.clear()
     selected.foreach(_.related.foreach(relatedModel.addElement))
-    val title = category.getSelectedItem match {
-      case "Scenarios" => "Scenario steps"
-      case "Step definitions" | "Unused definitions" => "Matching scenarios"
-      case "Ambiguous steps" => "Competing definitions"
-      case "Repeated expressions" => "Other declarations"
-      case "Duplicate scenarios" => "Other scenarios"
-      case _ => "Related sources"
-    }
+    val title = selectedView.relatedTitle
     relatedTitle.setText(s"$title · ${relatedModel.size}")
     relatedList.getEmptyText.setText(s"No ${title.toLowerCase(java.util.Locale.ROOT)} in this project")
-    relatedPanel.setVisible(selected.nonEmpty && category.getSelectedItem != "Undefined steps")
+    relatedPanel.setVisible(selected.nonEmpty && selectedView != SuiteView.Undefined)
     open.setEnabled(selected.nonEmpty)
     preview.setEnabled(selected.nonEmpty)
-    insert.setVisible(category.getSelectedItem == "Step definitions")
+    insert.setVisible(selectedView == SuiteView.Definitions)
     insert.setEnabled(selected.nonEmpty)
-    run.setVisible(category.getSelectedItem == "Scenarios")
+    run.setVisible(selectedView == SuiteView.Scenarios)
     val selection = selectedFindings
     run.setEnabled(selection.nonEmpty && selection.forall(_.runtimeModuleName.nonEmpty) && selection.map(_.runtimeModuleName).distinct.size == 1)
     run.setToolTipText(if (run.isEnabled) s"Run ${selection.size} selected scenarios" else "Select scenarios or groups from one runnable module")
@@ -384,19 +370,19 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
       }).submit(AppExecutorUtil.getAppExecutorService))
   }
   private def display(): Unit = {
-    val view = category.getSelectedItem.toString
-    val hasFeatureTags = !Set("Step definitions", "Unused definitions", "Repeated expressions").contains(view)
+    val view = selectedView
+    val hasFeatureTags = view.hasFeatureTags
     byTag.setVisible(hasFeatureTags)
     byCategory.setVisible(hasFeatureTags)
-    scenarioOptions.setVisible(view == "Scenarios")
-    definitionOptions.setVisible(view == "Step definitions")
-    explanation.setText(descriptions.find(_._1 == view).map(_._2).getOrElse(""))
+    scenarioOptions.setVisible(view == SuiteView.Scenarios)
+    definitionOptions.setVisible(view == SuiteView.Definitions)
+    explanation.setText(view.description)
     val query = filter.getText.toLowerCase(java.util.Locale.ROOT)
     val parsedTags = scala.util.Try(io.cucumber.tagexpressions.TagExpressionParser.parse(tagFilter.getText)).toOption
-    val baseRows = report.toSeq.flatMap(_.findings).filter(f => f.category == view &&
+    val baseRows = report.toSeq.flatMap(_.findings).filter(f => f.view == view &&
       (f.source.toString + " " + f.moduleGroup.name).toLowerCase(java.util.Locale.ROOT).contains(query))
-      .filter(f => kind.getSelectedIndex == 0 || view != "Step definitions" || f.keyword.exists(_.equalsIgnoreCase(kind.getSelectedItem.toString)))
-      .filter(f => view != "Scenarios" || parsedTags.exists(expression => f.tagSets.exists(tags => expression.evaluate(tags.asJava))))
+      .filter(f => kind.getSelectedIndex == 0 || view != SuiteView.Definitions || f.keyword.exists(_.equalsIgnoreCase(kind.getSelectedItem.toString)))
+      .filter(f => view != SuiteView.Scenarios || parsedTags.exists(expression => f.tagSets.exists(tags => expression.evaluate(tags.asJava))))
     val categories = ScalaCucumberSettings.getInstance(project).tagCategories.linesIterator.flatMap { line =>
       val parts = line.split("=>", 2)
       if (parts.length == 2) scala.util.Try(io.cucumber.tagexpressions.TagExpressionParser.parse(parts(1).trim)).toOption.map(parts(0).trim -> _) else None
@@ -436,11 +422,11 @@ class SuitePanel(project: Project) extends JPanel(new BorderLayout()) with Dispo
       .filter(_.getUserObject match { case finding: SuiteAnalysis.Finding => previousSelection(finding.source.target); case _ => false })
       .map(node => new javax.swing.tree.TreePath(node.getPath.map(_.asInstanceOf[AnyRef]))).toArray
     if (restored.nonEmpty) resultsTree.setSelectionPaths(restored)
-    summary.setText(if (view == "Scenarios" && parsedTags.isEmpty) "Invalid tag expression. Correct the Tags field to show scenarios." else scanState)
+    summary.setText(if (view == SuiteView.Scenarios && parsedTags.isEmpty) "Invalid tag expression. Correct the Tags field to show scenarios." else scanState)
     resultsTitle.setText(s"$view · ${baseRows.size}")
-    resultsTree.getEmptyText.setText(if (report.isEmpty) scanState else if (view == "Scenarios" && parsedTags.isEmpty) "Invalid tag expression"
-      else if (query.nonEmpty || (view == "Scenarios" && tagFilter.getText.nonEmpty) || (view == "Step definitions" && kind.getSelectedIndex != 0)) "No results match these filters"
-      else s"No ${view.toLowerCase(java.util.Locale.ROOT)} in this project")
+    resultsTree.getEmptyText.setText(if (report.isEmpty) scanState else if (view == SuiteView.Scenarios && parsedTags.isEmpty) "Invalid tag expression"
+      else if (query.nonEmpty || (view == SuiteView.Scenarios && tagFilter.getText.nonEmpty) || (view == SuiteView.Definitions && kind.getSelectedIndex != 0)) "No results match these filters"
+      else s"No ${view.label.toLowerCase(java.util.Locale.ROOT)} in this project")
     showRelated()
     revalidate()
   }

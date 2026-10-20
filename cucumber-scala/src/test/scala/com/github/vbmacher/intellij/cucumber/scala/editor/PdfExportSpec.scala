@@ -1,10 +1,12 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
-import com.github.vbmacher.intellij.cucumber.scala.publish.JcefPdfExporter
+import com.github.vbmacher.intellij.cucumber.scala.publish.{JcefPdfExporter, JcefProxyStartup}
+import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.util.registry.Registry
 import com.intellij.testFramework.PlatformTestUtil
 import com.intellij.ui.jcef.JBCefApp
+import com.intellij.util.net.HttpConfigurable
 import org.junit.{Assume, Test}
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
@@ -23,6 +25,11 @@ class PdfExportSpec extends ScCucumberSpecBase {
   @Test
   def testActualPdfRendererAndCancellationPreserveDestination(): Unit = {
     requireJcef()
+    val application = ApplicationManager.getApplication
+    val browserStarted = JBCefApp.isStarted()
+    new JcefProxyStartup().appFrameCreated(java.util.Collections.emptyList[String]())
+    assert(application.getServiceIfCreated(classOf[HttpConfigurable]) != null, "Proxy settings must be ready before editors open")
+    JBCefApp.isStarted() shouldBe browserStarted
     val destination = Files.createTempFile("cucumber-render-test-", ".pdf")
     try {
       val outcome = new AtomicReference[Try[Unit]]()

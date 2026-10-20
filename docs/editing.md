@@ -37,12 +37,13 @@ scenario usages. Observed run results appear when
 For one undefined feature step, invoke **Create step definition**. Choose the Scala
 destination and edit the generated template.
 
-For several missing steps, choose **Create Missing Scala Steps…** from the feature
-editor's context menu. Select a region first to limit the operation; otherwise it uses
-the current file. The action collects and deduplicates its missing steps. Choose any
-parameter mappings offered, then choose a writable Scala file whose first type has a
-body. Review the generated source before applying it. Cancelling leaves the destination
-unchanged.
+For several missing steps, choose **Generate…** (**Alt+Insert**) → **Create Missing
+Scala Steps…** in the feature editor. Select a region first to limit the operation;
+otherwise it uses the current file. The action collects and deduplicates its missing
+steps, then opens the same destination chooser as **Create step definition**. Choose
+an existing step-definition file or **Create new file**, then choose any parameter
+mappings offered. Cancelling the destination chooser or new-file dialog adds nothing.
+Each definition is added to the first type in the chosen file, which must have a body.
 
 Generation uses the step's semantic keyword, including localized keywords. For a `*`
 step it uses the last **Given**, **When** or **Then** in that scenario or background,
@@ -65,9 +66,14 @@ Remove anything you do not want to send. The window shows the destination server
 and model; nothing is sent until you click **Generate drafts**. Context must fit
 within 32,000 characters.
 
-Use **Inspect** to review each draft's proposed Gherkin, reason and validation.
-Select the drafts you want, then click **Insert selected**. They are inserted after
-the current scenario, or at the end of the selected feature or Rule, as one undoable
+Click a draft in the list to review its Gherkin, reason and step checks alongside it.
+The context collapses when drafts arrive; click **Context to send** to reopen it.
+Its chevron points right when hidden and down when shown. Drag the horizontal
+divider below the context editor to change its height; hiding and reopening it
+preserves the chosen size within the window.
+Check the drafts you want, or use arrow keys to preview and **Space** to toggle
+selection. The footer shows how many you selected. Click **Insert selected** to add
+them after the current scenario, or at the end of the selected feature or Rule, as one undoable
 edit. Syntax errors block selection. Unresolved steps need implementations; ambiguous
 steps list their matching definitions. **Step definition found** describes source
 resolution. Every draft is **Not executed**: review its assumptions and expected
@@ -82,7 +88,9 @@ review. Step validation waits for indexing; insertion also requires indexes to b
 
 Use **Rename** on a Scala step definition to change its expression and corresponding
 feature usages. Review the refactoring preview; captured argument values are preserved.
-Conflicting or ambiguous replacements are rejected.
+Keep parameter names, types and order unchanged. Rename supports literal Cucumber
+expressions; regex, optional, alternative, escaped, dynamic and concatenated patterns
+require manual editing. Conflicting or ambiguous replacements are rejected.
 
 For an undefined feature step, invoke **Use existing Scala step wording…** to inspect
 similar defined wording. Review the proposed capture-preserving replacement before

@@ -1,11 +1,10 @@
 package com.github.vbmacher.intellij.cucumber.scala.settings
 
 import com.github.vbmacher.intellij.cucumber.scala.run.RunResults
-import com.github.vbmacher.intellij.cucumber.scala.util.{OllamaCredentials, OllamaHttp}
+import com.github.vbmacher.intellij.cucumber.scala.util.OllamaHttp
 import com.intellij.openapi.components.{PersistentStateComponent, State, Storage}
 import com.intellij.openapi.options.Configurable
 import com.intellij.openapi.project.Project
-import com.intellij.openapi.progress.{ProgressIndicator, Task}
 import com.intellij.ui.TitledSeparator
 import com.intellij.ui.components.{JBLabel, JBScrollPane}
 import com.intellij.util.ui.{FormBuilder, JBUI, UIUtil}
@@ -48,7 +47,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val results = new JCheckBox("Show run results in feature gutters and documentation")
   private val clearResults = new javax.swing.JButton("Clear Editor Results")
   private val clearHistory = new javax.swing.JButton("Clear Run History")
-  clearResults.addActionListener(_ => RunResults.getInstance(project).clearDecorations())
+  clearResults.addActionListener(_ => RunResults.getInstance(project).clearEditorResults())
   clearHistory.addActionListener(_ => RunResults.getInstance(project).clearHistory())
   private val categories = new javax.swing.JTextArea(3, 36)
   private val requirements = new javax.swing.JTextArea(3, 36)
@@ -62,37 +61,9 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
   private val drafts = new JCheckBox("Enable edge-case scenario drafts")
   private val draftUrl = new javax.swing.JTextField(28)
   private val draftModel = new javax.swing.JTextField(28)
-  private val draftToken = new javax.swing.JPasswordField(28)
-  private val saveDraftToken = new javax.swing.JButton("Save token")
-  private val clearDraftToken = new javax.swing.JButton("Clear token")
-  private val draftTokenStatus = new JBLabel("Save token and Clear token act immediately for this URL, even if you cancel settings. Other changes require Apply.").setAllowAutoWrapping(true)
-  private def updateDraftControls(): Unit = Seq(draftUrl, draftModel, draftToken, saveDraftToken, clearDraftToken).foreach(_.setEnabled(drafts.isSelected))
+  private val draftToken = new AccessTokenSettings(project, "scenario drafts", "Edge-case draft access token", draftUrl)
+  private def updateDraftControls(): Unit = Seq(draftUrl, draftModel, draftToken).foreach(_.setEnabled(drafts.isSelected))
   drafts.addActionListener(_ => updateDraftControls())
-  saveDraftToken.addActionListener(_ => {
-    val password = draftToken.getPassword
-    val value = new String(password)
-    java.util.Arrays.fill(password, '\u0000')
-    draftToken.setText("")
-    if (value.isEmpty) draftTokenStatus.setText("Enter a token to save, or use Clear token to remove the stored token.")
-    else updateDraftToken(Some(value))
-  })
-  clearDraftToken.addActionListener(_ => updateDraftToken(None))
-  private def updateDraftToken(value: Option[String]): Unit = {
-    val endpoint = draftUrl.getText.trim
-    saveDraftToken.setEnabled(false)
-    clearDraftToken.setEnabled(false)
-    new Task.Backgroundable(project, "Update edge-case draft access token", false) {
-      override def run(indicator: ProgressIndicator): Unit = new OllamaCredentials(project, "scenario drafts").save(endpoint, value)
-      override def onSuccess(): Unit = if (!project.isDisposed) {
-        updateDraftControls()
-        draftTokenStatus.setText(if (value.nonEmpty) "Token saved in IDE Password Safe for the URL above." else "Stored token cleared for the URL above.")
-      }
-      override def onThrowable(error: Throwable): Unit = if (!project.isDisposed) {
-        updateDraftControls()
-        draftTokenStatus.setText("Could not update the token. Check the URL and IDE Password Safe settings.")
-      }
-    }.queue()
-  }
   private val retentionLabel = new JBLabel("Maximum history entries:")
   private def updateHistoryControls(): Unit = {
     retention.setEnabled(history.isSelected)
@@ -125,7 +96,6 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     drafts.setToolTipText("Offer Suggest edge cases in feature files. Context is sent only after review and explicit generation.")
     draftUrl.setToolTipText("Address of a running local or remote Ollama-compatible server, independent of semantic search and failure explanations.")
     draftModel.setToolTipText("An installed chat model that supports JSON output, not an embedding model.")
-    draftToken.setToolTipText("Optional bearer token. Save it in IDE Password Safe for the URL above; stored tokens are never displayed here.")
     updateDraftControls()
     retentionLabel.setLabelFor(retention)
     updateHistoryControls()
@@ -170,15 +140,10 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
       .addLabeledComponent("Chat model:", draftModel)
       .addComponent(hint("Use a chat model already installed on that server with JSON output support, such as llama3.2:3b. The plugin does not download models."))
       .addLabeledComponent("Access token (optional):", draftToken)
-      .addComponent(hint("Local Ollama needs no token: leave this blank. Only protected remote servers need a bearer token; draft tokens stay hidden and separate from failure-explanation tokens."))
-      .addComponent(row(saveDraftToken, clearDraftToken))
-      .addComponent(draftTokenStatus)
+      .addComponent(hint("Local Ollama needs no token: leave this blank. Only protected remote servers need a bearer token; draft tokens are masked and separate from failure-explanation tokens."))
       .getPanel
     draftUrl.getAccessibleContext.setAccessibleName("Edge-case draft Ollama URL")
     draftModel.getAccessibleContext.setAccessibleName("Edge-case draft chat model")
-    draftToken.getAccessibleContext.setAccessibleName("Edge-case draft access token")
-    saveDraftToken.getAccessibleContext.setAccessibleName("Save edge-case draft token")
-    clearDraftToken.getAccessibleContext.setAccessibleName("Clear edge-case draft token")
     form.setBorder(JBUI.Borders.empty(8, 12, 16, 12))
 
     // Track the viewport width so only the page scrolls vertically, without stretching control heights.
@@ -194,7 +159,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     scroll.setBorder(JBUI.Borders.empty())
     scroll
   }
-  override def isModified: Boolean = drafts.isSelected != settings.scenarioDrafts || draftUrl.getText.trim != settings.draftUrl || draftModel.getText.trim != settings.draftModel || explanations.isModified || ollamaUrl.getText.trim != settings.ollamaUrl || embeddingModel.getText.trim != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
+  override def isModified: Boolean = draftToken.isModified || drafts.isSelected != settings.scenarioDrafts || draftUrl.getText.trim != settings.draftUrl || draftModel.getText.trim != settings.draftModel || explanations.isModified || ollamaUrl.getText.trim != settings.ollamaUrl || embeddingModel.getText.trim != settings.embeddingModel || categories.getText != settings.tagCategories || results.isSelected != settings.resultDecorations || history.isSelected != settings.runHistory || retention.getValue.asInstanceOf[Integer].intValue() != settings.historyRetention || reuse.isSelected != settings.rankByReuse || context.isSelected != settings.rankByContext || wording.isSelected != settings.featureWording || tables.isSelected != settings.tableNavigation || requirements.getText != settings.requirementMappings
   override def apply(): Unit = {
     if (drafts.isSelected) {
       try OllamaHttp.endpoint(draftUrl.getText.trim, "")
@@ -202,6 +167,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
       if (draftModel.getText.trim.isEmpty) throw new com.intellij.openapi.options.ConfigurationException("Enter an installed chat model for edge-case drafts.")
     }
     explanations.apply()
+    draftToken.apply()
     settings.scenarioDrafts = drafts.isSelected
     settings.draftUrl = draftUrl.getText.trim
     settings.draftModel = draftModel.getText.trim
@@ -234,7 +200,7 @@ class ScalaCucumberConfigurable(project: Project) extends Configurable {
     drafts.setSelected(settings.scenarioDrafts)
     draftUrl.setText(settings.draftUrl)
     draftModel.setText(settings.draftModel)
-    draftToken.setText("")
+    draftToken.reset()
     updateDraftControls()
     updateHistoryControls()
   }

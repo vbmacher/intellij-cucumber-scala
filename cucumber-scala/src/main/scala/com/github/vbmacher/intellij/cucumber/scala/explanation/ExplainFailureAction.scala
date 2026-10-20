@@ -27,7 +27,7 @@ class ExplainFailureAction extends GherkinFileAction("Explain Cucumber Failureâ€
         "No recorded failed result for this selection. Run the scenario with failure explanations enabled, then try again.", "Explain Cucumber Failure")
       else if (choices.size == 1) ExplainFailureAction.open(file, choices.head)
       else {
-        final case class Choice(value: RunResults.Decoration) {
+        final case class Choice(value: RunResults.RecordedResult) {
           override def toString: String = s"${value.result.status} Â· ${value.result.selector} Â· run ${value.result.run} Â· ${java.time.Instant.ofEpochMilli(value.timestamp)}"
         }
         import scala.jdk.CollectionConverters._
@@ -41,7 +41,7 @@ class ExplainFailureAction extends GherkinFileAction("Explain Cucumber Failureâ€
 }
 
 object ExplainFailureAction {
-  def open(file: GherkinFile, result: RunResults.Decoration): Unit = {
+  def open(file: GherkinFile, result: RunResults.RecordedResult): Unit = {
     val project = file.getProject
     new Task.Backgroundable(project, "Collect Cucumber failure context", true) {
       private var context: Either[String, FailureContext.Snapshot] = Left("Context was not collected.")

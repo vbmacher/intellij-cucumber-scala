@@ -1,7 +1,8 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
-import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumberStepIndex, StepUsage}
+import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumberStepIndex
 import com.github.vbmacher.intellij.cucumber.scala.util.GherkinFileAction
 import com.intellij.openapi.actionSystem.{AnActionEvent, CommonDataKeys}
 import com.intellij.openapi.ui.popup.JBPopupFactory
@@ -21,7 +22,7 @@ object ScHooks {
   }
 
   def applicable(scenario: GherkinStepsHolder): Seq[Hook] = {
-    val tags = StepUsage.tags(scenario).asJava
+    val tags = Scenarios.inheritedTags(scenario).asJava
     moduleOf(scenario).toSeq.flatMap { module =>
       indexedCalls(scenario.getProject, stepSearchScope(module), ScCucumberStepIndex.Hooks).filter(_.isFromCucumber).flatMap { call =>
         val inner = asCall(call.getEffectiveInvokedExpr)

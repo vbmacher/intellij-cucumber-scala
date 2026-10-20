@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.intellij.openapi.application.ApplicationManager
@@ -33,7 +34,7 @@ class RunHistoryReadAccessSpec extends ScCucumberSpecBase {
       EdtTestUtil.runInEdtAndWait(() => {
         settings.runHistory = true
         file = myFixture.addFileToProject("read-access.feature", "Feature: History\n  Scenario: Result\n    Given example\n")
-        val location = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get.head
+        val location = Scenarios.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get.head
         val entry = new ScenarioHistoryEntry
         entry.identity = RunResults.identity(location)
         entry.name = "Result"

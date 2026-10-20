@@ -16,7 +16,7 @@ explains what its results mean and what to do next.
 | **Ambiguous steps** | Feature steps matching several Scala definitions; select one to see its competing definitions |
 | **Unused definitions** | Definitions with no matching feature step in this project |
 | **Repeated expressions** | Definitions declaring the same expression; select one to compare other declarations |
-| **Duplicate scenarios** | Scenarios with the same ordered step bodies |
+| **Duplicate scenarios** | Scenarios with the same ordered step wording and arguments |
 
 Results show a file path and line number beneath each entry. **Filter** searches
 names, expressions, module names and file paths. In **Step definitions**, use **Step kind** for
@@ -42,6 +42,16 @@ An ambiguous step needs a unique binding: compare the competing definitions and
 change the expressions or feature wording so only one matches. The competing
 expressions can differ; **Repeated expressions** finds declarations with identical
 expression text.
+
+**Duplicate scenarios** compares each scenario's own ordered step wording, DataTables
+and DocStrings. It ignores titles, tags, step keywords, inherited Backgrounds and
+Examples data. Two outlines with different Examples can therefore appear together;
+compare their context before treating them as equivalent.
+
+An outline remains one entry. A scenario tag filter matches when at least one
+non-empty Examples block satisfies it with inherited Feature and outline tags.
+Tags from different Examples blocks cannot jointly satisfy a filter: `@small and
+@large` matches no rows when those tags belong to separate blocks.
 
 Select an entry and use:
 

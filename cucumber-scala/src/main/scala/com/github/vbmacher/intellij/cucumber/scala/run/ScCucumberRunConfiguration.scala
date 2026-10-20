@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.{ScCucumber, ScCucumberExtension, ScCucumberStepIndex}
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
 import com.github.vbmacher.intellij.cucumber.scala.util.Dialogs
@@ -8,11 +9,17 @@ import com.intellij.execution.configurations._
 import com.intellij.execution.runners.{ExecutionEnvironment, ProgramRunner}
 import com.intellij.execution.testframework.sm.SMTestRunnerConnectionUtil
 import com.intellij.openapi.module.{Module, ModuleManager}
-import com.intellij.ui.TextFieldWithAutoCompletion
+import com.intellij.ui.{JBIntSpinner, TextFieldWithAutoCompletion, TitledSeparator}
+import com.intellij.ui.components.{JBLabel, JBScrollPane, JBTextField}
+import com.intellij.util.ui.{FormBuilder, JBUI, UIUtil}
 import io.cucumber.tagexpressions.TagExpressionParser
 import scala.util.Try
 import com.intellij.openapi.options.SettingsEditor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.fileChooser.FileChooserDescriptorFactory
+import com.intellij.openapi.ui.TextFieldWithBrowseButton
+import com.intellij.openapi.util.io.FileUtil
+import com.intellij.openapi.vfs.VfsUtilCore
 import com.intellij.openapi.roots.ModuleRootManager
 import com.intellij.openapi.vfs.pointers.{VirtualFilePointer, VirtualFilePointerManager}
 import com.intellij.openapi.fileEditor.FileDocumentManager
@@ -137,7 +144,7 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
       val started = System.currentTimeMillis()
       // Scanning all features and hashing sources is slow; results recorded during the run wait for it in the background.
       val context = com.intellij.openapi.application.ReadAction.nonBlocking[RunResults.Context](() => {
-        val locations = ScenarioSelection.locations(project, module.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten
+        val locations = Scenarios.locations(project, module.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten
         val identities = locations.map(location => RunResults.key(RunResults.fileUri(location.target.getContainingFile.getVirtualFile.getUrl), location.line) -> RunResults.identity(location)).toMap
         val scalaSources = com.intellij.psi.search.FileTypeIndex.getFiles(org.jetbrains.plugins.scala.ScalaFileType.INSTANCE, ScCucumber.stepSearchScope(module)).asScala.toSeq
           .filter(file => !com.intellij.openapi.roots.ProjectFileIndex.getInstance(project).isInLibrarySource(file)).sortBy(_.getPath)
@@ -197,13 +204,22 @@ class ScCucumberRunConfiguration(project: Project, factory: ConfigurationFactory
 class ScCucumberRunEditor(project: Project) extends SettingsEditor[ScCucumberRunConfiguration] {
   private val modules = ModuleManager.getInstance(project).getModules.sortBy(_.getName)
   private val module = new JComboBox[String](modules.map(_.getName))
+  private val featurePath = new JBTextField()
+  private val feature = new TextFieldWithBrowseButton(featurePath)
+  private val line = new JBIntSpinner(0, 0, Int.MaxValue)
+  private val glue = new JBTextField()
   private val tagField = TextFieldWithAutoCompletion.create(project, java.util.Collections.emptyList[String](), true, "")
+  private val vmOptions = new JBTextField()
+  private val runtimeOptions = new JBTextField()
+  private val directoryPath = new JBTextField()
+  private val workingDirectory = new TextFieldWithBrowseButton(directoryPath)
+  private val environment = new JTextArea(3, 30)
   private val preview = new JButton("Preview Selected Scenarios / Examples")
   private def updateTags(): Unit = {
     val selected = modules.find(_.getName == module.getSelectedItem)
     selected.foreach { m =>
       com.intellij.openapi.application.ReadAction.nonBlocking[java.util.Collection[String]](() =>
-        ScenarioSelection.locations(project, m.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten.flatMap(_.tags).distinct.sorted.asJava)
+        Scenarios.locations(project, m.getModuleWithDependenciesAndLibrariesScope(true), "").toOption.toSeq.flatten.flatMap(_.tags).distinct.sorted.asJava)
         .inSmartMode(project).expireWith(project).finishOnUiThread(com.intellij.openapi.application.ModalityState.defaultModalityState(), values => tagField.setVariants(values))
         .submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService)
     }
@@ -212,7 +228,7 @@ class ScCucumberRunEditor(project: Project) extends SettingsEditor[ScCucumberRun
   preview.addActionListener(_ => modules.find(_.getName == module.getSelectedItem).foreach { m =>
     val expression = tagField.getText
     com.intellij.openapi.application.ReadAction.nonBlocking[Either[String, Seq[String]]](() =>
-      ScenarioSelection.locations(project, m.getModuleWithDependenciesAndLibrariesScope(true), expression).map(_.map(_.toString)))
+      Scenarios.locations(project, m.getModuleWithDependenciesAndLibrariesScope(true), expression).map(_.map(_.toString)))
       .inSmartMode(project).expireWith(project).finishOnUiThread(com.intellij.openapi.application.ModalityState.defaultModalityState(), result => {
         result match {
           case Left(message) => com.intellij.openapi.ui.Messages.showErrorDialog(project, message, "Tag Expression")
@@ -220,31 +236,83 @@ class ScCucumberRunEditor(project: Project) extends SettingsEditor[ScCucumberRun
         }
       }).submit(com.intellij.util.concurrency.AppExecutorUtil.getAppExecutorService)
   })
-  private val fields: Seq[(String, javax.swing.text.JTextComponent)] = Seq("Feature URL", "Line (0 = whole feature)", "Glue packages (comma separated; blank = runtime default)", "Tag expression", "VM options", "Runtime/reporter options", "Working directory (blank = module root)", "Environment (NAME=value per line)").zipWithIndex.map { case (label, index) => label -> (if (index == 7) new JTextArea(3, 30) else new JTextField()) }
   override def createEditor(): JComponent = {
-    val panel = new JPanel(new java.awt.GridLayout(0, 2))
-    panel.add(new JLabel("Module")); panel.add(module)
-    fields.zipWithIndex.foreach { case ((label, field), i) => panel.add(new JLabel(label)); panel.add(if (i == 3) tagField else field) }
-    panel.add(preview)
+    module.setToolTipText("Module supplying the JDK, step definitions and Cucumber Scala test dependencies.")
+    feature.addBrowseFolderListener(project, FileChooserDescriptorFactory.singleFile()
+      .withExtensionFilter("feature").withTitle("Choose Feature File"))
+    workingDirectory.addBrowseFolderListener(project, FileChooserDescriptorFactory.singleDir()
+      .withTitle("Choose Working Directory"))
+    featurePath.getEmptyText.setText("Choose a .feature file")
+    directoryPath.getEmptyText.setText("Module content root")
+    workingDirectory.setToolTipText("Leave blank to use the module content root. Required for modules with several content roots.")
+    glue.getEmptyText.setText("Detect automatically")
+    glue.setToolTipText("Comma-separated packages containing step definitions and hooks. Blank detects Scala glue; if none is found, uses the runtime default.")
+    tagField.setToolTipText("Filter scenarios by tags, for example: @smoke and not @ignored. Blank runs all tags.")
+    tagField.setPlaceholder("All tags; e.g. @smoke and not @ignored")
+    tagField.ensureWillComputePreferredSize()
+    preview.setToolTipText("Preview scenarios and Examples rows in the module and its dependencies, filtered by tags.")
+    vmOptions.getEmptyText.setText("e.g. -Xmx2g -Dconfig.resource=test.conf")
+    runtimeOptions.getEmptyText.setText("e.g. --threads 2 --plugin json:results.json")
+    runtimeOptions.setToolTipText("Additional Cucumber command-line options, including reporters.")
+    environment.setToolTipText("One NAME=value per line, for example: API_URL=http://localhost:8080")
+    environment.setBorder(JBUI.Borders.empty(4))
+    Seq("Feature file" -> feature.getTextField, "Line" -> line, "Glue packages" -> glue,
+      "Tag expression" -> tagField, "VM options" -> vmOptions, "Cucumber options" -> runtimeOptions,
+      "Working directory" -> workingDirectory.getTextField, "Environment variables" -> environment)
+      .foreach { case (name, component) => component.getAccessibleContext.setAccessibleName(name) }
+    val lineRow = new JPanel(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT, 0, 0))
+    lineRow.add(line)
+    val lineHint = new JBLabel("0 runs the whole feature", UIUtil.ComponentStyle.SMALL, UIUtil.FontColor.BRIGHTER)
+    lineHint.setBorder(JBUI.Borders.emptyLeft(8))
+    lineRow.add(lineHint)
+    line.setToolTipText("Scenario or Examples-row line number; 0 runs the whole feature.")
+    val moduleRow = new JPanel(new java.awt.BorderLayout())
+    moduleRow.add(module, java.awt.BorderLayout.CENTER)
+    val form = FormBuilder.createFormBuilder()
+      .addComponent(new TitledSeparator("Selection"), 0)
+      .addLabeledComponent("Module:", moduleRow)
+      .addLabeledComponent("Feature file:", feature)
+      .addLabeledComponent("Line:", lineRow)
+      .addLabeledComponent("Tag expression:", tagField)
+      .addComponentToRightColumn(preview)
+      .addComponent(new TitledSeparator("Runtime"), 16)
+      .addLabeledComponent("Glue packages:", glue)
+      .addLabeledComponent("VM options:", vmOptions)
+      .addLabeledComponent("Cucumber options:", runtimeOptions)
+      .addLabeledComponent("Working directory:", workingDirectory)
+      .addLabeledComponent("Environment variables:", new JBScrollPane(environment))
+      .addTooltip("One NAME=value per line.")
+      .getPanel
+    form.setBorder(JBUI.Borders.empty(8, 12))
+    val panel = new JPanel(new java.awt.BorderLayout())
+    panel.add(form, java.awt.BorderLayout.NORTH)
     updateTags()
     panel
   }
   override def resetEditorFrom(configuration: ScCucumberRunConfiguration): Unit = {
     module.setSelectedItem(Option(configuration.getConfigurationModule.getModule).map(_.getName).orNull)
-    val values = Seq(configuration.featureUrl, configuration.line.toString, configuration.glue, configuration.tags, configuration.vmOptions, configuration.programOptions, configuration.workingDirectory,
-      configuration.environment.toSeq.sorted.map { case (k, v) => k + "=" + v }.mkString("\n"))
+    feature.setText(if (configuration.featureUrl.startsWith("file://")) FileUtil.toSystemDependentName(VfsUtilCore.urlToPath(configuration.featureUrl)) else configuration.featureUrl)
+    line.setNumber(configuration.line)
+    glue.setText(configuration.glue)
     tagField.setText(configuration.tags)
-    fields.zip(values).foreach { case ((_, field), value) => field.setText(value) }
+    vmOptions.setText(configuration.vmOptions)
+    runtimeOptions.setText(configuration.programOptions)
+    workingDirectory.setText(configuration.workingDirectory)
+    environment.setText(configuration.environment.toSeq.sorted.map { case (k, v) => k + "=" + v }.mkString("\n"))
   }
   override def applyEditorTo(configuration: ScCucumberRunConfiguration): Unit = {
+    try line.commitEdit() catch {
+      case _: java.text.ParseException => throw new com.intellij.openapi.options.ConfigurationException("Enter a non-negative line number; 0 runs the whole feature.")
+    }
     configuration.setModule(modules.find(_.getName == module.getSelectedItem).orNull)
-    configuration.featureUrl = fields(0)._2.getText.trim
-    configuration.setLine(fields(1)._2.getText.toIntOption.getOrElse(0))
-    configuration.glue = fields(2)._2.getText
+    val path = feature.getText.trim
+    configuration.featureUrl = if (path.isEmpty || path.contains("://")) path else VfsUtilCore.pathToUrl(FileUtil.toSystemIndependentName(path))
+    configuration.setLine(line.getNumber)
+    configuration.glue = glue.getText
     configuration.tags = tagField.getText
-    configuration.vmOptions = fields(4)._2.getText
-    configuration.programOptions = fields(5)._2.getText
-    configuration.workingDirectory = fields(6)._2.getText
-    configuration.environment = fields(7)._2.getText.split("\n").filter(_.contains("=")).map { line => val at = line.indexOf('='); line.substring(0, at) -> line.substring(at + 1) }.toMap
+    configuration.vmOptions = vmOptions.getText
+    configuration.programOptions = runtimeOptions.getText
+    configuration.workingDirectory = workingDirectory.getText
+    configuration.environment = environment.getText.split("\n").filter(_.contains("=")).map { line => val at = line.indexOf('='); line.substring(0, at) -> line.substring(at + 1) }.toMap
   }
 }

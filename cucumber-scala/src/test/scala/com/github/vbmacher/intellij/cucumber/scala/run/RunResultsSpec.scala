@@ -90,13 +90,13 @@ class RunResultsSpec extends ScCucumberSpecBase {
     val context = RunResults.Context(com.intellij.psi.util.PsiModificationTracker.getInstance(getProject).getModificationCount, "revision", "environment", Map.empty, 123L)
     service.record(CucumberMessages.StepResult("one", file.getVirtualFile.getUrl, 3, "selection", "FAILED", 4, "assertion"), context)
     val step = myFixture.findElementByText("Given example", classOf[org.jetbrains.plugins.cucumber.psi.GherkinStep])
-    service.at(step).size shouldBe 1
-    service.stale(service.at(step).head) shouldBe false
+    service.forEditor(step).size shouldBe 1
+    service.stale(service.forEditor(step).head) shouldBe false
     com.intellij.openapi.command.WriteCommandAction.runWriteCommandAction(getProject, new Runnable {
       override def run(): Unit = myFixture.getEditor.getDocument.insertString(myFixture.getEditor.getDocument.getTextLength, "# change\n")
     })
     com.intellij.psi.PsiDocumentManager.getInstance(getProject).commitAllDocuments()
-    service.stale(service.at(step).head) shouldBe true
+    service.stale(service.forEditor(step).head) shouldBe true
     Seq(("FAILED", 0), ("PASSED", 1), ("PASSED", 0), ("FAILED", 0)).zipWithIndex.foreach { case ((status, attempt), i) =>
       service.record(CucumberMessages.ScenarioResult(i.toString, file.getVirtualFile.getUrl, 2, "Result", attempt, status, attempt == 0 && status == "FAILED"), context)
     }
@@ -104,12 +104,51 @@ class RunResultsSpec extends ScCucumberSpecBase {
     RunResults.summary(service.history) should include("2 initial attempts")
     RunResults.summary(service.history) should include("1 retries")
     RunResults.summary(service.history) should include("Signal:")
-    service.clearDecorations(); service.at(step) shouldBe empty
+    service.clearEditorResults(); service.forEditor(step) shouldBe empty
     service.clearHistory(); service.history shouldBe empty
     settings.runHistory = false
     service.record(CucumberMessages.ScenarioResult("off", "uri", 2, "Result", 0, "PASSED", false), context)
     service.history shouldBe empty
   }
+  @Test
+  def testClearingSavedHistoryPreservesActiveErrorsAndIndependentConsumers(): Unit = {
+    val file = myFixture.configureByText("active.feature", "Feature: Active\n Scenario: Active\n  Given example\n")
+    val step = myFixture.findElementByText("Given example", classOf[org.jetbrains.plugins.cucumber.psi.GherkinStep])
+    val settings = ScalaCucumberSettings.getInstance(getProject)
+    val service = RunResults.getInstance(getProject)
+    val context = RunResults.Context(com.intellij.psi.util.PsiModificationTracker.getInstance(getProject).getModificationCount,
+      "revision", "environment", Map.empty, 123L)
+    val uri = file.getVirtualFile.getUrl
+    try {
+      for (editor <- Seq(false, true); history <- Seq(false, true); explanations <- Seq(false, true)) {
+        service.clearEditorResults()
+        service.clearHistory()
+        settings.resultDecorations = editor
+        settings.runHistory = history
+        settings.failureExplanations = explanations
+        service.record(CucumberMessages.ScenarioResult("old", uri, 2, "Active", 0, "PASSED", false), context)
+        service.record(CucumberMessages.StepResult("active", uri, 3, uri + ":2", "FAILED", 5L, "Active assertion"), context)
+        service.clearHistory()
+        service.history shouldBe empty
+        service.forEditor(step).nonEmpty shouldBe editor
+        service.failures(uri).nonEmpty shouldBe (editor || explanations)
+        service.record(CucumberMessages.ScenarioResult("active", uri, 2, "Active", 0, "FAILED", false), context)
+        service.history.map(_.error) shouldBe (if (history) Seq("Active assertion") else Seq.empty)
+        if (explanations) service.failures(uri).find(_.result.line == 2).get.result.error shouldBe "Active assertion"
+        service.clearEditorResults()
+        service.forEditor(step) shouldBe empty
+        service.failures(uri) shouldBe empty
+        service.history.size shouldBe (if (history) 1 else 0)
+      }
+    } finally {
+      settings.resultDecorations = true
+      settings.runHistory = false
+      settings.failureExplanations = false
+      service.clearEditorResults()
+      service.clearHistory()
+    }
+  }
+
   @Test
   def testHistoryKeepsErrorsWhenDecorationsAreDisabled(): Unit = {
     val settings = ScalaCucumberSettings.getInstance(getProject)
@@ -208,7 +247,7 @@ class RunResultsSpec extends ScCucumberSpecBase {
       service.record(CucumberMessages.StepResult("second", url, 3, url + ":6", "PASSED", 1L, ""), second)
       service.record(CucumberMessages.StepResult("second", url, 3, url + ":7", "PASSED", 1L, ""), second)
       icon shouldBe com.intellij.icons.AllIcons.RunConfigurations.TestPassed
-    } finally service.clearDecorations()
+    } finally service.clearEditorResults()
   }
 
   @Test

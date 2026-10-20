@@ -61,17 +61,35 @@
 
 User guides live in `docs/`, with images in `docs/images/`:
 
-| File | Contents |
-| --- | --- |
-| `getting_started.md` | Brief overview: every feature with a link to its detailed section; may include screenshots. |
-| `installation.md` | The only place for installation and setup: IDE builds, required plugins, project prerequisites, optional semantic search and the development environment. |
-| `navigation.md` | Plugin navigation features with examples and screenshots. |
-| `editing.md` | Feature and step editing: completion, Quick Documentation, generation, rename, numbering, tables, inspections, preview and export. |
-| `workspace.md` | The **Scala Cucumber** tool window and its tabs. |
-| `running.md` | Run/Debug, feature breakpoints and editor results. |
-| `configuration.md` | The only place describing settings UI, `.idea/scala-cucumber.xml`, inspection options and run-configuration fields. Other guides link here. |
-| `icons.md` | Table of all icons (Icon, Meaning, Rule) with exact places and conditions. Icons must be idiomatic. |
+| File                 | Contents                                                                                                                                                  |
+|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `getting_started.md` | Brief overview: every feature with a link to its detailed section; may include screenshots.                                                               |
+| `installation.md`    | The only place for installation and setup: IDE builds, required plugins, project prerequisites, optional semantic search and the development environment. |
+| `navigation.md`      | Plugin navigation features with examples and screenshots.                                                                                                 |
+| `editing.md`         | Feature and step editing: completion, Quick Documentation, generation, rename, numbering, tables, inspections, preview and export.                        |
+| `workspace.md`       | The **Scala Cucumber** tool window and its tabs.                                                                                                          |
+| `running.md`         | Run/Debug, feature breakpoints and editor results.                                                                                                        |
+| `configuration.md`   | The only place describing settings UI, `.idea/scala-cucumber.xml`, inspection options and run-configuration fields. Other guides link here.               |
+| `icons.md`           | Table of all icons (Icon, Meaning, Rule) with exact places and conditions. Icons must be idiomatic.                                                       |
 
 Add a new guide only for a user-facing category that fits none of these; otherwise extend
 the closest existing guide. Example-project instructions, such as running the examples
 from a terminal, belong in `example/README.md`.
+
+## Features
+
+- Organize around named capabilities with clear purposes, boundaries, and
+  consistent terminology. Extend existing capabilities before adding new ones.
+- Design orthogonal concepts that compose through explicit contracts.
+  Document dependencies, constraints, and justified exceptions.
+- Keep modules cohesive, interfaces small, and dependencies acyclic.
+  Do not force one feature per directory or abstract merely similar code.
+- Maintain a capability index linking to authoritative specifications.
+  Define each rule once; reference it elsewhere.
+- Specifications describe behavior, inputs, outputs, invariants, failures,
+  and significant interactions. Scale detail to complexity.
+- Separate current contracts, implementation details, proposals, and ADRs.
+  Readers must not reconstruct current behavior from decision history.
+- Keep specifications, implementation, examples, and tests aligned.
+  Verify contracts and significant feature combinations; report unverified
+  behavior and known deviations explicitly.

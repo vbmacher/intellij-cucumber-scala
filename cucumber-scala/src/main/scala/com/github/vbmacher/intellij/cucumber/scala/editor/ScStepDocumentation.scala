@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.completion.ScStepCompletion
 import com.github.vbmacher.intellij.cucumber.scala.run.RunResults
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber._
@@ -17,7 +18,7 @@ import org.jetbrains.plugins.cucumber.psi.GherkinStep
 class ScStepDocumentation extends AbstractDocumentationProvider {
   override def generateDoc(element: PsiElement, originalElement: PsiElement): String = {
     val step = Option(originalElement).flatMap(e => Option(PsiTreeUtil.getParentOfType(e, classOf[GherkinStep], false)))
-    step.filter(s => matchingSteps(s).nonEmpty || RunResults.getInstance(s.getProject).at(s).nonEmpty).map { s =>
+    step.filter(s => matchingSteps(s).nonEmpty || RunResults.getInstance(s.getProject).forEditor(s).nonEmpty).map { s =>
       val candidates = matchingSteps(s).collect { case d: ScStepDefinition => d }
       val title = if (candidates.size > 1) s"Ambiguous step: ${candidates.size} matching definitions" else "Scala step"
       s"<html><body><b>$title</b>" + candidates.map(d => details(d, s)).mkString("<hr>", "<hr>", "") + "<pre>" + escape(RunResults.getInstance(s.getProject).describe(s)) + "</pre></body></html>"
@@ -50,7 +51,7 @@ class ScStepDocumentation extends AbstractDocumentationProvider {
 
   private def usagePreview(scenarios: Seq[org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder]): String =
     s"<p>${scenarios.size} matching scenarios (includes ambiguous matches; outlines count once)</p>" +
-      scenarios.headOption.map(s => s"<p>${escape(StepUsage.tags(s).mkString(" "))} ${sourceLink(s)}</p><pre>${escape(s.getText)}</pre>").getOrElse("")
+      scenarios.headOption.map(s => s"<p>${escape(Scenarios.inheritedTags(s).mkString(" "))} ${sourceLink(s)}</p><pre>${escape(s.getText)}</pre>").getOrElse("")
 
   private def sourceLink(element: PsiElement): String = {
     val file = element.getContainingFile

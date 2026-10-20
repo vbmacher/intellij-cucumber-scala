@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.intellij.openapi.application.ApplicationManager
@@ -52,7 +53,7 @@ class RunHistoryPanelSpec extends ScCucumberSpecBase {
       settings.runHistory = false
       settings.historyRetention = 200
       results.clearHistory()
-      results.clearDecorations()
+      results.clearEditorResults()
     } finally super.tearDown()
   }
 
@@ -144,7 +145,7 @@ class RunHistoryPanelSpec extends ScCucumberSpecBase {
   def testSelectionSurvivesNewResultsAndAttemptsShowFailuresAndRetries(): Unit = {
     settings.runHistory = true
     val file = myFixture.addFileToProject("history.feature", "Feature: History\n  Scenario: Result\n    Given example\n")
-    val locations = ScenarioSelection.locations(getProject, com.intellij.psi.search.GlobalSearchScope.projectScope(getProject), "").toOption.get
+    val locations = Scenarios.locations(getProject, com.intellij.psi.search.GlobalSearchScope.projectScope(getProject), "").toOption.get
     val location = locations.find(_.scenario.getScenarioName == "Result").get
     val context = RunResults.Context(0L, "revision", "environment", Map(RunResults.key(file.getVirtualFile.getUrl, 2) -> RunResults.identity(location)), 0L)
     val view = panel()
@@ -157,7 +158,7 @@ class RunHistoryPanelSpec extends ScCucumberSpecBase {
     button(view, "Open Scenario").doClick()
     val editor = FileEditorManager.getInstance(getProject).getSelectedTextEditor
     editor.getDocument.getText shouldBe file.getText
-    editor.getCaretModel.getOffset shouldBe ScenarioSelection.sourceOffset(location.target)
+    editor.getCaretModel.getOffset shouldBe Scenarios.sourceOffset(location.target)
     results.record(failure.copy(run = "retry", attempt = 1, status = "PASSED", willRetry = false), context)
     PlatformTestUtil.waitWithEventsDispatching("retry shown", () => table(view).getValueAt(0, 2) == "1 initial, 1 retries", 10)
     table(view).getSelectedRow shouldBe 0

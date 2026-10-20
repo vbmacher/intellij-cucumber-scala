@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.publish
 
-import com.github.vbmacher.intellij.cucumber.scala.steps.StepUsage
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.tables.GherkinTables
 import com.intellij.openapi.util.text.StringUtil
 import com.intellij.psi.{PsiElement, PsiErrorElement}
@@ -15,7 +15,7 @@ object FeatureHtml {
     def children(element: PsiElement): String = element.getChildren.map(node).mkString
     def heading(element: PsiElement, level: Int, title: String): String = s"<h$level>${link(element, title)}</h$level>"
     def tags(element: PsiElement): String = {
-      val names = StepUsage.tags(element)
+      val names = Scenarios.inheritedTags(element)
       if (names.isEmpty) "" else "<p class=\"tags\">" + escape(names.mkString(" ")) + "</p>"
     }
     def headerOffset(element: PsiElement): Int = {

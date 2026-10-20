@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.suite
 
-import com.github.vbmacher.intellij.cucumber.scala.run.ScenarioSelection
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.progress.ProgressManager
@@ -17,7 +17,7 @@ object ScenarioSearch {
     def navigation(project: Project): Option[OpenFileDescriptor] = inReadAction {
       Option(pointer.getElement)
         .filter(s => s.isValid && s.getText == text)
-        .map(s => new OpenFileDescriptor(project, s.getContainingFile.getVirtualFile, ScenarioSelection.sourceOffset(s)))
+        .map(s => new OpenFileDescriptor(project, s.getContainingFile.getVirtualFile, Scenarios.sourceOffset(s)))
     }
   }
   final case class Hit(document: Document, similarity: Option[Double]) {
@@ -32,10 +32,10 @@ object ScenarioSearch {
 
   /** Snapshot PSI under a short read action; embedding requests must run outside that action. */
   def documents(project: Project, scope: GlobalSearchScope): Seq[Document] =
-    SuiteCatalog.scenarios(project, scope).map { scenario =>
+    Scenarios.declarations(project, scope).map { scenario =>
       ProgressManager.checkCanceled()
       val file = scenario.getContainingFile
-      val offset = ScenarioSelection.sourceOffset(scenario)
+      val offset = Scenarios.sourceOffset(scenario)
       Document(scenario.getScenarioName, scenario.getText, file.getVirtualFile.getPath,
         file.getText.take(offset).count(_ == '\n') + 1, SmartPointerManager.createPointer(scenario))
     }

@@ -1,7 +1,7 @@
 # Configuration
 
 Open **Settings → Scala Cucumber** for project settings. Changes take effect when you
-click **Apply** or **OK**; result/history clearing and token changes act immediately.
+click **Apply** or **OK**; result/history clearing acts immediately.
 
 ![Scala Cucumber settings](images/settings.png)
 
@@ -24,8 +24,8 @@ suggestion order; it does not change which Scala definition runs.
 | **Show run results in feature gutters and documentation** | On | Displays the latest recorded results in the editor and Quick Documentation. |
 | **Keep scenario run history in this workspace** | Off | Retains scenario outcomes locally for the [Run History tab](workspace.md#run-history). |
 | **Maximum history entries:** | 200 | Limits retained entries, removing the oldest first. Accepts 0–10000; 0 retains none. Available when history is enabled. |
-| **Clear Editor Results** | — | Removes the current editor result decorations immediately. |
-| **Clear Run History** | — | Deletes retained history immediately. |
+| **Clear Editor Results** | — | Clears session results, including failure-explanation context, immediately; saved history remains. |
+| **Clear Run History** | — | Deletes retained history immediately; active runs keep their errors and can add new entries when they finish. |
 
 History is local to the IDE workspace, stored in `.idea/workspace.xml` for a
 directory-based project. Clearing editor results and clearing saved history are
@@ -114,13 +114,12 @@ rebuild or perform a semantic search. Changing the server or model requires a ne
 | **Enable failure explanations** | Off | Offers [Explain Cucumber Failure](running.md#explain-a-failure) and retains recent results even when gutter result display is off. No model request is automatic. |
 | **Ollama URL:** | `http://localhost:11434` | Local or remote Ollama-compatible chat server receiving the reviewed context. Independent of the semantic-search server. |
 | **Chat model:** | `llama3.2:3b` | Installed chat model used for explanations. Prepare it as described in [installation](installation.md#prepare-optional-chat-models). |
-| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected server; stored tokens are never displayed. |
-| **Save token** / **Clear token** | — | Immediately saves or removes the token in IDE Password Safe for this project and the entered URL. |
+| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected server; saved tokens are masked. |
 
-Token changes do not wait for **Apply**. They are independent of the other settings;
-cancelling the settings window does not undo them. Tokens are excluded from project
-XML. Changing the server or chat model requires closing an existing review window
-and opening a new request.
+Clear the token field to remove a saved token, or enter a replacement. Token
+changes require **Apply** or **OK**; cancelling discards pending changes. Tokens are
+stored in IDE Password Safe and excluded from project XML. Changing the server or
+chat model requires closing an existing review window and opening a new request.
 
 ## Edge-case drafts
 
@@ -129,12 +128,11 @@ and opening a new request.
 | **Enable edge-case scenario drafts** | Off | Offers [Suggest edge cases](editing.md#suggest-edge-case-scenarios) in feature files. Requests require context review and explicit generation. |
 | **Ollama URL:** | `http://localhost:11434` | Ollama-compatible server receiving the reviewed specification. Independent of search and failure-explanation settings. |
 | **Chat model:** | `llama3.2:3b` | Installed chat model supporting JSON output. See [chat-model setup](installation.md#prepare-optional-chat-models). |
-| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected draft-generation server; stored tokens are never displayed. |
-| **Save token** / **Clear token** | — | Immediately saves or removes the draft token in IDE Password Safe for this project and the entered URL. |
+| **Access token (optional):** | Blank | Leave blank for local Ollama. Used only for a protected draft-generation server; saved tokens are masked. |
 
 Draft tokens are separate from failure-explanation tokens and excluded from project
-XML. Saving or clearing a token does not wait for **Apply**, and cancelling settings
-does not undo that change.
+XML. Clear the token field to remove a saved token, or enter a replacement.
+Changes require **Apply** or **OK**; cancelling discards pending changes.
 
 ## Project configuration file
 
@@ -207,17 +205,18 @@ Gutter Run/Debug actions create one for the selected feature, scenario or Exampl
 | Field | Meaning |
 | --- | --- |
 | **Module** | Module supplying the JDK and test runtime classpath. |
-| **Feature URL** | Feature-file location to run. |
-| **Line (0 = whole feature)** | Scenario or Examples-row selection; 0 selects the whole feature. |
-| **Glue packages (comma separated; blank = runtime default)** | Packages containing step definitions and hooks. When blank, the plugin derives packages from the module's available Scala glue; if none can be found, Cucumber uses its default. |
+| **Feature file** | Path to the `.feature` file to run. Use the browse button to choose a file. |
+| **Line** | Scenario or Examples-row line number; 0 selects the whole feature. |
+| **Glue packages** | Comma-separated packages containing step definitions and hooks. When blank, the plugin derives packages from the module's available Scala glue; if none can be found, Cucumber uses its default. |
 | **Tag expression** | Cucumber tag filter, for example `@smoke and not @ignored`. |
 | **VM options** | JVM arguments for the launched process. |
-| **Runtime/reporter options** | Additional Cucumber CLI options, such as `--threads 2`. |
-| **Working directory (blank = module root)** | Process working directory. A module with multiple content roots requires an explicit directory. |
-| **Environment (NAME=value per line)** | Environment variables for the process. |
+| **Cucumber options** | Additional Cucumber CLI options, such as `--threads 2` or `--plugin json:results.json`. |
+| **Working directory** | Process working directory; blank uses the module content root. Use the browse button to choose a directory. A module with multiple content roots requires an explicit directory. |
+| **Environment variables** | Environment variables for the process, one `NAME=value` per line. |
 
 **Preview Selected Scenarios / Examples** lists the executable scenarios or Examples
-rows selected by the module, location and tag filter before a run. An empty selection
+rows selected by the module and tag filter before a run. It does not filter by
+**Feature file** or **Line**. An empty selection
 is shown explicitly. Runtime prerequisites are listed in
 [installation](installation.md#prepare-a-cucumber-scala-project).
 

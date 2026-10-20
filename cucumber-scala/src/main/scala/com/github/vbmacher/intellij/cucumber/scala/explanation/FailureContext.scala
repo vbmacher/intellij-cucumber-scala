@@ -1,6 +1,7 @@
 package com.github.vbmacher.intellij.cucumber.scala.explanation
 
-import com.github.vbmacher.intellij.cucumber.scala.run.{RunResults, ScenarioSelection}
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
+import com.github.vbmacher.intellij.cucumber.scala.run.RunResults
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.{inReadAction, matchingSteps}
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.progress.ProgressManager
@@ -22,7 +23,7 @@ object FailureContext {
     def open(project: Project): Unit = if (file.isValid) new OpenFileDescriptor(project, file, offset).navigate(true)
   }
 
-  final case class Snapshot(result: RunResults.Decoration, stamp: Long, title: String, facts: String,
+  final case class Snapshot(result: RunResults.RecordedResult, stamp: Long, title: String, facts: String,
                             text: String, sources: Seq[Source]) {
     def problem(project: Project): Option[String] = inReadAction {
       if (project.isDisposed || sources.exists(!_.file.isValid)) Some("A source file was deleted. Run the scenario again before explaining it.")
@@ -35,10 +36,10 @@ object FailureContext {
   }
 
   private def selectorLine(value: String): Option[Int] = value.substring(value.lastIndexOf(':') + 1).toIntOption
-  private def line(element: PsiElement): Int = element.getContainingFile.getText.take(ScenarioSelection.sourceOffset(element)).count(_ == '\n') + 1
+  private def line(element: PsiElement): Int = element.getContainingFile.getText.take(Scenarios.sourceOffset(element)).count(_ == '\n') + 1
 
   /** Called under a read action; only recorded failures in the explicit editor selection are offered. */
-  def candidates(file: GherkinFile, offset: Int): Seq[RunResults.Decoration] = {
+  def candidates(file: GherkinFile, offset: Int): Seq[RunResults.RecordedResult] = {
     val element = file.findElementAt(math.min(offset, math.max(0, file.getTextLength - 1)))
     val step = Option(PsiTreeUtil.getParentOfType(element, classOf[GherkinStep], false))
     val row = Option(PsiTreeUtil.getParentOfType(element, classOf[GherkinTableRow], false))
@@ -55,7 +56,7 @@ object FailureContext {
     }.sortBy(d => (-d.timestamp, d.result.run, d.result.selector, d.result.line))
   }
 
-  def collect(feature: GherkinFile, result: RunResults.Decoration): Either[String, Snapshot] = {
+  def collect(feature: GherkinFile, result: RunResults.RecordedResult): Either[String, Snapshot] = {
     val project = feature.getProject
     val store = RunResults.getInstance(project)
     val stamp = PsiModificationTracker.getInstance(project).getModificationCount
@@ -66,7 +67,7 @@ object FailureContext {
       if (!feature.isValid || RunResults.fileUri(feature.getVirtualFile.getUrl) != RunResults.uri(result.result.uri))
         Left("The feature file for this result is unavailable. Open its project and run the scenario again.")
       else {
-        val locations = ScenarioSelection.locations(project, GlobalSearchScope.fileScope(feature), "").toOption.toSeq.flatten
+        val locations = Scenarios.locations(project, GlobalSearchScope.fileScope(feature), "").toOption.toSeq.flatten
         locations.find(l => selectorLine(result.result.selector).contains(l.line))
           .toRight("The recorded scenario or Examples row is unavailable. Run the scenario again.").map { location =>
             val step = PsiTreeUtil.findChildrenOfType(feature, classOf[GherkinStep]).asScala.find(s => line(s) == result.result.line)
@@ -76,9 +77,7 @@ object FailureContext {
               Source(label, element.getContainingFile.getVirtualFile, start, number, number + element.getText.count(_ == '\n'), element.getText)
             }
             val scenario = source("Scenario", location.scenario)
-            val backgrounds = Iterator.iterate(location.scenario.getParent)(_.getParent).takeWhile(_ != null)
-              .filter(e => e.isInstanceOf[GherkinFeature] || e.isInstanceOf[GherkinRule]).toSeq.reverse
-              .flatMap(_.getChildren.collect { case s: GherkinScenario if s.isBackground => source("Background", s) })
+            val backgrounds = Scenarios.backgrounds(location.scenario).map(source("Background", _))
             val definitions = step.toSeq.flatMap(matchingSteps).flatMap(d => Option(d.getElement))
               .map(target => source("Static Scala match", target.getParent)).distinct.sortBy(s => (s.file.getPath, s.offset))
             val matchStatus = if (step.isEmpty) "The failure was not recorded on a Gherkin step (for example, a hook failure). No step binding is claimed."

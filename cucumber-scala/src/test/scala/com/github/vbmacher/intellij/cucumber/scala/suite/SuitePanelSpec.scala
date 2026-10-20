@@ -27,7 +27,7 @@ class SuitePanelSpec extends ScCucumberSpecBase {
   private def button(panel: SuitePanel, text: String): JButton =
     children(panel).collectFirst { case b: JButton if b.getText == text => b }.get
   private def combo(panel: SuitePanel, first: String): JComboBox[_] =
-    children(panel).collectFirst { case c: JComboBox[_] if c.getItemAt(0) == first => c }.get
+    children(panel).collectFirst { case c: JComboBox[_] if c.getItemAt(0).toString == first => c }.get
   private def field(panel: SuitePanel, name: String): JTextField =
     children(panel).collectFirst { case f: JTextField if f.getAccessibleContext.getAccessibleName == name => f }.get
   private def tree(panel: SuitePanel): JTree = children(panel).collectFirst { case t: JTree => t }.get
@@ -64,10 +64,10 @@ class SuitePanelSpec extends ScCucumberSpecBase {
   def testAmbiguityExplainsCompetingDefinitionsAndNavigatesBothSources(): Unit = {
     fixtures()
     val view = panel()
-    combo(view, "Scenarios").getSelectedItem shouldBe "Scenarios"
+    combo(view, "Scenarios").getSelectedItem shouldBe SuiteView.Scenarios
     findings(view).size shouldBe 1
     button(view, "Source").isEnabled shouldBe false
-    combo(view, "Scenarios").setSelectedItem("Ambiguous steps")
+    combo(view, "Scenarios").setSelectedItem(SuiteView.Ambiguous)
     hasText(view, "Feature steps matching more than one Scala definition") shouldBe true
     val results = tree(view)
     findings(view).size shouldBe 1
@@ -120,7 +120,7 @@ class SuitePanelSpec extends ScCucumberSpecBase {
         field(view, "Scenario tag expression").setText("@smoke and (")
         findings(view).size shouldBe 0
         hasText(view, "Invalid tag expression") shouldBe true
-        combo(view, "Scenarios").setSelectedItem("Step definitions")
+        combo(view, "Scenarios").setSelectedItem(SuiteView.Definitions)
         findings(view).size shouldBe 3
         hasText(view, "Invalid tag expression") shouldBe false
         combo(view, "Any step kind").setSelectedItem("Given")
@@ -132,7 +132,7 @@ class SuitePanelSpec extends ScCucumberSpecBase {
         button(view, "Source").isEnabled shouldBe false
         field(view, "Suite text filter").setText("steps/Steps.scala")
         findings(view).size shouldBe 2
-        combo(view, "Scenarios").setSelectedItem("Scenarios")
+        combo(view, "Scenarios").setSelectedItem(SuiteView.Scenarios)
         field(view, "Suite text filter").setText("")
         field(view, "Scenario tag expression").setText("@smoke")
         findings(view).size shouldBe 1
@@ -181,9 +181,9 @@ class SuitePanelSpec extends ScCucumberSpecBase {
       container.getComponents.collect { case child: Container => child }.foreach(layout)
     }
     Seq(360, 760).foreach { width =>
-      Seq("Scenarios", "Step definitions", "Ambiguous steps").foreach { category =>
+      Seq(SuiteView.Scenarios, SuiteView.Definitions, SuiteView.Ambiguous).foreach { category =>
         combo(view, "Scenarios").setSelectedItem(category)
-        if (category == "Ambiguous steps") select(view, 0)
+        if (category == SuiteView.Ambiguous) select(view, 0)
         view.setSize(width, 850)
         (1 to 3).foreach(_ => layout(view))
         Seq(check(view, "Module"), check(view, "Tag"), check(view, "Category"), combo(view, "Scenarios"), field(view, "Suite text filter"), button(view, "Refresh"), button(view, "Source"), button(view, "Preview"), button(view, "Run"), button(view, "Insert")).filter(_.isVisible).foreach { component =>
@@ -194,16 +194,16 @@ class SuitePanelSpec extends ScCucumberSpecBase {
         }
         field(view, "Suite text filter").getWidth should be > 200
         button(view, "Source").getWidth should be < 150
-        if (category == "Scenarios") button(view, "Run").getY shouldBe button(view, "Source").getY
-        if (category == "Step definitions") button(view, "Insert").getY shouldBe button(view, "Source").getY
+        if (category == SuiteView.Scenarios) button(view, "Run").getY shouldBe button(view, "Source").getY
+        if (category == SuiteView.Definitions) button(view, "Insert").getY shouldBe button(view, "Source").getY
         tree(view).getScrollableTracksViewportWidth shouldBe true
-        if (width == 360 && category == "Ambiguous steps") {
+        if (width == 360 && category == SuiteView.Ambiguous) {
           val hint = children(view).collectFirst { case l: JLabel if Option(l.getText).exists(_.startsWith("Feature steps matching")) => l }.get
           hint.getHeight should be > 30
         }
       }
     }
-    combo(view, "Scenarios").setSelectedItem("Repeated expressions")
+    combo(view, "Scenarios").setSelectedItem(SuiteView.Repeated)
     findings(view).size shouldBe 0
     button(view, "Source").isEnabled shouldBe false
     button(view, "Preview").isEnabled shouldBe false
@@ -214,7 +214,7 @@ class SuitePanelSpec extends ScCucumberSpecBase {
   def testRefreshReplacesFindingsAfterSourceEdits(): Unit = {
     fixtures()
     val view = panel()
-    combo(view, "Scenarios").setSelectedItem("Undefined steps")
+    combo(view, "Scenarios").setSelectedItem(SuiteView.Undefined)
     findings(view).size shouldBe 1
     WriteCommandAction.runWriteCommandAction(getProject, new Runnable { override def run(): Unit = {
       val document = myFixture.getEditor.getDocument
@@ -230,7 +230,7 @@ class SuitePanelSpec extends ScCucumberSpecBase {
   def testFilteringKeepsTheSelectedFinding(): Unit = {
     fixtures()
     val view = panel()
-    combo(view, "Scenarios").setSelectedItem("Step definitions")
+    combo(view, "Scenarios").setSelectedItem(SuiteView.Definitions)
     select(view, findings(view).size - 1)
     val target = tree(view).getLastSelectedPathComponent.asInstanceOf[DefaultMutableTreeNode].getUserObject.asInstanceOf[SuiteAnalysis.Finding].source.target
     field(view, "Suite text filter").setText(".scala")

@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.moduleOf
 import com.intellij.execution.actions.{ConfigurationContext, RunConfigurationProducer}
 import com.intellij.execution.lineMarker.{ExecutorAction, RunLineMarkerContributor}
@@ -17,7 +18,7 @@ class ScCucumberRunProducer extends RunConfigurationProducer[ScCucumberRunConfig
       val holder = Option(PsiTreeUtil.getParentOfType(element, classOf[GherkinStepsHolder], false))
         .filterNot { case s: GherkinScenario => s.isBackground; case _ => false }
       val target = row.orElse(holder).getOrElse(file)
-      val line = if (target == file) 0 else file.getText.take(ScenarioSelection.sourceOffset(target)).count(_ == '\n') + 1
+      val line = if (target == file) 0 else file.getText.take(Scenarios.sourceOffset(target)).count(_ == '\n') + 1
       (file, line, target)
     }
   }

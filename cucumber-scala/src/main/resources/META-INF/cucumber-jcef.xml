@@ -1,4 +1,7 @@
 <idea-plugin>
+    <applicationListeners>
+        <listener class="com.github.vbmacher.intellij.cucumber.scala.publish.JcefProxyStartup" topic="com.intellij.ide.AppLifecycleListener"/>
+    </applicationListeners>
     <extensions defaultExtensionNs="com.intellij">
         <projectService serviceInterface="com.github.vbmacher.intellij.cucumber.scala.publish.FeaturePdfExporter" serviceImplementation="com.github.vbmacher.intellij.cucumber.scala.publish.JcefPdfExporter"/>
     </extensions>

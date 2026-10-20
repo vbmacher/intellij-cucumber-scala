@@ -48,7 +48,7 @@ class SuiteAnalysisSpec extends ScCucumberSpecBase {
       myFixture.configureByText("payments.feature", "Feature: Payments\n Scenario: Account\n  Given account\n")
       ScCucumber.inReadAction {
         val report = SuiteAnalysis.scan(getProject, Seq(myFixture.getModule), GlobalSearchScope.projectScope(getProject))
-        report.findings.find(_.category == "Scenarios").get.moduleGroup shouldBe second.head
+        report.findings.find(_.view == SuiteView.Scenarios).get.moduleGroup shouldBe second.head
       }
     } finally {
       properties.unlinkExternalOptions()
@@ -67,8 +67,8 @@ class SuiteAnalysisSpec extends ScCucumberSpecBase {
       report.scenarios shouldBe 2
       report.stepUsages shouldBe 4
       report.definitions shouldBe 3
-      report.findings.count(_.category == "Undefined steps") shouldBe 2
-      val ambiguous = report.findings.filter(_.category == "Ambiguous steps")
+      report.findings.count(_.view == SuiteView.Undefined) shouldBe 2
+      val ambiguous = report.findings.filter(_.view == SuiteView.Ambiguous)
       ambiguous.size shouldBe 2
       ambiguous.map(_.source.location.split('/').last).toSet shouldBe Set("first.feature:3", "second.feature:3")
       ambiguous.foreach { finding =>
@@ -77,11 +77,43 @@ class SuiteAnalysisSpec extends ScCucumberSpecBase {
         finding.related.map(_.target).distinct.size shouldBe 2
         finding.related.foreach(_.location should endWith("Steps.scala:1"))
       }
-      report.findings.count(_.category == "Unused definitions") shouldBe 1
-      val definition = report.findings.find(f => f.category == "Step definitions" && f.source.label.startsWith("account {int}")).get
+      report.findings.count(_.view == SuiteView.Unused) shouldBe 1
+      val definition = report.findings.find(f => f.view == SuiteView.Definitions && f.source.label.startsWith("account {int}")).get
       definition.related.map(_.location.split('/').last).toSet shouldBe Set("first.feature:2", "second.feature:2")
       definition.keyword shouldBe Some("Given")
-      report.findings.count(_.category == "Duplicate scenarios") shouldBe 2
+      report.findings.count(_.view == SuiteView.Duplicates) shouldBe 2
+    }
+  }
+
+  @Test
+  def testDuplicateBodiesExcludeBackgroundsAndExamplesButIncludeStepArguments(): Unit = {
+    Seq("first" -> "10", "second" -> "20").foreach { case (name, amount) =>
+      myFixture.addFileToProject(name + ".feature", s"""Feature: $name
+        | Background:
+        |  Given $name setup
+        | Scenario Outline: $name
+        |  When pay <amount>
+        |  Then receipt
+        |   | currency | USD |
+        |  Examples:
+        |   | amount |
+        |   | $amount |
+        |""".stripMargin)
+    }
+    myFixture.configureByText("different.feature", """Feature: Different
+      | Scenario Outline: Different argument
+      |  When pay <amount>
+      |  Then receipt
+      |   | currency | EUR |
+      |  Examples:
+      |   | amount |
+      |   | 10 |
+      |""".stripMargin)
+    ScCucumber.inReadAction {
+      val report = SuiteAnalysis.scan(getProject, Seq(myFixture.getModule), GlobalSearchScope.projectScope(getProject))
+      val duplicates = report.findings.filter(_.view == SuiteView.Duplicates)
+      duplicates.map(_.source.label).toSet shouldBe Set("first", "second")
+      duplicates.foreach(_.related.size shouldBe 1)
     }
   }
 

@@ -354,7 +354,7 @@
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>
         </action>
         <action id="ScalaCucumber.CreateMissingSteps" class="com.github.vbmacher.intellij.cucumber.scala.creation.BatchStepCreationAction" text="Create Missing Scala Steps…">
-            <add-to-group group-id="EditorPopupMenu" anchor="last"/>
+            <add-to-group group-id="GenerateGroup" anchor="last"/>
         </action>
         <group id="ScalaCucumber.Table" text="Gherkin Table" popup="true">
             <add-to-group group-id="EditorPopupMenu" anchor="last"/>

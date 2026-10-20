@@ -3,6 +3,8 @@
 Cucumber for Scala connects `.feature` files to Scala step definitions written with the
 Cucumber Scala DSL. Use the guides below for each feature.
 
+For feature boundaries and interactions, see the [capability specifications](../features/README.md).
+
 | What you can do | Guide |
 | --- | --- |
 | Install the plugin and prepare a project or development environment | [Installation](installation.md) |

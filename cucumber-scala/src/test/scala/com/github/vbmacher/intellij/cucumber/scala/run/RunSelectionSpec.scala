@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.github.vbmacher.intellij.cucumber.scala.editor.ScHooks
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
@@ -32,14 +33,14 @@ class RunSelectionSpec extends ScCucumberSpecBase {
         |      | -1 |
         |""".stripMargin)
     ScCucumber.inReadAction {
-      val all = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "@payments and @smoke").toOption.get
+      val all = Scenarios.locations(getProject, GlobalSearchScope.projectScope(getProject), "@payments and @smoke").toOption.get
       all.size shouldBe 2
-      ScenarioSelection.tags(all.head.scenario) should contain allOf("@first", "@second", "@payments")
+      Scenarios.tags(all.head.scenario) should contain allOf("@first", "@second", "@payments")
       val impossible = io.cucumber.tagexpressions.TagExpressionParser.parse("@first and @second")
       import scala.jdk.CollectionConverters._
-      ScenarioSelection.tagSets(all.head.scenario).exists(tags => impossible.evaluate(tags.asJava)) shouldBe false
+      Scenarios.tagSets(all.head.scenario).exists(tags => impossible.evaluate(tags.asJava)) shouldBe false
       all.map(_.selector).distinct.size shouldBe 2
-      val second = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "@second and not @first").toOption.get
+      val second = Scenarios.locations(getProject, GlobalSearchScope.projectScope(getProject), "@second and not @first").toOption.get
       second.size shouldBe 1
       val selected = new ScCucumberRunProducer().selection(second.head.target.getFirstChild).get
       selected._2 shouldBe second.head.line
@@ -89,7 +90,7 @@ class RunSelectionSpec extends ScCucumberSpecBase {
   def testIdenticalScenarioAndExampleRowsKeepSeparateHistoryIdentities(): Unit = {
     myFixture.configureByText("identities.feature", "Feature: Identities\n  Scenario: Same\n    Given setup\n  Scenario: Same\n    Given setup\n  Scenario Outline: Rows\n    Given <value>\n    Examples:\n      | value |\n      | same |\n      | same |\n")
     ScCucumber.inReadAction {
-      val locations = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get
+      val locations = Scenarios.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get
       locations.size shouldBe 4
       locations.map(RunResults.identity).distinct.size shouldBe 4
     }
@@ -182,7 +183,7 @@ class RunSelectionSpec extends ScCucumberSpecBase {
   def testHistoryMustDistinguishChangedExamplesHeaders(): Unit = {
     myFixture.configureByText("identity.feature", "Feature: Identity\n  Scenario Outline: Transfer\n    Given transfer <from> to <to>\n    Examples:\n      | from | to |\n      | A | B |\n")
     def identity() = ScCucumber.inReadAction {
-      val location = ScenarioSelection.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get.head
+      val location = Scenarios.locations(getProject, GlobalSearchScope.projectScope(getProject), "").toOption.get.head
       RunResults.identity(location)
     }
     val before = identity()

@@ -16,6 +16,7 @@ Plugin sources live under
 | Package | Contents |
 | --- | --- |
 | `steps` | Scala DSL, step index, definitions, parameter types and usages |
+| `scenarios` | Scenario declarations, executable rows, inherited tags and applicable Backgrounds |
 | `completion` | Step wording, templates and custom-parameter completion |
 | `creation` | Single and batch step generation |
 | `drafts` | Reviewed model-assisted scenario drafts and insertion |

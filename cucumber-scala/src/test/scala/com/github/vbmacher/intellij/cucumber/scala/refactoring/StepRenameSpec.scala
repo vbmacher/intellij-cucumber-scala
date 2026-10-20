@@ -28,6 +28,31 @@ class StepRenameSpec extends StepResolveSpecBase {
   }
 
   @Test
+  def testNativeRenameRejectsUnsupportedPatternsWithoutEditingSources(): Unit = {
+    Seq(
+      "\"^account ([0-9]+)$\"" -> "account 42",
+      "\"account(s) {int}\"" -> "accounts 42",
+      "\"account/customer {int}\"" -> "customer 42",
+      "\"\"\"account \\(primary) {int}\"\"\"" -> "account (primary) 42",
+      "(\"account \" + \"{int}\")" -> "account 42"
+    ).zipWithIndex.foreach { case ((expression, wording), index) =>
+      val definition = myFixture.addFileToProject(s"Steps$index.scala", s"class Steps$index { Given($expression) { (id: Int) => () } }")
+      val feature = myFixture.configureByText(s"unsupported$index.feature", s"Feature: Unsupported\n Scenario: Unsupported\n  Given $wording\n")
+      val beforeDefinition = definition.getText
+      val beforeFeature = feature.getText
+      val declaration = ScCucumber.inReadAction {
+        val matched = findAllMatchingDefinitions(wording).find(_.getElement.getContainingFile == definition).get
+        StepDeclaration(matched.getElement, matched.getExpression)
+      }
+      intercept[ConflictsInTestsException] {
+        new RenameProcessor(getProject, PomService.convertToPsi(getProject, declaration), "new " + declaration.getName, false, false).run()
+      }
+      definition.getText shouldBe beforeDefinition
+      feature.getText shouldBe beforeFeature
+    }
+  }
+
+  @Test
   def testAmbiguousOrChangedParametersDoNotProduceAPlan(): Unit = {
     myFixture.addFileToProject("Steps.scala", "class Steps { Given(\"account {int} exists\") { (id: Int) => () }; Given(\"account {word} exists\") { (id: String) => () } }")
     myFixture.configureByText("accounts.feature", "Feature: Accounts\n  Scenario: Accounts\n    Given account 42 exists\n")

@@ -3,16 +3,19 @@ package com.github.vbmacher.intellij.cucumber.scala.drafts
 import com.github.vbmacher.intellij.cucumber.scala.ScCucumberSpecBase
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.inReadAction
+import com.intellij.icons.AllIcons
 import com.intellij.openapi.command.WriteCommandAction
+import com.intellij.openapi.editor.colors.EditorColorsManager
 import com.intellij.openapi.util.Disposer
 import com.intellij.testFramework.PlatformTestUtil
-import com.intellij.ui.EditorTextField
+import com.intellij.ui.{EditorTextField, OnePixelSplitter}
 import org.jetbrains.plugins.cucumber.psi.GherkinFile
 import org.junit.Test
 import org.junit.runner.RunWith
 import org.junit.runners.JUnit4
 
 import java.awt.{Component, Container}
+import java.awt.event.ActionEvent
 import java.util.concurrent.{CountDownLatch, TimeUnit}
 import java.util.concurrent.atomic.AtomicReference
 import javax.swing._
@@ -27,6 +30,12 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
   }
   private def button(view: ScenarioDraftPanel, text: String): JButton =
     children(view).collectFirst { case b: JButton if b.getText == text => b }.get
+  private def drafts(view: ScenarioDraftPanel): JList[String] =
+    children(view).collectFirst { case list: JList[_] => list.asInstanceOf[JList[String]] }.get
+  private def toggle(view: ScenarioDraftPanel): Unit = {
+    val list = drafts(view)
+    list.getActionMap.get("toggleDraft").actionPerformed(new ActionEvent(list, ActionEvent.ACTION_PERFORMED, "toggleDraft"))
+  }
   private def status(view: ScenarioDraftPanel, text: String): Boolean = children(view).exists {
     case label: JLabel => Option(label.getText).exists(_.contains(text))
     case _ => false
@@ -48,6 +57,44 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
   }
 
   @Test
+  def testContextToggleAndResizableEditorPreserveExpandedHeight(): Unit = {
+    val view = panel(new ScenarioDraftProvider {
+      override def suggest(context: String, check: () => Unit): Seq[ScenarioDraft] = Seq(valid)
+    })
+    val toggle = children(view).collectFirst { case button: JToggleButton => button }.get
+    val splitter = children(view).collectFirst { case split: OnePixelSplitter if split.isVertical => split }.get
+    def layout(container: Container): Unit = {
+      container.doLayout()
+      container.getComponents.collect { case child: Container => child }.foreach(layout)
+    }
+    view.setSize(view.getPreferredSize)
+    layout(view)
+    toggle.isSelected shouldBe true
+    toggle.getIcon shouldBe AllIcons.General.ArrowRight
+    toggle.getSelectedIcon shouldBe AllIcons.General.ArrowDown
+    val initialHeight = splitter.getFirstComponent.getHeight
+    splitter.setProportion(0.6f)
+    layout(view)
+    val expandedHeight = splitter.getFirstComponent.getHeight
+    expandedHeight should be > initialHeight
+    splitter.getDivider.isVisible shouldBe true
+
+    toggle.doClick()
+    layout(view)
+    splitter.getFirstComponent.isVisible shouldBe false
+    splitter.getDivider.isVisible shouldBe false
+    splitter.getSecondComponent.getHeight shouldBe splitter.getHeight
+    toggle.getToolTipText shouldBe "Show context"
+
+    toggle.doClick()
+    layout(view)
+    splitter.getFirstComponent.isVisible shouldBe true
+    splitter.getFirstComponent.getHeight shouldBe expandedHeight
+    splitter.getDivider.isVisible shouldBe true
+    toggle.getToolTipText shouldBe "Hide context"
+  }
+
+  @Test
   def testExplicitSubmissionPreviewAndSelectedOnlyInsertion(): Unit = {
     val submitted = new AtomicReference[String]()
     val view = panel(new ScenarioDraftProvider {
@@ -55,21 +102,31 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
     })
     submitted.get() shouldBe null
     status(view, "Nothing has been sent") shouldBe true
-    button(view, "Insert selected").isEnabled shouldBe false
+    new JButton(view.insertAction).isEnabled shouldBe false
     val original = myFixture.getFile.getText
     children(view).collectFirst { case a: JTextArea if a.getAccessibleContext.getAccessibleName == "Context to send" => a }.get
       .setText("reviewed specification")
     button(view, "Generate drafts").doClick()
-    await(view, "select drafts to insert")
+    await(view, "Click a draft to preview")
     submitted.get() shouldBe "reviewed specification"
     myFixture.getFile.getText shouldBe original
     val preview = children(view).collectFirst { case e: EditorTextField => e }.get
     preview.getText should include("Scenario: Zero")
     children(view).collectFirst { case a: JTextArea if a.getAccessibleContext.getAccessibleName == "Draft validation" => a }.get.getText should include("Unresolved")
-    val checks = children(view).collect { case c: JCheckBox => c }
-    checks.map(_.isSelected) shouldBe Seq(false, false)
-    checks.head.doClick()
-    button(view, "Insert selected").doClick()
+    val list = drafts(view)
+    list.getModel.getSize shouldBe 2
+    new JButton(view.insertAction).isEnabled shouldBe false
+    val contextToggle = children(view).collectFirst { case b: JToggleButton => b }.get
+    contextToggle.isSelected shouldBe false
+    contextToggle.doClick()
+    contextToggle.isSelected shouldBe true
+    list.setSelectedIndex(1)
+    preview.getText should include("Scenario: Duplicate")
+    new JButton(view.insertAction).isEnabled shouldBe false
+    list.setSelectedIndex(0)
+    toggle(view)
+    status(view, "1 of 2 selected") shouldBe true
+    new JButton(view.insertAction).doClick()
     myFixture.getFile.getText should include("Scenario: Zero")
     myFixture.getFile.getText should not include "Scenario: Duplicate"
     status(view, "Not executed") shouldBe true
@@ -81,13 +138,13 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
       override def suggest(context: String, check: () => Unit): Seq[ScenarioDraft] = Seq(valid)
     })
     button(view, "Generate drafts").doClick()
-    await(view, "select drafts to insert")
-    children(view).collectFirst { case c: JCheckBox => c }.get.doClick()
-    button(view, "Insert selected").isEnabled shouldBe true
+    await(view, "Click a draft to preview")
+    toggle(view)
+    new JButton(view.insertAction).isEnabled shouldBe true
     children(view).collectFirst { case a: JTextArea if a.getAccessibleContext.getAccessibleName == "Context to send" => a }.get
       .append("\nChanged requirement")
-    button(view, "Insert selected").isEnabled shouldBe false
-    children(view).collect { case c: JCheckBox => c } shouldBe empty
+    new JButton(view.insertAction).isEnabled shouldBe false
+    drafts(view).getModel.getSize shouldBe 0
     myFixture.getFile.getText should not include "Scenario: Zero"
   }
 
@@ -106,9 +163,12 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
     await(view, "HTTP 404")
     button(view, "Generate drafts").isEnabled shouldBe true
     button(view, "Generate drafts").doClick()
-    await(view, "select drafts to insert")
-    children(view).collect { case c: JCheckBox => c }.foreach(_.isEnabled shouldBe false)
-    button(view, "Insert selected").isEnabled shouldBe false
+    await(view, "Click a draft to preview")
+    val list = drafts(view)
+    val cell = list.getCellRenderer.getListCellRendererComponent(list, list.getModel.getElementAt(0), 0, true, false)
+    children(cell.asInstanceOf[Container]).collectFirst { case check: JCheckBox => check }.get.isEnabled shouldBe false
+    toggle(view)
+    new JButton(view.insertAction).isEnabled shouldBe false
     myFixture.getFile.getText shouldBe original
   }
 
@@ -141,8 +201,27 @@ class ScenarioDraftPanelSpec extends ScCucumberSpecBase {
         if (operation == "source") await(view, "feature changed")
         else if (operation == "provider") await(view, "settings changed")
         else PlatformTestUtil.dispatchAllEventsInIdeEventQueue()
-        children(view).collect { case c: JCheckBox => c } shouldBe empty
+        drafts(view).getModel.getSize shouldBe 0
         myFixture.getEditor.getDocument.getText should not include "Scenario: Zero"
       }
     })
+
+  @Test
+  def testPreviewUsesMatchingSyntaxAndBackgroundColors(): Unit = {
+    val view = panel(new ScenarioDraftProvider {
+      override def suggest(context: String, check: () => Unit): Seq[ScenarioDraft] = Seq(valid)
+    })
+    button(view, "Generate drafts").doClick()
+    await(view, "Click a draft to preview")
+    val preview = children(view).collectFirst { case field: EditorTextField => field }.get
+    preview.addNotify()
+    try {
+      val editor = preview.getEditor(true)
+      val scheme = EditorColorsManager.getInstance().getGlobalScheme
+      editor.getColorsScheme.getDefaultForeground shouldBe scheme.getDefaultForeground
+      editor.getContentComponent.getBackground shouldBe scheme.getDefaultBackground
+      editor.getSettings.isUseSoftWraps shouldBe true
+      editor.isViewer shouldBe true
+    } finally preview.removeNotify()
+  }
 }

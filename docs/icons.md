@@ -19,6 +19,8 @@ shows the light-theme assets from the plugin and its IntelliJ/Gherkin dependenci
 | <img src="images/icons/settings.svg" width="16" height="16" alt="Settings"> | History Settings | In **Run History**, opens **Scala Cucumber** settings. |
 | <img src="images/icons/collapsed.svg" width="16" height="16" alt="Expand"> | Collapsed index options | In **Scenario Search**, on **Semantic index** when its model and index controls are hidden. |
 | <img src="images/icons/expanded.svg" width="16" height="16" alt="Collapse"> | Expanded index options | On the same control when its model and index controls are visible. Selecting **Semantic** expands them. |
+| <img src="images/icons/collapsed.svg" width="16" height="16" alt="Expand"> | Hidden request context | In **Suggest edge cases**, on **Context to send** when the context editor is hidden. Click to show it. |
+| <img src="images/icons/expanded.svg" width="16" height="16" alt="Collapse"> | Visible request context | On **Context to send** when the context editor is shown. Click to hide it. |
 
 Result markers require [editor result display](configuration.md#run-results-and-history).
 They report observed executions, not scenario coverage. For actions and examples, see

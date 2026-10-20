@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.drafts
 
-import com.github.vbmacher.intellij.cucumber.scala.run.ScenarioSelection
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.{inReadAction, matchingSteps, moduleOf}
 import com.intellij.openapi.command.WriteCommandAction
 import com.intellij.openapi.editor.Document
@@ -129,7 +129,7 @@ object DraftContext {
       val anchor = scenario.getOrElse(scope)
       val offset = anchor.getTextRange.getEndOffset
       def leading(element: PsiElement): String = {
-        val start = ScenarioSelection.sourceOffset(element)
+        val start = Scenarios.sourceOffset(element)
         source.substring(source.lastIndexOf('\n', math.max(0, start - 1)) + 1, start).takeWhile(c => c == ' ' || c == '\t')
       }
       val indent = scenario.map(leading).getOrElse {
@@ -145,7 +145,7 @@ object DraftContext {
       }
       else {
         val headers = ancestors.reverse.collect { case f: GherkinFeature => header(f); case r: GherkinRule => header(r) }
-        val backgrounds = ancestors.reverse.flatMap(_.getChildren.collect { case s: GherkinScenario if s.isBackground => s.getText })
+        val backgrounds = Scenarios.backgrounds(anchor).map(_.getText)
         s"Gherkin language: ${file.getLocaleLanguage}\n\n" + (headers ++ backgrounds :+
           selected.map { case (start, end) => source.substring(start, end) }.getOrElse(anchor.getText)).mkString("\n\n")
       }

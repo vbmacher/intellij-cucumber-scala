@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.publish
 
-import com.github.vbmacher.intellij.cucumber.scala.run.ScenarioSelection
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber.moduleOf
 import com.github.vbmacher.intellij.cucumber.scala.util.{Dialogs, GherkinFileAction}
 import com.intellij.openapi.actionSystem.{AnActionEvent, CommonDataKeys}
@@ -39,7 +39,7 @@ class ExportFeaturesAction extends GherkinFileAction("Export Features…") {
           case 1 => moduleOf(feature).map(_.getModuleWithDependenciesAndLibrariesScope(true)).getOrElse(GlobalSearchScope.EMPTY_SCOPE)
           case _ => GlobalSearchScope.projectScope(project)
         }
-        ScenarioSelection.locations(project, searchScope, tags.getText) match {
+        Scenarios.locations(project, searchScope, tags.getText) match {
           case Left(message) => Messages.showErrorDialog(project, message, "Export Features")
           case Right(locations) =>
             if (Dialogs.confirm(project, s"Export ${locations.size} Executable Scenarios / Example Rows", if (locations.isEmpty) "Empty selection" else locations.mkString("\n"))) {

@@ -62,7 +62,7 @@ class FailureExplanationPanelSpec extends ScCucumberSpecBase {
     myFixture.getFile.getText shouldBe original
     button(view, "Open source").doClick()
     myFixture.getEditor.getCaretModel.getOffset shouldBe original.indexOf("Then")
-    RunResults.getInstance(getProject).clearDecorations()
+    RunResults.getInstance(getProject).clearEditorResults()
     button(view, "Explain").doClick()
     status(view, "cleared or replaced") shouldBe true
   }
@@ -100,7 +100,7 @@ class FailureExplanationPanelSpec extends ScCucumberSpecBase {
             button(view, "Explain").isEnabled shouldBe false
             operation match {
               case "cancel" => button(view, "Cancel request").doClick()
-              case "clear" => RunResults.getInstance(getProject).clearDecorations()
+              case "clear" => RunResults.getInstance(getProject).clearEditorResults()
               case "close" => Disposer.dispose(view)
             }
           } finally release.countDown()

@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.settings.ScalaCucumberSettings
 import com.github.vbmacher.intellij.cucumber.scala.util.Dialogs
 import com.intellij.codeInsight.daemon.{DaemonCodeAnalyzer, LineMarkerInfo, LineMarkerProvider}
@@ -47,22 +48,17 @@ object RunResults {
   val HistoryChanged: Topic[HistoryListener] = Topic.create("Scala Cucumber run history", classOf[HistoryListener])
 
   final case class Context(stamp: Long, revision: String, environment: String, identities: Map[String, String], started: Long)
-  final case class Decoration(result: CucumberMessages.StepResult, stamp: Long, timestamp: Long)
+  final case class RecordedResult(result: CucumberMessages.StepResult, stamp: Long, timestamp: Long)
   def digest(text: String): String = MessageDigest.getInstance("SHA-256").digest(text.getBytes(StandardCharsets.UTF_8)).map(b => f"${b & 0xff}%02x").mkString
-  def identity(location: ScenarioSelection.Location): String = {
+  def identity(location: Scenarios.Location): String = {
     def signature(scenario: org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder): String =
       Option(PsiTreeUtil.getParentOfType(scenario, classOf[org.jetbrains.plugins.cucumber.psi.GherkinRule])).map(_.getRuleName).getOrElse("") + "\n" +
         scenario.getScenarioName + "\n" + scenario.getSteps.map(_.getText).mkString("\n")
     val scenario = location.scenario
     val file = scenario.getContainingFile
-    val sameScenarios = PsiTreeUtil.findChildrenOfType(file, classOf[org.jetbrains.plugins.cucumber.psi.GherkinStepsHolder]).asScala.toSeq
-      .filter(s => signature(s) == signature(scenario))
-    val rowOccurrence = scenario match {
-      case outline: org.jetbrains.plugins.cucumber.psi.GherkinScenarioOutline if location.target != scenario =>
-        outline.getExamplesBlocks.asScala.toSeq.flatMap(block => Option(block.getTable).toSeq.flatMap(_.getDataRows.asScala))
-          .filter(_.getText == location.target.getText).indexOf(location.target)
-      case _ => 0
-    }
+    val sameScenarios = Scenarios.declarations(file).filter(s => signature(s) == signature(scenario))
+    val rowOccurrence = if (location.target == scenario) 0 else Scenarios.locations(scenario).map(_.target)
+      .filter(_.getText == location.target.getText).indexOf(location.target)
     val rowSignature = if (location.target == scenario) "" else {
       val header = Option(PsiTreeUtil.getParentOfType(location.target, classOf[org.jetbrains.plugins.cucumber.psi.GherkinTable]))
         .flatMap(table => Option(table.getHeaderRow)).map(_.getText).getOrElse("")
@@ -113,7 +109,7 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
   import RunResults._
   private var state = new ScenarioHistoryState
   private val pendingErrors = mutable.Map.empty[(String, String), Vector[String]]
-  private val decorations = mutable.LinkedHashMap.empty[(String, String, Int, String), Decoration]
+  private val observations = mutable.LinkedHashMap.empty[(String, String, Int, String), RecordedResult]
   private def settings = ScalaCucumberSettings.getInstance(project)
   override def getState: ScenarioHistoryState = synchronized {
     val snapshot = new ScenarioHistoryState
@@ -130,8 +126,8 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
         pendingErrors(key) = (pendingErrors.getOrElse(key, Vector.empty) :+ result.error).distinct
       }
       if (settings.resultDecorations || settings.failureExplanations) {
-        decorations((result.run, uri(result.uri), result.line, result.selector)) = Decoration(result, context.stamp, context.started)
-        while (decorations.size > 5000) decorations.remove(decorations.head._1)
+        observations((result.run, uri(result.uri), result.line, result.selector)) = RecordedResult(result, context.stamp, context.started)
+        while (observations.size > 5000) observations.remove(observations.head._1)
       }
     }
     refresh()
@@ -154,30 +150,33 @@ class RunResults(project: Project) extends PersistentStateComponent[ScenarioHist
     }
     refreshHistory()
   }
-  def at(element: PsiElement): Seq[Decoration] = {
+  /** Presentation access respects the display setting; explanation access does not. */
+  def forEditor(element: PsiElement): Seq[RecordedResult] = {
     if (!settings.resultDecorations) return Seq.empty
     val file = element.getContainingFile
     val line = file.getText.take(element.getTextOffset).count(_ == '\n') + 1
     val expected = key(fileUri(file.getVirtualFile.getUrl), line)
-    synchronized { decorations.values.filter(d => key(d.result.uri, d.result.line) == expected).toVector.sortBy(d => (d.timestamp, d.result.run)) }
+    synchronized { observations.values.filter(d => key(d.result.uri, d.result.line) == expected).toVector.sortBy(d => (d.timestamp, d.result.run)) }
   }
-  def stale(decoration: Decoration): Boolean = decoration.stamp != PsiModificationTracker.getInstance(project).getModificationCount
-  def failures(featureUrl: String): Seq[Decoration] = {
+  def stale(observation: RecordedResult): Boolean = observation.stamp != PsiModificationTracker.getInstance(project).getModificationCount
+  def failures(featureUrl: String): Seq[RecordedResult] = {
     val expected = fileUri(featureUrl)
-    synchronized { decorations.values.filter(d => uri(d.result.uri) == expected && Set("FAILED", "AMBIGUOUS", "UNDEFINED")(d.result.status)).toVector }
+    synchronized { observations.values.filter(d => uri(d.result.uri) == expected && Set("FAILED", "AMBIGUOUS", "UNDEFINED")(d.result.status)).toVector }
   }
-  def contains(decoration: Decoration): Boolean = synchronized {
-    val r = decoration.result
-    decorations.get((r.run, uri(r.uri), r.line, r.selector)).contains(decoration)
+  def contains(observation: RecordedResult): Boolean = synchronized {
+    val r = observation.result
+    observations.get((r.run, uri(r.uri), r.line, r.selector)).contains(observation)
   }
-  def describe(element: PsiElement): String = at(element).map { decoration =>
-    val r = decoration.result
-    s"${r.status} · ${r.durationMillis} ms · run ${r.run} · ${r.selector}" + (if (stale(decoration)) " · STALE (source changed)" else "") +
+  def describe(element: PsiElement): String = forEditor(element).map { observation =>
+    val r = observation.result
+    s"${r.status} · ${r.durationMillis} ms · run ${r.run} · ${r.selector}" + (if (stale(observation)) " · STALE (source changed)" else "") +
       (if (r.error.nonEmpty) "\n" + r.error else "")
   }.mkString("\n\n")
-  def clearDecorations(): Unit = { synchronized { decorations.clear() }; refresh() }
+  /** Clear session observations (including explanation context), independently of saved history. */
+  def clearEditorResults(): Unit = { synchronized { observations.clear() }; refresh() }
+  /** Active runs keep their accumulated errors; their completed outcomes may be retained later. */
   def clearHistory(): Unit = {
-    synchronized { state.entries.clear(); pendingErrors.clear() }
+    synchronized { state.entries.clear() }
     refreshHistory()
   }
   def retentionChanged(): Unit = {
@@ -199,7 +198,7 @@ class FeatureResultLineMarker extends LineMarkerProvider {
     val target = step.orElse(row)
     target.flatMap { source =>
       val results = RunResults.getInstance(source.getProject)
-      val values = results.at(source)
+      val values = results.forEditor(source)
       // Outline and Background steps run once per row or scenario; show the worst outcome of the latest run.
       val latest = values.lastOption.toSeq.flatMap(last => values.filter(_.result.run == last.result.run))
       latest.minByOption(d => d.result.status match {

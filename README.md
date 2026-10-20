@@ -11,6 +11,9 @@ for navigating, writing, running and documenting Gherkin scenarios backed by the
 Start with the [feature guide](docs/getting_started.md) or explore the
 [example project](example/README.md).
 
+The [capability index](features/README.md) links to each feature's contract, example
+and screenshot.
+
 | Guide | Contents |
 | --- | --- |
 | [Installation](docs/installation.md) | IDE requirements, plugin installation, project prerequisites and development setup |

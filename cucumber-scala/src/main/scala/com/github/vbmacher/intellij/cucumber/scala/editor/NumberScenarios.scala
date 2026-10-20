@@ -1,6 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.editor
 
-import com.github.vbmacher.intellij.cucumber.scala.run.ScenarioSelection
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.util.{Dialogs, GherkinFileAction}
 import com.intellij.openapi.actionSystem.{AnActionEvent, CommonDataKeys}
 import com.intellij.openapi.command.WriteCommandAction
@@ -25,7 +25,7 @@ object NumberScenarios {
       val clean = existing.replaceFirstIn(before, "")
       val number = (start.toLong + index).toString.reverse.padTo(width, '0').reverse
       val after = s"$prefix$number - $clean"
-      val colon = scenario.getText.indexOf(':', ScenarioSelection.sourceOffset(scenario) - scenario.getTextOffset)
+      val colon = scenario.getText.indexOf(':', Scenarios.sourceOffset(scenario) - scenario.getTextOffset)
       val nameAt = scenario.getText.indexOf(before, colon + 1)
       if (before == after || nameAt < 0) None
       else Some(Edit(scenario, TextRange.from(scenario.getTextOffset + nameAt, before.length), before, after))

@@ -1,5 +1,6 @@
 package com.github.vbmacher.intellij.cucumber.scala.run
 
+import com.github.vbmacher.intellij.cucumber.scala.scenarios.Scenarios
 import com.github.vbmacher.intellij.cucumber.scala.settings.{ScalaCucumberConfigurable, ScalaCucumberSettings}
 import com.github.vbmacher.intellij.cucumber.scala.steps.ScCucumber
 import com.intellij.icons.AllIcons
@@ -22,7 +23,7 @@ import javax.swing._
 import javax.swing.table.DefaultTableModel
 
 class RunHistoryPanel(project: Project) extends JPanel(new BorderLayout()) with Disposable {
-  private type Group = (Seq[ScenarioHistoryEntry], Option[ScenarioSelection.Location])
+  private type Group = (Seq[ScenarioHistoryEntry], Option[Scenarios.Location])
   private val results = RunResults.getInstance(project)
   private def settings = ScalaCucumberSettings.getInstance(project)
   private val model = new DefaultTableModel(Array[Object]("Scenario", "Latest result", "Attempts", "Last run", "Revision", "Environment"), 0) {
@@ -95,7 +96,7 @@ class RunHistoryPanel(project: Project) extends JPanel(new BorderLayout()) with 
   open.addActionListener(_ => selected.flatMap(_._2).foreach { location =>
     val descriptor = ScCucumber.inReadAction {
       val target = location.target
-      Option.when(target.isValid)(new OpenFileDescriptor(project, target.getContainingFile.getVirtualFile, ScenarioSelection.sourceOffset(target)))
+      Option.when(target.isValid)(new OpenFileDescriptor(project, target.getContainingFile.getVirtualFile, Scenarios.sourceOffset(target)))
     }
     descriptor.foreach(_.navigate(true))
   })
@@ -143,7 +144,7 @@ class RunHistoryPanel(project: Project) extends JPanel(new BorderLayout()) with 
     enableHistory.setVisible(!settings.runHistory)
     if (snapshot.isEmpty) display(Seq.empty)
     else pending = Some(ReadAction.nonBlocking[Seq[Group]](() => {
-      val current = ScenarioSelection.locations(project, GlobalSearchScope.projectScope(project), "").toOption.toSeq.flatten
+      val current = Scenarios.locations(project, GlobalSearchScope.projectScope(project), "").toOption.toSeq.flatten
         .map(location => RunResults.identity(location) -> location).toMap
       snapshot.groupBy(e => (e.identity, e.revision, e.environment)).toSeq.sortBy(_._2.map(_.timestamp).max).reverse
         .map { case ((identity, _, _), same) => same -> current.get(identity) }
